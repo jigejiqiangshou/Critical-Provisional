@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>《临界》CRITICAL · 卡池与构筑</title>
+<style>
+  :root{
+    --bg:#0f1419; --panel:#161d26; --card:#1c2530; --line:#2a3644;
+    --ink:#e8edf2; --muted:#98a6b3; --dim:#6b7a88;
+    --accent:#ff8a3d; --accent2:#ffb45e; --blue:#5aa9ff; --red:#ff5d5d;
+    --green:#3ecf8e; --gold:#ffc94d; --purple:#b48cff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.75; font-size:15px;
+  }
+  .wrap{max-width:1080px; margin:0 auto; padding:0 22px 120px;}
+  header{
+    padding:56px 22px 40px; text-align:center;
+    background:linear-gradient(160deg,#1a1408 0%,#241a0c 45%,#0f1419 100%);
+    border-bottom:1px solid var(--line);
+  }
+  header .logo{
+    display:inline-block; font-size:13px; letter-spacing:.35em; color:var(--gold);
+    border:1px solid var(--gold); padding:4px 16px; border-radius:999px; margin-bottom:20px;
+  }
+  header h1{
+    margin:0; font-size:40px; letter-spacing:.12em; font-weight:800;
+    background:linear-gradient(90deg,#ffd28a,#ff8a3d); -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  header .sub{color:var(--muted); margin-top:10px; font-size:14px;}
+
+  h2.sec{font-size:24px; margin:60px 0 6px; color:var(--ink); display:flex; align-items:center; gap:14px;}
+  h2.sec .no{font-size:13px; color:#0f1419; background:var(--accent); border-radius:8px; padding:3px 10px; font-weight:700;}
+  .lead{color:var(--muted); margin:0 0 20px; font-size:14px;}
+
+  .attr{
+    display:inline-block; font-size:10px; padding:1px 7px; border-radius:5px; margin-left:6px;
+    color:#0f1419; font-weight:700; vertical-align:middle;
+  }
+  .attr.zhuque{background:var(--red);}
+  .attr.xuanwu{background:var(--blue);}
+  .attr.baihu{background:var(--gold);}
+  .attr.qinglong{background:var(--green);}
+  .attr.none{background:#4a5a6c; color:#e8edf2;}
+  .attr.baichuan{background:#7fe3e8; color:#06272b;}
+
+  .tag{
+    display:inline-block; font-size:12px; padding:2px 9px; border-radius:6px; margin:0 3px 4px 0;
+    background:#202b38; color:var(--accent2); border:1px solid var(--line); white-space:nowrap;
+  }
+  .tag.core{background:rgba(255,138,61,.14); border-color:rgba(255,138,61,.4);}
+  .tag.adv{background:rgba(90,169,255,.12); border-color:rgba(90,169,255,.35); color:var(--blue);}
+  .tag.divine{background:rgba(255,201,77,.16); border-color:rgba(255,201,77,.5); color:var(--gold);}
+
+.tag.srch{background:rgba(126,217,87,.12); border-color:rgba(126,217,87,.35); color:#7ed957;}
+
+.tag.plan{background:rgba(154,160,173,.12); border-color:rgba(154,160,173,.4); color:#9aa0ad;}
+
+  .cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(205px,1fr)); gap:14px; margin:18px 0;}
+  .card{
+    background:linear-gradient(170deg,#232e3b,#1a232d); border:1px solid var(--line);
+    border-radius:12px; padding:14px; position:relative; min-height:158px;
+  }
+  .card .cost{
+    position:absolute; top:10px; left:10px; width:26px; height:26px; border-radius:50%;
+    background:var(--gold); color:#0f1419; font-weight:800; font-size:14px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .card .name{font-weight:700; color:#fff; margin:0 0 0 32px; font-size:14px;}
+  .card .type{font-size:11px; color:var(--dim); margin:2px 0 0 32px; letter-spacing:.06em;}
+  .card .stats{position:absolute; bottom:10px; right:12px; font-weight:800; color:#fff;}
+  .card .stats .atk{color:var(--red);} .card .stats .hp{color:var(--green);}
+  .card .text{font-size:12.5px; color:var(--muted); margin-top:12px;}
+  .card .kws{margin-top:8px;}
+  .card.echo{border-color:rgba(255,201,77,.45);}
+  .card.pulse{border-color:rgba(90,169,255,.4);}
+
+  .deck{
+    background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:20px 24px; margin:18px 0;
+  }
+  .deck h3{margin:0 0 4px; color:#fff; font-size:18px;}
+  .deck .desc{color:var(--muted); font-size:13.5px; margin-bottom:14px;}
+  table{width:100%; border-collapse:collapse; background:var(--card); border-radius:10px; overflow:hidden;}
+  th,td{border:1px solid var(--line); padding:8px 13px; text-align:left; font-size:13.5px;}
+  th{background:#202b38; color:var(--accent2); font-weight:600;}
+  td{color:var(--ink);}
+  tr:nth-child(even) td{background:rgba(255,255,255,.015);}
+  .mana{color:var(--gold); font-weight:700;}
+
+  /* ---- v4.0 王牌时代追加 ---- */
+  .card.ace{
+    border-color:rgba(180,140,255,.55);
+    box-shadow:0 0 0 1px rgba(180,140,255,.22), 0 6px 24px rgba(0,0,0,.35);
+  }
+  .card.ace .cost{
+    width:auto; min-width:26px; padding:0 10px; border-radius:999px;
+    background:linear-gradient(135deg,#b48cff,#8f5fff); color:#0f1419;
+    letter-spacing:.02em;
+  }
+  .tag.lock{background:rgba(255,93,93,.12); border-color:rgba(255,93,93,.4); color:var(--red);}
+  .tag.ace{background:rgba(180,140,255,.14); border-color:rgba(180,140,255,.45); color:var(--purple);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">CRITICAL</div>
+    <h1>临 界</h1>
+    <div class="sub">CRITICAL · 双人对战集换式卡牌游戏 · 卡池 v4.0（王牌时代）</div>
+  </header>
+  <p class="lead">按四象属性与中立分组。单位标注攻击力 / 生命；同名卡构筑上限 4 张，旗舰每副恰 1 张。v4.0 全池 118 张＝114 张普通牌＋4 张王牌：普通牌（锚点／脉冲／回响／进化）不消耗 AP 与任何资源，强度由卡面自肃逐卡定价（同名一次／字段锁／技能锁／召唤条件）；AP 只用于攻击（1 AP/次）与王牌（1 AP/张）。终焉值＝双方弃牌区合计，满 40 触发终焉阶段；回收＝终焉刹车。单次行动对核心伤害 ≤12（4 AP × 12 ＝ 48 ＜ 50，OTK 在制度层不可能）。</p>
+  <h2 class="sec"><span class="no" style="background:#b48cff">王牌</span>王牌（ACE）· 四席</h2>
+  <p class="lead">第四种卡片类型，标价 1 AP/张，同名牌每卡组限 1 张、每副王牌总数不设上限；四速不可被响应。王牌不是单位、不是脉冲、不是回响，结算后送入弃牌区。所有检索与看顶选牌效果的候选集显式排除王牌（规则书第 42 条红线）。</p>
+  <div class="cards">
+    <div class="card ace"><div class="cost">1 AP</div><div class="name">降临</div><div class="type">王牌<span class="attr qinglong">青龙</span></div><div class="text">从你的卡组选 1 个单位，置于你的场上。无视其召唤条件。该单位本回合可以攻击。</div><div class="kws"><span class="tag ace">王牌</span></div></div>
+    <div class="card ace"><div class="cost">1 AP</div><div class="name">夺魂</div><div class="type">王牌<span class="attr xuanwu">玄武</span></div><div class="text">夺取对手 1 个单位的控制权，直到回合结束。</div><div class="kws"><span class="tag ace">王牌</span></div></div>
+    <div class="card ace"><div class="cost">1 AP</div><div class="name">回魂</div><div class="type">王牌<span class="attr xuanwu">玄武</span></div><div class="text">从你的弃牌区选至多 2 个单位，无视召唤条件，置于你的场上。这些单位本回合可以攻击。</div><div class="kws"><span class="tag ace">王牌</span></div></div>
+    <div class="card ace"><div class="cost">1 AP</div><div class="name">泉涌</div><div class="type">王牌<span class="attr none">中立</span></div><div class="text">本回合，你每使用 1 张牌，就抽 1 张牌。</div><div class="kws"><span class="tag ace">王牌</span><span class="tag srch">过牌</span></div></div>
+  </div>
+  <h2 class="sec"><span class="no">01</span>完整卡池（125 张）</h2>
+  <h2 class="sec" style="margin-top:36px"><span class="no" style="background:#ff5d5d">朱雀</span>朱雀火 · 爆发与直伤</h2>
+  <div class="cards">
+    <div class="card"><div class="name">毕方</div><div class="type">锚点<span class="attr zhuque">朱雀</span></div><div class="text">独足神鸟，一羽燎原。突袭。遗蜕：抽 1 张牌。</div><div class="stats"><span class="atk">2</span>/<span class="hp">1</span></div><div class="kws"><span class="tag core">突袭</span><span class="tag adv">遗蜕</span></div></div>
+    <div class="card"><div class="name">火鸦</div><div class="type">锚点<span class="attr zhuque">朱雀</span></div><div class="text">流火成群，遮天蔽日。技能「余火」：本回合，你的单位每被消灭 1 个，此单位就攻击力 +1。如果你发动此技能，此单位本回合就不能攻击。每回合，你只能发动此技能 1 次。</div><div class="stats"><span class="atk">3</span>/<span class="hp">2</span></div><div class="kws"><span class="tag adv">技能</span><span class="tag lock">技能锁</span></div></div>
+    <div class="card"><div class="name">金乌</div><div class="type">锚点<span class="attr zhuque">朱雀</span></div><div class="text">日中之灵，其羽如金。如果此单位攻击对方核心，则额外造成 2 点伤害。</div><div class="stats"><span class="atk">3</span>/<span class="hp">2</span></div><div class="kws"><span class="tag core">打核</span></div></div>
+    <div class="card"><div class="name">焰羽</div><div class="type">锚点<span class="attr zhuque">朱雀</span></div><div class="text">振羽引途。进场：看牌库顶 5 选 1 张单位加入手牌，其余洗回牌库。</div><div class="stats"><span class="atk">1</span>/<span class="hp">2</span></div><div class="kws"><span class="tag adv">进场</span><span class="tag srch">看顶选牌</span></div></div>
+    <div class="card pulse"><div class="name">炎纹</div><div class="type">脉冲<span class="attr zhuque">朱雀</span></div><div class="text">火纹灼骨。对目标单位造成 3 点伤害，然后抽 1 张。</div><div class="kws"><span class="tag core">去除</span><span class="tag srch">过牌</span></div></div>
+    <div class="card pulse"><div class="name">烽火令</div><div class="type">脉冲<span class="attr zhuque">朱雀</span></div><div class="text">弃 1 张手牌：从牌库检索 1 张朱雀单位，加入手牌。</div><div class="kws"><span class="tag srch">付费</span><span class="tag srch">定向铺场</span></div></div>
+    <div class="card pulse"><div class="name">离火</div><div class="type">脉冲<span class="attr zhuque">朱雀</span></div><div class="text">离火灼骨。对目标单位造成 5 点伤害。</div><div class="kws"><span class="tag core">去除</span></div></div>
+    <div class="card pulse"><div class="name">烈焰奔袭</div><div class="type">脉冲<span class="attr zhuque">朱雀</span></div><div class="text">目标朱雀单位本回合获得「突袭」，攻击力 +1。</div><div class="kws"><span class="tag core">突袭增益</span></div></div>
+    <div class="card pulse"><div class="name">燎原</div><div class="type">脉冲<span class="attr zhuque">朱雀</span></div><div class="text">对对方所有单位造成 3 点伤害。如果你发动此效果，本回合你就不能发动其他朱雀卡的效果。</div><div class="kws"><span class="tag core">清场</span><span class="tag lock">字段锁</span></div></div>
+    <div class="card"><div class="name">三足金乌</div><div class="type">锚点<span class="attr zhuque">朱雀</span></div><div class="text">进化自火鸦。日中之精，其羽如金。突袭。如果此单位攻击对方核心，则额外造成 2 点伤害。</div><div class="stats"><span class="atk">5</span>/<span class="hp">4</span></div><div class="kws"><span class="tag core">突袭</span><span class="tag divine">进化 火鸦</span></div></div>
+    <div class="card"><div class="name">朱厌</div><div class="type">锚点<span class="attr zhuque">朱雀</span></div><div class="text">赤身瑞兽，见则兵起。如果此单位攻击，则先对目标造成 1 点穿透伤害。</div><div class="stats"><span class="atk">5</span>/<span class="hp">4</span></div><div class="kws"><span class="tag core">攻击先手</span></div></div>
+    <div class="card"><div class="name">朱雀·陵光</div><div class="type">锚点<span class="attr zhuque">朱雀</span></div><div class="text">进化自毕方。南明离火，光耀九霄。技能「焚天」：对目标单位造成 5 点伤害。如果你发动此技能，此单位本回合就不能攻击。登场：检索 1 张朱雀脉冲加入手牌。神威「涅槃」：如果你的场上有至少 3 个朱雀单位，就可以发动：持续 2 轮：你的朱雀单位攻击力 +1，且你的每一个回合额外 +1 AP。（旗舰）每回合，你只能发动此技能 1 次。</div><div class="stats"><span class="atk">8</span>/<span class="hp">9</span></div><div class="kws"><span class="tag divine">进化 毕方</span><span class="tag adv">技能</span><span class="tag lock">技能锁</span><span class="tag divine">神威</span><span class="tag srch">登场检索</span></div></div>
+    <div class="card"><div class="name">祝融</div><div class="type">锚点<span class="attr zhuque">朱雀</span></div><div class="text">火神降世。技能「烈焰」：对对方所有单位造成 2 点伤害。如果你发动此技能，本回合你的单位就不能攻击。你的场上必须至少有 4 个朱雀单位，才能召唤此单位。每回合，你只能发动此技能 1 次。</div><div class="stats"><span class="atk">8</span>/<span class="hp">8</span></div><div class="kws"><span class="tag adv">技能</span><span class="tag lock">条件召唤</span><span class="tag core">清场</span></div></div>
+    <div class="card pulse"><div class="name">三昧真火</div><div class="type">脉冲<span class="attr zhuque">朱雀</span></div><div class="text">消灭目标单位。如果你发动此效果，本回合你就不能发动其他朱雀卡的效果。</div><div class="kws"><span class="tag core">硬解</span><span class="tag lock">字段锁</span></div></div>
+    <div class="card"><div class="name">烬鸢</div><div class="type">锚点<span class="attr zhuque">朱雀</span></div><div class="text">进化自火鸦。火羽纷飞，余烬燎原。如果你的单位被消灭，则对对方单位造成 2 点伤害。</div><div class="stats"><span class="atk">4</span>/<span class="hp">5</span></div><div class="kws"><span class="tag divine">进化 火鸦</span><span class="tag adv">事件</span></div></div>
+    <div class="card pulse"><div class="name">炽羽</div><div class="type">脉冲<span class="attr zhuque">朱雀</span></div><div class="text">弃 1 张手牌：抽 2 张牌。如果弃掉的是朱雀牌，本回合你的朱雀单位就攻击力 +1。</div><div class="kws"><span class="tag srch">付费</span><span class="tag srch">过牌</span></div></div>
+    <div class="card pulse"><div class="name">征召</div><div class="type">脉冲<span class="attr zhuque">朱雀</span></div><div class="text">从牌库检索 1 张朱雀单位加入手牌。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag srch">定向检索</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card echo"><div class="name">天火</div><div class="type">回响<span class="attr zhuque">朱雀</span></div><div class="text">打出后盖放。如果对方单位入场，你可以翻开并对其造成 3 点伤害；如果其熔毁，就抽 1 张牌。</div><div class="kws"><span class="tag adv">入场</span><span class="tag core">打单位</span></div></div>
+    <div class="card echo"><div class="name">涅槃余烬</div><div class="type">回响<span class="attr zhuque">朱雀</span></div><div class="text">打出后盖放。如果你的核心受到伤害，你可以翻开并对伤害来源造成 3 点伤害。</div><div class="kws"><span class="tag core">反伤</span></div></div>
+    <div class="card pulse"><div class="name">焚粮</div><div class="type">脉冲<span class="attr zhuque">朱雀</span></div><div class="text">焚粮为薪，士气如灼。弃任意张数的手牌单位（至少 1 张）：本回合选 1 个你的单位，其攻击力 +2×弃掉的数量。</div><div class="kws"><span class="tag srch">付费</span><span class="tag core">单体增益</span><span class="tag adv">终焉油门</span></div></div>
+    <div class="card echo"><div class="name">焰迹</div><div class="type">回响<span class="attr zhuque">朱雀</span></div><div class="text">火过留痕，燎原不绝。打出后盖放。如果你的单位攻击对方核心结算后，你可以翻开并追加 N 点伤害，N 为你的弃牌区中的单位数（N 为 0 不翻开）。</div><div class="kws"><span class="tag adv">盖放</span><span class="tag core">打核</span><span class="tag adv">终焉油门</span></div></div>
+    <div class="card"><div class="name">朱雀羽</div><div class="type">锚点<span class="attr zhuque">朱雀</span></div><div class="text">朱雀落羽，余烬不灭。如果此单位被消灭，你可以将 1 张手牌置入弃牌区；如果你如此做，就抽 2 张牌。</div><div class="stats"><span class="atk">2</span>/<span class="hp">2</span></div><div class="kws"><span class="tag adv">遗蜕</span><span class="tag srch">过牌</span><span class="tag adv">终焉油门</span></div></div>
+  </div>
+  <h2 class="sec" style="margin-top:36px"><span class="no" style="background:#5aa9ff">玄武</span>玄武水 · 防御与控制</h2>
+  <div class="cards">
+    <div class="card"><div class="name">冰夷</div><div class="type">锚点<span class="attr xuanwu">玄武</span></div><div class="text">冰夷为甲，万夫莫开。守护。遗蜕：抽 1 张牌。</div><div class="stats"><span class="atk">2</span>/<span class="hp">4</span></div><div class="kws"><span class="tag core">守护</span><span class="tag adv">遗蜕</span></div></div>
+    <div class="card"><div class="name">玄龟</div><div class="type">锚点<span class="attr xuanwu">玄武</span></div><div class="text">负岳镇海，不动如山。</div><div class="stats"><span class="atk">2</span>/<span class="hp">8</span></div><div class="kws"><span class="tag core">守护</span><span class="tag core">护盾 3</span></div></div>
+    <div class="card"><div class="name">螣蛇</div><div class="type">锚点<span class="attr xuanwu">玄武</span></div><div class="text">腾蛇乘雾，游于北冥。护盾 5。过热 3（攻击后自身受到 3 点伤害）。</div><div class="stats"><span class="atk">3</span>/<span class="hp">9</span></div><div class="kws"><span class="tag core">护盾 5</span><span class="tag core">过热 3</span></div></div>
+    <div class="card"><div class="name">玄武·执明</div><div class="type">锚点<span class="attr xuanwu">玄武</span></div><div class="text">进化自冰夷。执明镇北，四灵之首。守护。技能「镇海」：你的所有单位获得「护盾 2」。登场：检索 1 张玄武脉冲加入手牌。神威「玄冥」：如果你的场上有至少 3 个玄武单位，就可以发动：持续 3 轮：你的所有单位获得「守护」，且攻击力 +2。（旗舰）每回合，你只能发动此技能 1 次。</div><div class="stats"><span class="atk">5</span>/<span class="hp">12</span></div><div class="kws"><span class="tag core">守护</span><span class="tag divine">进化 冰夷</span><span class="tag adv">技能</span><span class="tag divine">神威</span><span class="tag srch">登场检索</span></div></div>
+    <div class="card"><div class="name">冰尉</div><div class="type">锚点<span class="attr xuanwu">玄武</span></div><div class="text">进化自冰夷。冰卒列阵，寒气森然。守护。登场：你的其他单位获得护盾 1。</div><div class="stats"><span class="atk">3</span>/<span class="hp">7</span></div><div class="kws"><span class="tag core">守护</span><span class="tag divine">进化 冰夷</span><span class="tag adv">登场</span></div></div>
+    <div class="card"><div class="name">北冥鲲</div><div class="type">锚点<span class="attr xuanwu">玄武</span></div><div class="text">北冥有鱼，其名为鲲。守护。你的其他单位获得 +1 最大生命。你的弃牌区必须至少有 15 张牌，才能召唤此单位。</div><div class="stats"><span class="atk">8</span>/<span class="hp">12</span></div><div class="kws"><span class="tag core">守护</span><span class="tag core">光环</span><span class="tag lock">条件召唤</span></div></div>
+    <div class="card"><div class="name">共工</div><div class="type">锚点<span class="attr xuanwu">玄武</span></div><div class="text">水神怒触不周山。守护。护盾 3。入场：弃 1 张手牌。</div><div class="stats"><span class="atk">6</span>/<span class="hp">9</span></div><div class="kws"><span class="tag core">守护</span><span class="tag core">护盾 3</span><span class="tag adv">代价</span></div></div>
+    <div class="card pulse"><div class="name">寒渊</div><div class="type">脉冲<span class="attr xuanwu">玄武</span></div><div class="text">北冥之底，万载寒渊。弃 2 张手牌：从牌库检索 2 张玄武单位加入手牌。</div><div class="kws"><span class="tag srch">付费</span><span class="tag srch">定向检索</span></div></div>
+    <div class="card pulse"><div class="name">弱水</div><div class="type">脉冲<span class="attr xuanwu">玄武</span></div><div class="text">使目标单位眩晕（其下一个回合不能攻击）。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag core">眩晕</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">北冥之渊</div><div class="type">脉冲<span class="attr xuanwu">玄武</span></div><div class="text">令对方的下一个回合 AP -1。如果你发动此效果，本回合你就不能发动其他玄武卡的效果。</div><div class="kws"><span class="tag adv">干扰</span><span class="tag lock">字段锁</span></div></div>
+    <div class="card pulse"><div class="name">凝霜</div><div class="type">脉冲<span class="attr xuanwu">玄武</span></div><div class="text">目标单位获得「护盾 5」。</div><div class="kws"><span class="tag core">护盾</span></div></div>
+    <div class="card pulse"><div class="name">龟息</div><div class="type">脉冲<span class="attr xuanwu">玄武</span></div><div class="text">回复你的核心 6 点生命，且其获得「护盾 3」。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag adv">治疗</span><span class="tag core">护盾</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card"><div class="name">渊瞳</div><div class="type">锚点<span class="attr xuanwu">玄武</span></div><div class="text">渊底之瞳，窥见所需。进场：弃 1 张手牌，抽 1 张。</div><div class="stats"><span class="atk">2</span>/<span class="hp">4</span></div><div class="kws"><span class="tag adv">进场</span><span class="tag adv">滤抽</span></div></div>
+    <div class="card pulse"><div class="name">血涟</div><div class="type">脉冲<span class="attr xuanwu">玄武</span></div><div class="text">以血为引。支付 3 点核心生命：目标单位获得护盾 3，然后看牌库顶 8 选 1 张玄武单位加入手牌，其余洗回牌库。</div><div class="kws"><span class="tag srch">付费</span><span class="tag srch">看顶选牌</span></div></div>
+    <div class="card pulse"><div class="name">渊引</div><div class="type">脉冲<span class="attr xuanwu">玄武</span></div><div class="text">弃 2 张手牌：从牌库检索 1 张玄武单位加入手牌。</div><div class="kws"><span class="tag srch">付费</span><span class="tag srch">定向检索</span></div></div>
+    <div class="card pulse"><div class="name">玄召</div><div class="type">脉冲<span class="attr xuanwu">玄武</span></div><div class="text">从牌库检索 1 张玄武单位加入手牌。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag srch">定向检索</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card echo"><div class="name">冰封</div><div class="type">回响<span class="attr xuanwu">玄武</span></div><div class="text">打出后盖放。如果对方单位攻击，你可以翻开并使其眩晕。</div><div class="kws"><span class="tag core">眩晕</span></div></div>
+    <div class="card echo"><div class="name">寒鉴</div><div class="type">回响<span class="attr xuanwu">玄武</span></div><div class="text">打出后盖放。如果对方的法术指定你的单位，你可以翻开并使其无效。</div><div class="kws"><span class="tag core">反制</span></div></div>
+    <div class="card"><div class="name">观水</div><div class="type">锚点<span class="attr xuanwu">玄武</span></div><div class="text">渊深自映，处下而盈。守护。你的核心生命必须低于对方，才能部署此单位。逆境：你的核心生命每比对方低 10 点，就 +1 档（至多 3 档）；每有 1 档，就使你的检索效果多找 1 张；只要档位至少为 1，你的单位每死亡 1 个，就抽 1 张牌（每回合至多因此抽 1+档位 张）。</div><div class="stats"><span class="atk">4</span>/<span class="hp">6</span></div><div class="kws"><span class="tag core">守护</span><span class="tag adv">逆境引擎</span><span class="tag adv">死亡发条</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">借势</div><div class="type">脉冲<span class="attr xuanwu">玄武</span></div><div class="text">借力打力，因势利导。每回合，你只能使用 1 张同名卡。本回合你的单位攻击力 +X（X 为对方场上攻击力最高单位的攻击力的一半，向下取整；如果 X 为 0，就改为抽 1 张牌）。本回合，你的单位每消灭 1 个对方单位，就抽 1 张牌。</div><div class="kws"><span class="tag core">攻击增益</span><span class="tag srch">续航</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">蓄澜</div><div class="type">脉冲<span class="attr xuanwu">玄武</span></div><div class="text">水蓄而决，其势难当。每回合，你只能使用 1 张同名卡。本回合你的单位攻击力 +2×蓄力值（蓄力值为你连续未部署单位的回合数，含本回合至多 3；如果蓄力为 0，就改为抽 1 张牌）。打出时消耗全部蓄力值；部署单位后蓄力清零。</div><div class="kws"><span class="tag srch">爆发</span><span class="tag adv">等待</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">竭泽</div><div class="type">脉冲<span class="attr xuanwu">玄武</span></div><div class="text">水落石出，泽竭而渔。每回合，你只能使用 1 张同名卡。弃 1 张手牌：抽 X 张牌，X 为 1 + ⌊(30 − 双方牌库剩余合计) / 10⌋（至多 3）。</div><div class="kws"><span class="tag srch">过牌</span><span class="tag srch">残局</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">回流</div><div class="type">脉冲<span class="attr xuanwu">玄武</span></div><div class="text">周流不息，退而复还。每回合，你只能使用 1 张同名卡。弃 2 张手牌，本回合你的单位不能攻击。从你的弃牌区任选 1 张牌，加入你的手牌。</div><div class="kws"><span class="tag srch">回收</span><span class="tag srch">再生</span><span class="tag lock">同名一次</span></div></div>
+  </div>
+  <h2 class="sec" style="margin-top:36px"><span class="no" style="background:#ffc94d">白虎</span>白虎金 · 穿透与杀伐</h2>
+  <div class="cards">
+    <div class="card"><div class="name">天狼</div><div class="type">锚点<span class="attr baihu">白虎</span></div><div class="text">天狼啸月，寒光凛冽。如果此单位攻击对方核心，则额外造成 1 点伤害。</div><div class="stats"><span class="atk">4</span>/<span class="hp">4</span></div><div class="kws"><span class="tag core">打核</span></div></div>
+    <div class="card"><div class="name">残牙</div><div class="type">锚点<span class="attr baihu">白虎</span></div><div class="text">虎口余刃，断而后利。突袭。可进化为「破军」。</div><div class="stats"><span class="atk">3</span>/<span class="hp">3</span></div><div class="kws"><span class="tag core">突袭</span><span class="tag divine">进化 破军</span></div></div>
+    <div class="card"><div class="name">白额虎</div><div class="type">锚点<span class="attr baihu">白虎</span></div><div class="text">献祭：牺牲此单位，令一个你的白虎单位本回合攻击力 +3。</div><div class="stats"><span class="atk">3</span>/<span class="hp">4</span></div><div class="kws"><span class="tag adv">献祭</span></div></div>
+    <div class="card pulse"><div class="name">断金</div><div class="type">脉冲<span class="attr baihu">白虎</span></div><div class="text">对一个带护盾的单位造成 8 点伤害，无视护盾。</div><div class="kws"><span class="tag core">破盾</span></div></div>
+    <div class="card echo"><div class="name">虎啸</div><div class="type">回响<span class="attr baihu">白虎</span></div><div class="text">打出后盖放。如果对方单位入场，你可以翻开并对其造成 3 点伤害。</div><div class="kws"><span class="tag adv">入场</span></div></div>
+    <div class="card pulse"><div class="name">裂金</div><div class="type">脉冲<span class="attr baihu">白虎</span></div><div class="text">对目标单位造成 5 点伤害；如果其熔毁，就抽 1 张。</div><div class="kws"><span class="tag core">去除</span><span class="tag srch">循环</span></div></div>
+    <div class="card pulse"><div class="name">庚金</div><div class="type">脉冲<span class="attr baihu">白虎</span></div><div class="text">本回合一个你的白虎单位获得「穿透」。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag core">穿透</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card"><div class="name">破军</div><div class="type">锚点<span class="attr baihu">白虎</span></div><div class="text">进化自残牙。破军为锋，杀伐四方。只要此单位在场，你的白虎单位每攻击 1 次，就攻击力 +1。锋锐：攻击后本回合攻击力 +1（高攻单位至多 +3）。</div><div class="stats"><span class="atk">9</span>/<span class="hp">6</span></div><div class="kws"><span class="tag core">锋锐</span><span class="tag adv">光环</span><span class="tag divine">进化 残牙</span></div></div>
+    <div class="card"><div class="name">蓐收</div><div class="type">锚点<span class="attr baihu">白虎</span></div><div class="text">金神主刑杀。锋锐。技能「刑杀」：对对方所有单位造成 2 点伤害。你的场上必须至少有 1 个天狼，才能召唤此单位。每回合，你只能发动此技能 1 次。</div><div class="stats"><span class="atk">6</span>/<span class="hp">6</span></div><div class="kws"><span class="tag core">锋锐</span><span class="tag adv">AOE</span><span class="tag core">条件召唤</span></div></div>
+    <div class="card pulse"><div class="name">歃血</div><div class="type">脉冲<span class="attr baihu">白虎</span></div><div class="text">歃血为誓。支付 2 点核心生命：对目标单位造成 4 点伤害，然后本回合你的白虎单位无视护盾。</div><div class="kws"><span class="tag srch">付费</span><span class="tag core">破盾</span></div></div>
+    <div class="card pulse"><div class="name">虎符</div><div class="type">脉冲<span class="attr baihu">白虎</span></div><div class="text">弃 1 张手牌：看牌库顶 8 选 1 张白虎单位，加入手牌，其余洗回牌库。</div><div class="kws"><span class="tag srch">付费</span><span class="tag srch">看顶选牌</span><span class="tag srch">铺场</span></div></div>
+    <div class="card"><div class="name">白虎·监兵</div><div class="type">锚点<span class="attr baihu">白虎</span></div><div class="text">进化自天狼。监兵执锐，锋芒无匹。锋锐。如果此单位攻击的目标带有护盾，则此单位对其造成的伤害 +3。登场：检索 1 张白虎脉冲加入手牌。神威「锋鸣」：如果你场上有至少 3 个白虎单位，就可以发动：你的所有白虎单位攻击力 +2，且获得「突袭」与「穿透」，持续 2 轮。（旗舰）</div><div class="stats"><span class="atk">8</span>/<span class="hp">8</span></div><div class="kws"><span class="tag core">锋锐</span><span class="tag divine">进化 天狼</span><span class="tag divine">神威</span><span class="tag srch">登场检索</span></div></div>
+    <div class="card"><div class="name">贪狼</div><div class="type">锚点<span class="attr baihu">白虎</span></div><div class="text">星宿主杀，无坚不摧。锋锐。你的核心生命必须不高于 25，才能召唤此单位。</div><div class="stats"><span class="atk">8</span>/<span class="hp">8</span></div><div class="kws"><span class="tag core">锋锐</span><span class="tag lock">条件召唤</span></div></div>
+    <div class="card pulse"><div class="name">白虹</div><div class="type">脉冲<span class="attr baihu">白虎</span></div><div class="text">对所有对方单位造成 4 点穿透伤害。如果你发动此效果，本回合你就不能发动其他白虎卡的效果。</div><div class="kws"><span class="tag core">穿透</span><span class="tag core">AOE</span><span class="tag lock">字段锁</span></div></div>
+    <div class="card"><div class="name">锐虎</div><div class="type">锚点<span class="attr baihu">白虎</span></div><div class="text">锐牙新砺，一击致命。突袭。锋锐。</div><div class="stats"><span class="atk">5</span>/<span class="hp">4</span></div><div class="kws"><span class="tag core">突袭</span><span class="tag core">锋锐</span></div></div>
+    <div class="card pulse"><div class="name">虎贲</div><div class="type">脉冲<span class="attr baihu">白虎</span></div><div class="text">从牌库检索 1 张白虎单位加入手牌。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag srch">定向检索</span><span class="tag lock">同名一次</span></div></div>
+  </div>
+  <h2 class="sec" style="margin-top:36px"><span class="no" style="background:#3ecf8e">青龙</span>青龙木 · 生长与成长</h2>
+  <div class="cards">
+    <div class="card"><div class="name">青鸾</div><div class="type">锚点<span class="attr qinglong">青龙</span></div><div class="text">青鸾衔书，隐于云间。隐匿。登场：抽 1 张牌。</div><div class="stats"><span class="atk">3</span>/<span class="hp">3</span></div><div class="kws"><span class="tag core">隐匿</span><span class="tag divine">进化 青鸾系</span></div></div>
+    <div class="card"><div class="name">螭龙</div><div class="type">锚点<span class="attr qinglong">青龙</span></div><div class="text">无角之龙，潜行九渊。隐匿。你场上每有 1 个其他单位，此单位就攻击力 +1。</div><div class="stats"><span class="atk">5</span>/<span class="hp">3</span></div><div class="kws"><span class="tag core">隐匿</span><span class="tag adv">共鸣</span></div></div>
+    <div class="card"><div class="name">青苗</div><div class="type">锚点<span class="attr qinglong">青龙</span></div><div class="text">青青翠苗，生生不息。遗蜕：抽 1 张牌。</div><div class="stats"><span class="atk">1</span>/<span class="hp">3</span></div><div class="kws"><span class="tag adv">遗蜕</span></div></div>
+    <div class="card"><div class="name">牺木</div><div class="type">锚点<span class="attr qinglong">青龙</span></div><div class="text">献祭：牺牲此单位，抽 2 张牌。</div><div class="stats"><span class="atk">1</span>/<span class="hp">4</span></div><div class="kws"><span class="tag adv">献祭</span><span class="tag srch">过牌</span></div></div>
+    <div class="card"><div class="name">应龙</div><div class="type">锚点<span class="attr qinglong">青龙</span></div><div class="text">进化自螭龙。有翼神龙，群英共鸣。你场上每有 1 个其他单位，此单位就攻击力 +1。</div><div class="stats"><span class="atk">6</span>/<span class="hp">6</span></div><div class="kws"><span class="tag adv">共鸣</span><span class="tag divine">进化 螭龙</span></div></div>
+    <div class="card"><div class="name">木灵</div><div class="type">锚点<span class="attr qinglong">青龙</span></div><div class="text">进化自青苗。草木有灵，生生不息。你的其他单位获得 +1/+1。</div><div class="stats"><span class="atk">5</span>/<span class="hp">6</span></div><div class="kws"><span class="tag divine">进化 青苗</span><span class="tag core">光环</span></div></div>
+    <div class="card"><div class="name">建木</div><div class="type">锚点<span class="attr qinglong">青龙</span></div><div class="text">进化自木灵。建木通天，万物凭依。你的其他单位获得 +2/+2。</div><div class="stats"><span class="atk">7</span>/<span class="hp">9</span></div><div class="kws"><span class="tag divine">进化 木灵</span><span class="tag core">光环</span></div></div>
+    <div class="card"><div class="name">青龙·孟章</div><div class="type">锚点<span class="attr qinglong">青龙</span></div><div class="text">进化自青鸾。孟章司春，万物生长。隐匿。技能「生发」：目标你的单位获得 +2/+2（本回合，生命值部分即时获得）。登场：检索 1 张青龙脉冲加入手牌。神威「汲灵」：如果你的场上有至少 4 个单位，就可以发动：持续 2 轮：你的所有单位获得 +1/+1 与「突袭」。（旗舰）每回合，你只能发动此技能 1 次。</div><div class="stats"><span class="atk">6</span>/<span class="hp">8</span></div><div class="kws"><span class="tag core">隐匿</span><span class="tag divine">进化 青鸾</span><span class="tag adv">技能</span><span class="tag divine">神威</span><span class="tag srch">登场检索</span></div></div>
+    <div class="card"><div class="name">句芒</div><div class="type">锚点<span class="attr qinglong">青龙</span></div><div class="text">春神司生发。技能「生发」：目标你的单位获得 +2/+2（本回合，生命值部分即时获得）。如果你发动此效果，本回合你就不能发动其他青龙卡的效果。每回合，你只能发动此技能 1 次。</div><div class="stats"><span class="atk">5</span>/<span class="hp">8</span></div><div class="kws"><span class="tag adv">技能</span><span class="tag lock">字段锁</span></div></div>
+    <div class="card pulse"><div class="name">春风</div><div class="type">脉冲<span class="attr qinglong">青龙</span></div><div class="text">回复你的核心 5 点生命。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag adv">治疗</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">木甲</div><div class="type">脉冲<span class="attr qinglong">青龙</span></div><div class="text">目标单位本回合获得 +3/+3（生命值部分即时获得）。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag adv">增益</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">缚龙索</div><div class="type">脉冲<span class="attr qinglong">青龙</span></div><div class="text">龙索缚形，动弹不得。目标单位眩晕，并对其造成 2 点伤害。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag core">眩晕</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">春雨</div><div class="type">脉冲<span class="attr qinglong">青龙</span></div><div class="text">春雨贵如油。目标你的单位获得 +1/+1 与护盾 1。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag adv">增益</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">青翠</div><div class="type">脉冲<span class="attr qinglong">青龙</span></div><div class="text">青翠凝碧，万物勃发。目标你的单位本回合获得 +2/+2（生命值部分即时获得）。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag adv">增益</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">移栽</div><div class="type">脉冲<span class="attr qinglong">青龙</span></div><div class="text">弃 1 张手牌：从牌库检索 1 张青龙单位，加入手牌。</div><div class="kws"><span class="tag srch">付费</span><span class="tag srch">定向铺场</span></div></div>
+    <div class="card echo"><div class="name">藤缚</div><div class="type">回响<span class="attr qinglong">青龙</span></div><div class="text">打出后盖放。如果对方单位入场，你可以翻开并对其造成 5 点伤害。</div><div class="kws"><span class="tag adv">入场</span></div></div>
+    <div class="card"><div class="name">青帝侍</div><div class="type">锚点<span class="attr qinglong">青龙</span></div><div class="text">进化自青鸾。青帝近侍，执印传诏。隐匿。登场：从牌库检索 1 张「青苗」加入手牌。</div><div class="stats"><span class="atk">4</span>/<span class="hp">6</span></div><div class="kws"><span class="tag core">隐匿</span><span class="tag divine">进化 青鸾</span><span class="tag srch">登场检索</span></div></div>
+    <div class="card pulse"><div class="name">雨露</div><div class="type">脉冲<span class="attr qinglong">青龙</span></div><div class="text">从牌库检索 1 张青龙单位加入手牌。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag srch">定向检索</span><span class="tag lock">同名一次</span></div></div>
+  </div>
+  <h2 class="sec" style="margin-top:36px"><span class="no" style="background:#4a5a6c">中立</span>中立无属性 · 通用支援</h2>
+  <div class="cards">
+    <div class="card pulse"><div class="name">洞察</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">抽 2 张牌。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag srch">过牌</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">传讯</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">抽 1 张牌。</div><div class="kws"><span class="tag srch">过牌</span></div></div>
+    <div class="card pulse"><div class="name">引路</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">拨云见路。从牌库检索 1 张脉冲加入手牌。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag srch">定向检索</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">星火</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">看牌库顶 3 选 1 张加入手牌，其余洗回牌库。</div><div class="kws"><span class="tag srch">看顶选牌</span></div></div>
+    <div class="card pulse"><div class="name">蓄势</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">弃 1 张：抽 2 张。</div><div class="kws"><span class="tag srch">付费</span><span class="tag srch">过牌</span></div></div>
+    <div class="card pulse"><div class="name">整备</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">看牌库顶 8 选 1 张单位加入手牌，其余洗回牌库。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag srch">看顶选牌</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">止戈</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">目标单位本回合不能攻击。</div><div class="kws"><span class="tag adv">干扰</span></div></div>
+    <div class="card pulse"><div class="name">净化</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">移除目标单位的所有护盾与增益。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag adv">净化</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">庇护</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">目标单位本回合免疫伤害。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag core">免疫</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">复苏</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">回复你的核心 8 点生命。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag adv">治疗</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">回天</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">回复你的核心 12 点生命。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag adv">治疗</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">湮灭</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">消灭目标单位。如果你使用此卡，本回合你的单位就不能攻击。</div><div class="kws"><span class="tag core">硬解</span><span class="tag core">锁定</span></div></div>
+    <div class="card pulse"><div class="name">溯源</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">从弃牌堆选 1 张牌移回手牌。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag srch">回收</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">兑换</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">从弃牌堆将 1 张脉冲移回手牌（由你选）。</div><div class="kws"><span class="tag srch">回收</span></div></div>
+    <div class="card"><div class="name">白泽</div><div class="type">锚点<span class="attr none">中立</span></div><div class="text">通晓万物。技能「通晓」：抽 1 张牌（不耗 AP）。每回合，你只能使用 1 张同名卡。每回合，你只能发动此技能 1 次。</div><div class="stats"><span class="atk">3</span>/<span class="hp">6</span></div><div class="kws"><span class="tag adv">技能</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card"><div class="name">麒麟</div><div class="type">锚点<span class="attr none">中立</span></div><div class="text">仁兽麒麟，踏云而行。守护。进场：回复你的核心 3 点生命。你的场上必须没有其他单位，才能召唤此单位。</div><div class="stats"><span class="atk">8</span>/<span class="hp">8</span></div><div class="kws"><span class="tag core">守护</span><span class="tag lock">条件召唤</span><span class="tag adv">治疗</span></div></div>
+    <div class="card echo"><div class="name">镇岳</div><div class="type">回响<span class="attr none">中立</span></div><div class="text">打出后盖放。如果对方单位攻击你的核心，你可以翻开并取消该次攻击。</div><div class="kws"><span class="tag core">取消攻击</span></div></div>
+    <div class="card echo"><div class="name">化险</div><div class="type">回响<span class="attr none">中立</span></div><div class="text">打出后盖放。如果你的核心受到伤害，你可以翻开并防止其中最多 5 点。</div><div class="kws"><span class="tag core">防护</span></div></div>
+    <div class="card echo"><div class="name">藏锋</div><div class="type">回响<span class="attr none">中立</span></div><div class="text">打出后盖放。如果你的单位被攻击，你可以翻开并取消该次攻击。</div><div class="kws"><span class="tag core">取消攻击</span></div></div>
+    <div class="card echo"><div class="name">招摇</div><div class="type">回响<span class="attr none">中立</span></div><div class="text">打出后盖放。如果对方使用脉冲，你可以翻开并使其无效。</div><div class="kws"><span class="tag core">反制</span></div></div>
+    <div class="card pulse"><div class="name">寻苗</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">从牌库检索 1 张一段进化单位加入手牌。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag srch">定向检索</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">寻果</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">从牌库检索 1 张二段以上进化单位加入手牌。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag srch">定向检索</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">军令</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">从牌库检索 1 张攻击力 4 以上的单位加入手牌。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag srch">定向检索</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">铁壁</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">从牌库检索 1 张生命 6 以上的单位加入手牌。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag srch">定向检索</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">破甲</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">从牌库检索 1 张带穿透的单位加入手牌。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag srch">定向检索</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">遗烬</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">从牌库检索 1 张带遗蜕的单位加入手牌。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag srch">定向检索</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">壁垒</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">从牌库检索 1 张带守护的单位加入手牌。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag srch">定向检索</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">流转</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">弃 1 张手牌：抽 1 张牌。</div><div class="kws"><span class="tag srch">过牌</span><span class="tag adv">换血</span></div></div>
+    <div class="card pulse"><div class="name">清仓</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">弃 3 张手牌：抽 2 张牌。</div><div class="kws"><span class="tag srch">过牌</span><span class="tag adv">换血</span></div></div>
+    <div class="card echo"><div class="name">暗哨</div><div class="type">回响<span class="attr none">中立</span></div><div class="text">打出后盖放。如果对方单位入场，你可以翻开并抽 1 张牌。</div><div class="kws"><span class="tag srch">过牌</span><span class="tag adv">盖放</span></div></div>
+    <div class="card echo"><div class="name">伏兵</div><div class="type">回响<span class="attr none">中立</span></div><div class="text">打出后盖放。如果对方单位攻击你的核心，你可以翻开并抽 2 张牌。</div><div class="kws"><span class="tag srch">过牌</span><span class="tag adv">盖放</span></div></div>
+    <div class="card pulse"><div class="name">了断</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">弃 1 张手牌：抽 2 张牌。如果弃掉的是单位，就再抽 1 张。</div><div class="kws"><span class="tag srch">过牌</span><span class="tag adv">换血</span></div></div>
+    <div class="card pulse"><div class="name">重筮</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">弃掉你的全部手牌，抽 4 张牌。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag srch">过牌</span><span class="tag adv">换血</span><span class="tag lock">同名一次</span></div></div>
+    <div class="card pulse"><div class="name">搏命</div><div class="type">脉冲<span class="attr none">中立</span></div><div class="text">支付你一半的核心生命：抽 5 张牌。</div><div class="kws"><span class="tag srch">过牌</span><span class="tag srch">爆发</span></div></div>
+  </div>
+  <h2 class="sec" style="margin-top:36px"><span class="no" style="background:#7fe3e8">百川</span>百川 · 无敌（12 张新卡）</h2>
+  <p class="lead">自成一属的第五属性「百川」。核心是<b>冰泉</b>——场上占一格、正面朝上、双方公开的中转站：锚点把牌存进去，大怪把牌取出来，一张牌因此能结算多次。神威「返照」把整副牌翻第二圈，王牌「归根」扫场后进终焉一波。此概念只有本套牌使用，不进规则书。</p>
+  <div class="cards">
+    <div class="card "><div class="name">输川</div><div class="type">锚点<span class="attr baichuan">百川</span></div><div class="stat"><span class="a">2</span>/<span class="h">3</span></div><div class="text">这个区域在场上占一格，正面朝上放置卡牌，双方公开。技能「输川」：从你的卡组弃 3 张牌，抽 2 张牌。抽到的这两张牌必须立即打出；如果能立即打出，就结算其效果并将它置于冰泉；如果不能立即打出，就直接置于墓地，不触发其效果。</div><div class="kws"><span class="tag">—</span></div></div>
+    <div class="card "><div class="name">引流</div><div class="type">锚点<span class="attr baichuan">百川</span></div><div class="stat"><span class="a">2</span>/<span class="h">4</span></div><div class="text">这个区域在场上占一格，正面朝上放置卡牌，双方公开。技能「引流」：从你的弃牌区选 1 张牌置于冰泉；从你的卡组弃 2 张牌。</div><div class="kws"><span class="tag">—</span></div></div>
+    <div class="card "><div class="name">承波</div><div class="type">锚点<span class="attr baichuan">百川</span></div><div class="stat"><span class="a">2</span>/<span class="h">3</span></div><div class="text">这个区域在场上占一格，正面朝上放置卡牌，双方公开。技能「承波」：抽 1 张牌；将 1 张手牌（脉冲或锚点，不含王牌）置于冰泉。</div><div class="kws"><span class="tag">—</span></div></div>
+    <div class="card "><div class="name">蓄塘</div><div class="type">锚点<span class="attr baichuan">百川</span></div><div class="stat"><span class="a">1</span>/<span class="h">4</span></div><div class="text">这个区域在场上占一格，正面朝上放置卡牌，双方公开。技能「蓄塘」：从你的卡组将 1 张牌置于冰泉，抽 1 张牌。每当你的其他单位被消灭，将那张牌置于冰泉，并抽 1 张牌（不在你自己的回合也能触发）。</div><div class="kws"><span class="tag">—</span></div></div>
+    <div class="card "><div class="name">探珠</div><div class="type">锚点<span class="attr baichuan">百川</span></div><div class="stat"><span class="a">5</span>/<span class="h">6</span></div><div class="text">这个区域在场上占一格，正面朝上放置卡牌，双方公开。这个锚点必须由 输川 或 蓄塘 进化才能召唤。技能「探珠」：从冰泉内抽 3 张牌，选择其中的 1 张打出，剩余 2 张置于墓地；如果选中的这张牌无法打出，就将它返回冰泉。</div><div class="kws"><span class="tag srch">进化</span></div></div>
+    <div class="card "><div class="name">回潮</div><div class="type">锚点<span class="attr baichuan">百川</span></div><div class="stat"><span class="a">4</span>/<span class="h">8</span></div><div class="text">这个区域在场上占一格，正面朝上放置卡牌，双方公开。守护。这个锚点必须由 输川 或 引流 进化才能召唤。技能「回潮」：将冰泉内的所有牌洗回你的卡组，抽 2 张牌。</div><div class="kws"><span class="tag srch">守护</span><span class="tag srch">进化</span></div></div>
+    <div class="card "><div class="name">择卷</div><div class="type">锚点<span class="attr baichuan">百川</span></div><div class="stat"><span class="a">6</span>/<span class="h">6</span></div><div class="text">这个区域在场上占一格，正面朝上放置卡牌，双方公开。这个锚点必须由 引流 或 承波 进化才能召唤。技能「择卷」：从冰泉选 1 张脉冲打出，之后将其置于墓地。</div><div class="kws"><span class="tag srch">进化</span></div></div>
+    <div class="card "><div class="name">筑堤</div><div class="type">锚点<span class="attr baichuan">百川</span></div><div class="stat"><span class="a">3</span>/<span class="h">9</span></div><div class="text">这个区域在场上占一格，正面朝上放置卡牌，双方公开。守护。这个锚点必须由 承波 或 蓄塘 进化才能召唤。技能「筑堤」：直到回合结束，只要冰泉每有 3 张牌，此单位就获得 +2/+2。</div><div class="kws"><span class="tag srch">守护</span><span class="tag srch">进化</span></div></div>
+    <div class="card "><div class="name">百川·东到海</div><div class="type">锚点<span class="attr baichuan">百川</span></div><div class="stat"><span class="a">6</span>/<span class="h">10</span></div><div class="text">这个区域在场上占一格，正面朝上放置卡牌，双方公开。这个锚点必须由 探珠 或 回潮 或 择卷 或 筑堤 进化才能召唤。登场：检索 1 张百川脉冲加入手牌；并将冰泉中的牌按每 3 张抽 1 张加入手牌（最多 3 张）。神威「返照」：不耗 AP，每局限一次，只能在自己的回合发动：将你的卡组与弃牌区洗匀后互换。（旗舰）</div><div class="kws"><span class="tag divine">旗舰</span><span class="tag srch">进化</span><span class="tag srch">登场检索</span></div></div>
+    <div class="card ace"><div class="cost">1 AP</div><div class="name">归根</div><div class="type">王牌<span class="attr baichuan">百川</span></div><div class="text">对面的所有锚点回手牌。</div><div class="kws"><span class="tag ace">王牌</span></div></div>
+    <div class="card pulse"><div class="name">汇流</div><div class="type">脉冲<span class="attr baichuan">百川</span></div><div class="text">将 1 张手牌洗回卡组：从你的卡组将 1 张底座加入手牌。</div><div class="kws"><span class="tag srch">检索</span><span class="tag adv">启动</span></div></div>
+    <div class="card pulse"><div class="name">归源</div><div class="type">脉冲<span class="attr baichuan">百川</span></div><div class="text">从你的卡组检索 1 张底座加入手牌。每回合，你只能使用 1 张同名卡。</div><div class="kws"><span class="tag srch">检索</span><span class="tag adv">启动</span></div></div>
+  </div>
+
+  <h2 class="sec"><span class="no">02</span>示范卡组（5 副）</h2>
+  <p class="lead">四象各一副＋百川一套，每副 60 张，可直接用卡池打印开打。同名卡 ×4（旗舰 ×1，王牌同种 ≤1）。每副资源层（检索＋过牌＋回收）33-40%，落在宪法带 25-40%——没有资源层的卡组抽到什么打什么，有了资源层的卡组才能执行战术。牌库见底触发疲劳（递增伤害、无视护盾）。</p>
+  <div class="deck">
+    <h3>① 朱雀快攻 · 燎原</h3>
+    <div class="desc">突袭铺场抢血+遗蜕触发双核，检索密度顶格（40%），神威涅槃爆发，最快打残对手。</div>
+    <div class="desc" style="color:var(--dim)">资源层 23/60 ＝ 38%（检索＋过牌＋回收，宪法带 25-40%）　·　王牌：降临</div>
+    <table>
+      <tr><th>卡牌</th><th>属性</th><th>类型</th><th>数量</th></tr>
+      <tr><td>毕方</td><td>朱雀</td><td>锚点</td><td>×4</td></tr>
+      <tr><td>火鸦</td><td>朱雀</td><td>锚点</td><td>×4</td></tr>
+      <tr><td>三足金乌</td><td>朱雀</td><td>锚点</td><td>×2</td></tr>
+      <tr><td>烬鸢</td><td>朱雀</td><td>锚点</td><td>×3</td></tr>
+      <tr><td>焰羽</td><td>朱雀</td><td>锚点</td><td>×1</td></tr>
+      <tr><td>朱厌</td><td>朱雀</td><td>锚点</td><td>×4</td></tr>
+      <tr><td>朱雀·陵光</td><td>朱雀</td><td>锚点</td><td>×1</td></tr>
+      <tr><td>祝融</td><td>朱雀</td><td>锚点</td><td>×2</td></tr>
+      <tr><td>离火</td><td>朱雀</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>炎纹</td><td>朱雀</td><td>脉冲</td><td>×4</td></tr>
+      <tr><td>烽火令</td><td>朱雀</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>烈焰奔袭</td><td>朱雀</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>燎原</td><td>朱雀</td><td>脉冲</td><td>×1</td></tr>
+      <tr><td>三昧真火</td><td>朱雀</td><td>脉冲</td><td>×1</td></tr>
+      <tr><td>炽羽</td><td>朱雀</td><td>脉冲</td><td>×4</td></tr>
+      <tr><td>征召</td><td>朱雀</td><td>脉冲</td><td>×1</td></tr>
+      <tr><td>朱雀羽</td><td>朱雀</td><td>锚点</td><td>×2</td></tr>
+      <tr><td>焚粮</td><td>朱雀</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>焰迹</td><td>朱雀</td><td>回响</td><td>×1</td></tr>
+      <tr><td>天火</td><td>朱雀</td><td>回响</td><td>×2</td></tr>
+      <tr><td>涅槃余烬</td><td>朱雀</td><td>回响</td><td>×1</td></tr>
+      <tr><td>引路</td><td>中立</td><td>脉冲</td><td>×4</td></tr>
+      <tr><td>整备</td><td>中立</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>寻苗</td><td>中立</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>遗烬</td><td>中立</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>洞察</td><td>中立</td><td>脉冲</td><td>×3</td></tr>
+      <tr><td>降临</td><td>青龙</td><td>王牌</td><td>×1</td></tr>
+    </table>
+  </div>
+  <div class="deck">
+    <h3>② 玄武控制 · 玄冥</h3>
+    <div class="desc">逆境引擎读血差爆档+守护墙链拖延逼档，残局回收续航，夺魂/回魂双王牌。上手难度高：四线并行管理（血线/场面/节奏/牌库深度）。</div>
+    <div class="desc" style="color:var(--dim)">资源层 19/60 ＝ 31%（检索＋过牌＋回收，宪法带 25-40%）　·　王牌：夺魂、回魂</div>
+    <div class="desc" style="line-height:1.8">
+      <b>档位是什么</b>：只在你场上有「观水」时存在，等于 ⌊(对方核心生命 − 你的核心生命) / 10⌋，至多 3 档；血差不足 10 点、或观水离场，档位为 0。游戏界面顶部实时显示「逆境 N 档」。<br>
+      每档只让「检索 / 看牌库顶选牌」多找 1 张牌；档位 ≥1 时，你的单位每死亡 1 个抽 1 张牌，每回合至多因此抽 1+档位 张。档位<strong>不</strong>加成伤害、护盾与攻击力。
+    </div>
+    <div class="desc" style="overflow-x:auto">
+      <table style="min-width:560px;border-collapse:collapse;font-size:13px">
+        <tr style="color:var(--dim)"><th style="text-align:left;padding:6px 14px 6px 0">档位</th><th style="text-align:left;padding:6px 14px 6px 0">血差（对方核心生命 − 你的核心生命）</th><th style="text-align:left;padding:6px 14px 6px 0">检索 / 看顶多找</th><th style="text-align:left;padding:6px 14px 6px 0">单位死亡抽牌每回合封顶</th><th style="text-align:left;padding:6px 14px 6px 0">界面显示</th></tr>
+        <tr><td style="padding:5px 14px 5px 0">0</td><td style="padding:5px 14px 5px 0">&lt; 10，或场上无观水</td><td style="padding:5px 14px 5px 0">+0</td><td style="padding:5px 14px 5px 0">不触发</td><td style="padding:5px 14px 5px 0">不显示</td></tr>
+        <tr><td style="padding:5px 14px 5px 0">1</td><td style="padding:5px 14px 5px 0">10–19</td><td style="padding:5px 14px 5px 0">+1 张</td><td style="padding:5px 14px 5px 0">2 张</td><td style="padding:5px 14px 5px 0">逆境 1 档</td></tr>
+        <tr><td style="padding:5px 14px 5px 0">2</td><td style="padding:5px 14px 5px 0">20–29</td><td style="padding:5px 14px 5px 0">+2 张</td><td style="padding:5px 14px 5px 0">3 张</td><td style="padding:5px 14px 5px 0">逆境 2 档</td></tr>
+        <tr><td style="padding:5px 14px 5px 0">3</td><td style="padding:5px 14px 5px 0">≥ 30</td><td style="padding:5px 14px 5px 0">+3 张</td><td style="padding:5px 14px 5px 0">4 张</td><td style="padding:5px 14px 5px 0">逆境 3 档</td></tr>
+      </table>
+    </div>
+    <div class="desc" style="color:var(--dim)">档位口径取自游戏 2D 版：<code>lifeDiffTier()</code> 算血差封顶、<code>tierAdjust()</code> 只加检索与看顶、<code>killUnit()</code> 管死亡抽牌封顶、<code>headHtml()</code> 出「逆境 N 档」读数。简介中的「读血差爆档」是简称，档位定义以本表为准。</div>
+    <table>
+      <tr><th>卡牌</th><th>属性</th><th>类型</th><th>数量</th></tr>
+      <tr><td>冰夷</td><td>玄武</td><td>锚点</td><td>×4</td></tr>
+      <tr><td>玄龟</td><td>玄武</td><td>锚点</td><td>×2</td></tr>
+      <tr><td>螣蛇</td><td>玄武</td><td>锚点</td><td>×2</td></tr>
+      <tr><td>渊瞳</td><td>玄武</td><td>锚点</td><td>×2</td></tr>
+      <tr><td>麒麟</td><td>中立</td><td>锚点</td><td>×1</td></tr>
+      <tr><td>玄武·执明</td><td>玄武</td><td>锚点</td><td>×1</td></tr>
+      <tr><td>冰尉</td><td>玄武</td><td>锚点</td><td>×1</td></tr>
+      <tr><td>共工</td><td>玄武</td><td>锚点</td><td>×1</td></tr>
+      <tr><td>北冥鲲</td><td>玄武</td><td>锚点</td><td>×1</td></tr>
+      <tr><td>凝霜</td><td>玄武</td><td>脉冲</td><td>×4</td></tr>
+      <tr><td>弱水</td><td>玄武</td><td>脉冲</td><td>×3</td></tr>
+      <tr><td>北冥之渊</td><td>玄武</td><td>脉冲</td><td>×1</td></tr>
+      <tr><td>龟息</td><td>玄武</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>血涟</td><td>玄武</td><td>脉冲</td><td>×3</td></tr>
+      <tr><td>渊引</td><td>玄武</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>寒渊</td><td>玄武</td><td>脉冲</td><td>×1</td></tr>
+      <tr><td>玄召</td><td>玄武</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>冰封</td><td>玄武</td><td>回响</td><td>×2</td></tr>
+      <tr><td>寒鉴</td><td>玄武</td><td>回响</td><td>×2</td></tr>
+      <tr><td>观水</td><td>玄武</td><td>锚点</td><td>×2</td></tr>
+      <tr><td>借势</td><td>玄武</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>蓄澜</td><td>玄武</td><td>脉冲</td><td>×1</td></tr>
+      <tr><td>竭泽</td><td>玄武</td><td>脉冲</td><td>×1</td></tr>
+      <tr><td>回流</td><td>玄武</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>铁壁</td><td>中立</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>壁垒</td><td>中立</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>整备</td><td>中立</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>引路</td><td>中立</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>洞察</td><td>中立</td><td>脉冲</td><td>×3</td></tr>
+      <tr><td>庇护</td><td>中立</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>夺魂</td><td>玄武</td><td>王牌</td><td>×1</td></tr>
+      <tr><td>回魂</td><td>玄武</td><td>王牌</td><td>×1</td></tr>
+    </table>
+  </div>
+  <div class="deck">
+    <h3>③ 白虎斩杀 · 杀破狼</h3>
+    <div class="desc">连击三层载体+穿透爆发，破盾四件套，锐虎当回合斩杀快线，降临保终端准时。</div>
+    <div class="desc" style="color:var(--dim)">资源层 23/60 ＝ 38%（检索＋过牌＋回收，宪法带 25-40%）　·　王牌：降临</div>
+    <table>
+      <tr><th>卡牌</th><th>属性</th><th>类型</th><th>数量</th></tr>
+      <tr><td>天狼</td><td>白虎</td><td>锚点</td><td>×3</td></tr>
+      <tr><td>残牙</td><td>白虎</td><td>锚点</td><td>×4</td></tr>
+      <tr><td>锐虎</td><td>白虎</td><td>锚点</td><td>×2</td></tr>
+      <tr><td>白额虎</td><td>白虎</td><td>锚点</td><td>×2</td></tr>
+      <tr><td>破军</td><td>白虎</td><td>锚点</td><td>×3</td></tr>
+      <tr><td>蓐收</td><td>白虎</td><td>锚点</td><td>×3</td></tr>
+      <tr><td>白虎·监兵</td><td>白虎</td><td>锚点</td><td>×2</td></tr>
+      <tr><td>贪狼</td><td>白虎</td><td>锚点</td><td>×1</td></tr>
+      <tr><td>断金</td><td>白虎</td><td>脉冲</td><td>×3</td></tr>
+      <tr><td>裂金</td><td>白虎</td><td>脉冲</td><td>×4</td></tr>
+      <tr><td>庚金</td><td>白虎</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>歃血</td><td>白虎</td><td>脉冲</td><td>×3</td></tr>
+      <tr><td>虎符</td><td>白虎</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>白虹</td><td>白虎</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>虎贲</td><td>白虎</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>虎啸</td><td>白虎</td><td>回响</td><td>×2</td></tr>
+      <tr><td>引路</td><td>中立</td><td>脉冲</td><td>×4</td></tr>
+      <tr><td>整备</td><td>中立</td><td>脉冲</td><td>×1</td></tr>
+      <tr><td>破甲</td><td>中立</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>寻苗</td><td>中立</td><td>脉冲</td><td>×1</td></tr>
+      <tr><td>军令</td><td>中立</td><td>脉冲</td><td>×1</td></tr>
+      <tr><td>洞察</td><td>中立</td><td>脉冲</td><td>×3</td></tr>
+      <tr><td>蓄势</td><td>中立</td><td>脉冲</td><td>×4</td></tr>
+      <tr><td>星火</td><td>中立</td><td>脉冲</td><td>×1</td></tr>
+      <tr><td>止戈</td><td>中立</td><td>脉冲</td><td>×1</td></tr>
+      <tr><td>化险</td><td>中立</td><td>回响</td><td>×1</td></tr>
+      <tr><td>降临</td><td>青龙</td><td>王牌</td><td>×1</td></tr>
+    </table>
+  </div>
+  <div class="deck">
+    <h3>④ 青龙生长 · 万物生</h3>
+    <div class="desc">铺场扩张+三条成长线（三层进化链/buff 层/光环层），过牌造血，降临一步直达建木。</div>
+    <div class="desc" style="color:var(--dim)">资源层 21/60 ＝ 35%（检索＋过牌＋回收，宪法带 25-40%）　·　王牌：降临</div>
+    <table>
+      <tr><th>卡牌</th><th>属性</th><th>类型</th><th>数量</th></tr>
+      <tr><td>青鸾</td><td>青龙</td><td>锚点</td><td>×4</td></tr>
+      <tr><td>青苗</td><td>青龙</td><td>锚点</td><td>×4</td></tr>
+      <tr><td>木灵</td><td>青龙</td><td>锚点</td><td>×2</td></tr>
+      <tr><td>建木</td><td>青龙</td><td>锚点</td><td>×1</td></tr>
+      <tr><td>青帝侍</td><td>青龙</td><td>锚点</td><td>×1</td></tr>
+      <tr><td>青龙·孟章</td><td>青龙</td><td>锚点</td><td>×1</td></tr>
+      <tr><td>螭龙</td><td>青龙</td><td>锚点</td><td>×4</td></tr>
+      <tr><td>应龙</td><td>青龙</td><td>锚点</td><td>×1</td></tr>
+      <tr><td>牺木</td><td>青龙</td><td>锚点</td><td>×1</td></tr>
+      <tr><td>句芒</td><td>青龙</td><td>锚点</td><td>×3</td></tr>
+      <tr><td>移栽</td><td>青龙</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>雨露</td><td>青龙</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>木甲</td><td>青龙</td><td>脉冲</td><td>×3</td></tr>
+      <tr><td>青翠</td><td>青龙</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>春雨</td><td>青龙</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>春风</td><td>青龙</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>藤缚</td><td>青龙</td><td>回响</td><td>×2</td></tr>
+      <tr><td>寻果</td><td>中立</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>寻苗</td><td>中立</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>整备</td><td>中立</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>引路</td><td>中立</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>洞察</td><td>中立</td><td>脉冲</td><td>×4</td></tr>
+      <tr><td>星火</td><td>中立</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>蓄势</td><td>中立</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>庇护</td><td>中立</td><td>脉冲</td><td>×2</td></tr>
+      <tr><td>化险</td><td>中立</td><td>回响</td><td>×2</td></tr>
+      <tr><td>藏锋</td><td>中立</td><td>回响</td><td>×2</td></tr>
+      <tr><td>降临</td><td>青龙</td><td>王牌</td><td>×1</td></tr>
+    </table>
+  </div>
+  <div class="deck">
+    <h3>⑤ 百川 · 无敌</h3>
+    <div class="desc">冰泉中转站：锚点存货、大怪取料、一张牌结算多次；神威返照整副翻第二圈，归根扫场后进终焉一波。</div>
+    <div class="desc" style="color:var(--dim)">百川 41 张（底座 16＋大怪 16＋旗舰 1＋王牌 1＋汇流 4＋归源 4）＋中立 19 张　·　王牌：归根　·　旗舰：百川·东到海</div>
+    <table>
+      <tr><th>卡名</th><th>属性</th><th>类型</th><th>张数</th></tr>
+      <tr><td>输川</td><td>百川</td><td>锚点</td><td>×4</td></tr>
+      <tr><td>引流</td><td>百川</td><td>锚点</td><td>×4</td></tr>
+      <tr><td>承波</td><td>百川</td><td>锚点</td><td>×4</td></tr>
+      <tr><td>蓄塘</td><td>百川</td><td>锚点</td><td>×4</td></tr>
+      <tr><td>探珠</td><td>百川</td><td>进化体</td><td>×4</td></tr>
+      <tr><td>回潮</td><td>百川</td><td>进化体</td><td>×4</td></tr>
+      <tr><td>择卷</td><td>百川</td><td>进化体</td><td>×4</td></tr>
+      <tr><td>筑堤</td><td>百川</td><td>进化体</td><td>×4</td></tr>
+      <tr><td>百川·东到海</td><td>百川</td><td>旗舰</td><td>×1</td></tr>
+      <tr><td>归根</td><td>百川</td><td>王牌</td><td>×1</td></tr>
+      <tr><td>汇流</td><td>百川</td><td>脉冲</td><td>×4</td></tr>
+      <tr><td>归源</td><td>百川</td><td>脉冲</td><td>×4</td></tr>
+      <tr><td>寻苗／铁壁</td><td>中立</td><td>脉冲</td><td>各×1</td></tr>
+      <tr><td>壁垒／军令</td><td>中立</td><td>脉冲</td><td>各×1　·　整备 ×2</td></tr>
+      <tr><td>传讯／洞察</td><td>中立</td><td>脉冲</td><td>各×2</td></tr>
+      <tr><td>星火</td><td>中立</td><td>脉冲</td><td>×4</td></tr>
+      <tr><td>溯源／引路</td><td>中立</td><td>脉冲</td><td>各×2</td></tr>
+    </table>
+  </div>
+  <p class="lead" style="margin-top:40px; text-align:center; color:var(--dim)">《临界》CRITICAL · 卡池 v4.0 · 王牌时代 · 60 张构筑 · 同名卡 ×4（旗舰 ×1，王牌同种 ≤1）。AP 只用于攻击与王牌；配合规则书与场地图可完整开打。</p>
+</div>
+</body>
+</html>

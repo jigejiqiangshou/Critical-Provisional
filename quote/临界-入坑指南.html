@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>《临界》入坑指南</title>
+<style>
+:root{--paper:#f6f3ec;--ink:#26241f;--muted:#6b665c;--line:#d9d2c2;--accent:#8c3b2e;--white:#fbfaf6;--blue:#3b5a8c}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"Noto Sans CJK SC","PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;font-size:16px;line-height:1.9;-webkit-font-smoothing:antialiased}
+.wrap{max-width:880px;margin:0 auto;padding:48px 40px 100px}
+h1,h2,h3{font-family:"Noto Serif CJK SC","Songti SC","SimSun",serif;line-height:1.4}
+h1{font-size:34px;margin:0 0 6px;border-bottom:2px solid var(--ink);padding-bottom:14px}
+h2{font-size:22px;margin:38px 0 14px;padding-left:12px;border-left:5px solid var(--accent)}
+p{margin:12px 0}
+ol,ul{padding-left:28px;margin:12px 0}li{margin:8px 0}
+strong{color:var(--accent)}
+code{font-family:Consolas,monospace;background:#ece7d9;color:#5a3a20;padding:1px 6px;border-radius:3px}
+blockquote{margin:14px 0;padding:12px 18px;background:#f0ece0;border-left:4px solid #b9a97e;color:#4a453a;border-radius:0 4px 4px 0}
+.toc{background:var(--white);border:1px solid var(--line);border-radius:6px;padding:8px 26px 20px;margin:26px 0 36px}
+.toc h2{margin:16px 0 10px;font-size:20px}
+.toc ul{list-style:none;padding-left:0}.toc li{line-height:1.7}
+.toc li ul{padding-left:20px;border-left:1px dotted var(--line);margin:2px 0 2px 6px}
+.toc a{color:var(--ink);text-decoration:none;border-bottom:1px solid transparent}
+.toc a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+.toc>ul>li>a{font-weight:700}
+.figure{margin:22px 0;text-align:center}
+.figure svg{max-width:100%;height:auto;display:block;margin:0 auto}
+.cap{color:var(--muted);font-size:13px;margin-top:8px}
+.kind-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.kind-card{flex:1 1 150px;max-width:170px;min-width:140px;border:2px solid #7d6a45;border-radius:10px;padding:12px;background:#fffdf7;text-align:left;box-shadow:2px 3px 0 rgba(90,70,35,.12)}
+.kc-h{font-size:15px;font-weight:700;color:var(--accent);border-bottom:1px solid #d9c9a0;padding-bottom:6px;margin-bottom:8px}
+.kc-b{font-size:13px;font-weight:700;color:var(--blue);margin-bottom:6px}
+.kc-d{font-size:12.5px;color:#5a5448;line-height:1.6}
+.kc-unit{background:linear-gradient(160deg,#fffdf7,#f7efe0)}
+.kc-spell{background:linear-gradient(160deg,#fffdf7,#eef2f7)}
+.kc-trap{background:linear-gradient(160deg,#fffdf7,#f2eee0)}
+.kc-ace{background:linear-gradient(160deg,#fffdf7,#f7e8dc)}
+.trap-demo{border:2px solid #7d6a45;border-radius:10px;background:#fffdf7;padding:16px 20px;text-align:left;max-width:560px;margin:0 auto;box-shadow:2px 3px 0 rgba(90,70,35,.12)}
+.td-head{font-size:15px;font-weight:700;color:var(--accent);margin-bottom:10px}
+.td-text{background:#f5f1e6;border-left:3px solid var(--accent);padding:10px 12px;border-radius:0 4px 4px 0;font-size:15px}
+.td-note{color:var(--muted);font-size:12.5px;margin-top:10px}
+.foot{color:var(--muted);font-size:12.5px;text-align:center;margin-top:44px;border-top:1px solid var(--line);padding-top:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="toc"><h2>目录</h2>
+<ul>
+<li><a href="#一-这游戏在玩什么-0">一、这游戏在玩什么</a></li>
+<li><a href="#二-先认识你的牌-1">二、先认识你的牌</a></li>
+<li><a href="#三-轮到你了-按三步走-2">三、轮到你了，按三步走</a></li>
+<li><a href="#四-AP-是什么-什么时候能攻击-3">四、AP 是什么，什么时候能攻击</a></li>
+<li><a href="#五-回响-埋伏起来的牌-4">五、回响：埋伏起来的牌</a></li>
+<li><a href="#六-打久了会怎样-终焉与疲劳-5">六、打久了会怎样：终焉与疲劳</a></li>
+<li><a href="#七-第一局照着做-6">七、第一局照着做</a></li>
+</ul></div><h1>《临界》入坑指南</h1>
+<blockquote>
+<p>这份指南写给<strong>从来没玩过集换式卡牌游戏</strong>的人。读完它，你就能坐下来打第一局。想查细则，再看《临界》规则书；想处理争议，看《临界》裁判裁决书。</p>
+</blockquote>
+<p><a id="一-这游戏在玩什么-0"></a></p>
+<h2>一、这游戏在玩什么</h2>
+<p>你和对手各有一座「核心」，各带 50 点生命。你们轮流出牌、召唤单位去打对方的单位，最后打空对方的核心就赢了。</p>
+<p>它和你听过的万智牌、游戏王是一类游戏：你自备一副牌，抽牌、出牌、攻击。但《临界》有自己的规矩，别把别的游戏的习惯带进来——尤其是这里<strong>没有费用</strong>，绝大多数牌随便出，只有攻击和大招要花一种叫 AP 的点数。</p>
+<div class="figure">
+<svg viewBox="0 0 640 190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="核心与生命示意">
+  <rect x="8" y="8" width="624" height="174" rx="10" fill="#fffdf7" stroke="#cbb98f" stroke-width="2"/>
+  <text x="30" y="38" font-size="16" font-weight="700" fill="#3a3630">对局的目标：先打空对方的核心</text>
+  <g transform="translate(60,70)">
+    <rect x="0" y="0" width="70" height="80" rx="10" fill="#8c3b2e"/>
+    <text x="35" y="48" font-size="22" fill="#fff" text-anchor="middle">核</text>
+    <text x="35" y="100" font-size="14" fill="#8c3b2e" text-anchor="middle">对方核心</text>
+    <rect x="0" y="112" width="70" height="14" rx="7" fill="#e6ded0"/>
+    <rect x="0" y="112" width="14" height="14" rx="7" fill="#c0392b"/>
+  </g>
+  <text x="150" y="120" font-size="34" fill="#8c3b2e">VS</text>
+  <g transform="translate(250,70)">
+    <rect x="0" y="0" width="70" height="80" rx="10" fill="#3b5a8c"/>
+    <text x="35" y="48" font-size="22" fill="#fff" text-anchor="middle">核</text>
+    <text x="35" y="100" font-size="14" fill="#3b5a8c" text-anchor="middle">你的核心</text>
+    <rect x="0" y="112" width="70" height="14" rx="7" fill="#e6ded0"/>
+    <rect x="0" y="112" width="70" height="14" rx="7" fill="#3b5a8c"/>
+  </g>
+  <text x="360" y="86" font-size="15" fill="#4a453a">双方核心各 50 点生命。</text>
+  <text x="360" y="112" font-size="15" fill="#4a453a">把对方的打到 0，你就赢。</text>
+  <text x="360" y="138" font-size="15" fill="#4a453a">谁先归零谁输，同时归零算平。</text>
+</svg>
+<div class="cap">图 1　核心与胜负：红色条是对方剩余生命，蓝色条是你的。</div>
+</div>
+
+<p><a id="二-先认识你的牌-1"></a></p>
+<h2>二、先认识你的牌</h2>
+<p>一副卡组 60 张，里面混着四种牌。你起手抓 3 张（后手 4 张），之后每回合再抽 1 张。</p>
+<div class="figure">
+<div class="kind-row">
+  <div class="kind-card kc-unit"><div class="kc-h">锚点（单位）</div><div class="kc-b">攻 3 / 血 2</div><div class="kc-d">场上打架的角色，能攻击、会被打。</div></div>
+  <div class="kind-card kc-spell"><div class="kc-h">脉冲（法术）</div><div class="kc-b">一次性</div><div class="kc-d">用一次就生效，然后进弃牌区。</div></div>
+  <div class="kind-card kc-trap"><div class="kc-h">回响（响应）</div><div class="kc-b">盖放</div><div class="kc-d">先背面扣着，条件满足时再翻开。</div></div>
+  <div class="kind-card kc-ace"><div class="kc-h">王牌</div><div class="kc-b">1 AP</div><div class="kc-d">花 1 点 AP 发动的强力大招。</div></div>
+</div>
+<div class="cap">图 3　四种卡：单位站场，法术用一次，回响埋伏，王牌是大招。</div>
+</div>
+
+<p>每张单位牌上有攻击力和生命值两个数。攻击力是它打人有多疼，生命值是它有多耐打。生命被打到 0，它就「熔毁」，被扔进弃牌区。</p>
+<p>有些牌上还印着<strong>关键词</strong>，比如「守护」（对方必须先打它）、「突袭」（刚上场就能攻击）、「隐匿」（没动手前不能被攻击选为目标）。这些词不用死记，卡上有就照着做，看不懂时翻规则书的关键词表。</p>
+<p><a id="三-轮到你了-按三步走-2"></a></p>
+<h2>三、轮到你了，按三步走</h2>
+<div class="figure">
+<svg viewBox="0 0 640 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="一个回合的三个阶段">
+  <rect x="8" y="8" width="624" height="194" rx="10" fill="#fffdf7" stroke="#cbb98f" stroke-width="2"/>
+  <text x="30" y="36" font-size="16" font-weight="700" fill="#3a3630">你的一个回合，按顺序走三步</text>
+  <g font-size="14" fill="#4a453a">
+    <rect x="30" y="60" width="170" height="96" rx="8" fill="#f0e9d8" stroke="#b9a97e"/>
+    <text x="115" y="88" font-size="17" font-weight="700" fill="#8c3b2e" text-anchor="middle">① 开始</text>
+    <text x="115" y="116" text-anchor="middle">恢复 AP</text>
+    <text x="115" y="138" text-anchor="middle">抽 1 张牌</text>
+    <rect x="235" y="60" width="170" height="96" rx="8" fill="#f0e9d8" stroke="#b9a97e"/>
+    <text x="320" y="88" font-size="17" font-weight="700" fill="#8c3b2e" text-anchor="middle">② 主阶段</text>
+    <text x="320" y="116" text-anchor="middle">出牌、进化</text>
+    <text x="320" y="138" text-anchor="middle">命令攻击</text>
+    <rect x="440" y="60" width="170" height="96" rx="8" fill="#f0e9d8" stroke="#b9a97e"/>
+    <text x="525" y="88" font-size="17" font-weight="700" fill="#8c3b2e" text-anchor="middle">③ 结束</text>
+    <text x="525" y="116" text-anchor="middle">弃多余手牌</text>
+    <text x="525" y="138" text-anchor="middle">检查终焉</text>
+  </g>
+  <path d="M202 108 L232 108" stroke="#8c3b2e" stroke-width="2" marker-end="url(#ar)"/>
+  <path d="M407 108 L437 108" stroke="#8c3b2e" stroke-width="2" marker-end="url(#ar)"/>
+  <defs><marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8c3b2e"/></marker></defs>
+  <text x="320" y="182" font-size="13" fill="#6b665c" text-anchor="middle">你和对方轮流走这套流程；你走完一轮、对方走完一轮，合起来叫「一轮」。</text>
+</svg>
+<div class="cap">图 2　一个回合的流程：先恢复和抽牌，再出牌攻击，最后收尾。</div>
+</div>
+
+<ol>
+<li><strong>开始</strong>：把你的 AP 恢复到本回合该有的数量，抽 1 张牌。</li>
+<li><strong>主阶段</strong>：这是你干活的时间——出牌、把单位进化、命令单位攻击，想按什么顺序就按什么顺序。</li>
+<li><strong>结束</strong>：手牌超过 7 张就把多的丢掉，然后看看终焉值（下面讲）有没有到 40。</li>
+</ol>
+<p>你走完这三步，就轮到对手走他的三步。你和对手各走一次，合起来叫<strong>一轮</strong>。牌上写「持续 2 轮」，就是撑过你两回合、对方两回合那么久。</p>
+<p><a id="四-AP-是什么-什么时候能攻击-3"></a></p>
+<h2>四、AP 是什么，什么时候能攻击</h2>
+<p>AP 就是你每回合能花的「攻击点数」。它只在两个地方用：<strong>命令单位攻击</strong>（每次 1 点）和<strong>发动王牌</strong>（每张 1 点）。出牌、盖回响、发动单位技能、进化都不要 AP——这就是这游戏说的「免费时代」。</p>
+<div class="figure">
+<svg viewBox="0 0 640 160" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AP 成长曲线">
+  <rect x="8" y="8" width="624" height="144" rx="10" fill="#fffdf7" stroke="#cbb98f" stroke-width="2"/>
+  <text x="30" y="36" font-size="16" font-weight="700" fill="#3a3630">攻击和大招要花 AP，AP 随回合慢慢变多</text>
+  <g font-size="13" fill="#4a453a">
+    <text x="60" y="70" text-anchor="middle">回合</text>
+    <text x="170" y="70" text-anchor="middle">1–3</text>
+    <text x="290" y="70" text-anchor="middle">4–5</text>
+    <text x="430" y="70" text-anchor="middle">6 起</text>
+    <text x="565" y="70" text-anchor="middle">上限</text>
+    <text x="170" y="112" font-size="20" font-weight="700" fill="#8c3b2e" text-anchor="middle">0</text>
+    <text x="290" y="112" font-size="20" font-weight="700" fill="#8c3b2e" text-anchor="middle">1</text>
+    <text x="430" y="112" font-size="20" font-weight="700" fill="#8c3b2e" text-anchor="middle">2</text>
+    <text x="565" y="112" font-size="20" font-weight="700" fill="#8c3b2e" text-anchor="middle">2</text>
+  </g>
+  <text x="320" y="142" font-size="13" fill="#6b665c" text-anchor="middle">出普通牌、盖回响、发动技能都不要钱；只有攻击和王牌花 AP。</text>
+</svg>
+<div class="cap">图 4　AP 成长：前三个回合没钱攻击，第 6 回合起每回合有 2 点。</div>
+</div>
+
+<p>注意两点：第一，单位刚上场的那个回合不能攻击，除非它有「突袭」；第二，每个单位每回合最多攻击一次。攻击花了 AP 就不退，哪怕你的攻击被人用回响挡掉了，AP 也照花。</p>
+<p>对方场上还有单位时，你只能打他的单位，不能越过它们直接打核心。等他场上空了，你才能攻击核心，把那 50 点生命一点点啃掉。</p>
+<p><a id="五-回响-埋伏起来的牌-4"></a></p>
+<h2>五、回响：埋伏起来的牌</h2>
+<p>回响是四种牌里最特别的一种。你打出它时<strong>不生效</strong>，而是背面朝上扣在你的「盖放区」，不花 AP。</p>
+<p>卡上写着「如果……，你可以翻开并……」。当写明的条件出现时——<strong>哪怕是对手的回合</strong>——你可以选择翻开它、立刻生效；也可以选择继续扣着不翻。不翻不亏，条件下次再出现时你还能翻。</p>
+<div class="figure">
+<div class="trap-demo">
+  <div class="td-head">回响牌怎么读</div>
+  <div class="td-text">打出后盖放。如果对方单位攻击你的核心，你可以翻开并取消该次攻击。</div>
+  <div class="td-note">这张叫「镇岳」。你先扣着，等对手来打你的核心时，翻开来挡掉这次攻击。示例卡面文本以卡池页为准。</div>
+</div>
+</div>
+
+<p><a id="六-打久了会怎样-终焉与疲劳-5"></a></p>
+<h2>六、打久了会怎样：终焉与疲劳</h2>
+<p>打得越久，双方扔进弃牌区的牌越多。你数一下两边弃牌区的牌，加起来就是<strong>终焉值</strong>。它到 40 时，游戏进入「终焉阶段」：攻击不再花 AP，次数也不限，大家都开足火力，一直打到分出胜负为止。</p>
+<p>另一种情况是牌抽光了。牌库空了还要抽牌时，你不是抽不到，而是<strong>受伤</strong>——第一次掉 1 点核心生命，第二次掉 2 点，第三次掉 3 点，越来越疼，而且护盾挡不住。这叫「疲劳」。所以别把牌耗光。</p>
+<p><a id="七-第一局照着做-6"></a></p>
+<h2>七、第一局照着做</h2>
+<ol>
+<li>拿一副 60 张的卡组（里面有且只有 1 张旗舰，也就是带「神威」的那张强力卡），洗匀。</li>
+<li>和对手猜拳或协商定先后手；他先手抓 3 张，你后手抓 4 张。</li>
+<li>各自把核心生命记成 50，摆好牌库、手牌的区域。</li>
+<li>第一回合开始时各抽 1 张。如果想换牌，第一回合里每人有一次机会把手牌全洗回去、重抓一样多。</li>
+<li>走你的三步：开始→主阶段→结束。主阶段里出牌、召唤单位、能攻击就攻击。</li>
+<li>谁先把对方核心打到 0，谁赢。</li>
+</ol>
+<p>遇到卡上写的词看不懂、或者和对手对某条规则有分歧，别猜——翻《临界》规则书；还判不了，就按《临界》裁判裁决书。祝你第一局打得开心。</p>
+<div class="foot">《临界》入坑指南 · 送给第一次接触集换式卡牌游戏的你 · 细则见规则书，争议见裁判裁决书</div>
+</div>
+</body>
+</html>
