@@ -16,7 +16,7 @@
 | 数据 | SQLite WASM 在专用 Worker 通过 OPFS 持久化发行卡池，优先验证 `opfs-sahpool`。对局层以独立的 SQLite 数据库原子提交权威状态、日志与命令回执。用户卡组与安装记录各用独立的 IndexedDB 存储库。卡组通过文件跨设备迁移。 |
 | 验证 | Vitest 验证无界面规则、契约和存储边界。Playwright 验证浏览器流程。离线冷启动、文件选择、WebGL 与触控另做移动实机验收。 |
 
-详见 [路线取舍](research.md)、[数据模型](data-model.md)、[层级图](contracts/layer-boundaries.md)、[业务契约](contracts/business-interactions.md)、[前端包规范](contracts/frontend-packages.md) 和 [验收指南](quickstart.md)。
+详见 [路线取舍](research.md)、[数据模型](data-model.md)、[层级图](contracts/layer-boundaries.md)、[业务契约](contracts/business-interactions.md)、[对局场景时序图](contracts/scenario-sequences.md)、[前端包规范](contracts/frontend-packages.md) 和 [验收指南](quickstart.md)。
 
 ## 章程检查
 
