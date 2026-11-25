@@ -1,1 +1,6 @@
 /.tools/
+
+# Keep installed project skills versioned.
+!/.agents/
+!/.agents/skills/
+!/.agents/skills/**
