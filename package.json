@@ -1,0 +1,24 @@
+{
+  "name": "critical-provisional",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "build": "tsc --noEmit && vite build",
+    "dev": "vite",
+    "preview": "vite preview",
+    "test": "vitest run --passWithNoTests",
+    "test:baseline": "vitest run --passWithNoTests tests/baseline/",
+    "test:e2e": "playwright test --pass-with-no-tests"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@types/node": "^24.19.4",
+    "typescript": "^6.0.3",
+    "vite": "^8.4.0",
+    "vitest": "^5.1.2"
+  }
+}
