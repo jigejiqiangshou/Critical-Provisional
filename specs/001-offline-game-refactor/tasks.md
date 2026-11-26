@@ -47,8 +47,8 @@ T011 依赖 T032、T041。T012 依赖 T009、T042。T013 依赖 T011、T012，�
 
 独立通过条件为在手机及电脑导入同一兼容示例包并离线冷启动；无效包被拒绝且旧包仍能运行。
 
-- [ ] T017 [US6] 在 `tests/contract/frontend-package.test.ts` 和 `tests/acceptance/install-offline.spec.ts` 建立离线导入、版本不兼容、存储失败、授权撤销和宿主数据隔离场景。验证候选在受控入口加载、握手及协议协商成功后才切换为活动版。入口失败、握手超时或协议协商失败时撤销候选端口，上一活动版与仍有效的授权继续可用。
-- [ ] T018 [US6] 在 `src/clients/launcher/install.ts` 和 `src/clients/launcher/package-store.ts` 按[数据模型](data-model.md)实现 `FrontendPackage.manifest`、`Installation.key` 和 `Installation.state`，完成导入、验证、更新、回退和卸载。
+- [ ] T017 [US6] 在 `tests/contract/frontend-package.test.ts` 和 `tests/acceptance/install-offline.spec.ts` 建立离线导入、版本不兼容、存储失败、授权撤销和宿主数据隔离场景。验证断网时从已安装第三方前端条目选择同 ID 新版本，确认来源后才进入候选启动。取消确认保留原活动版，从新装入口导入同一文件须报告 ID 冲突。验证候选在受控入口加载、握手及协议协商成功后才切换为活动版。入口失败、握手超时或协议协商失败时撤销候选端口，上一活动版与仍有效的授权继续可用。
+- [ ] T018 [US6] 在 `src/clients/launcher/install.ts` 和 `src/clients/launcher/package-store.ts` 按[数据模型](data-model.md)实现 `FrontendPackage.manifest`、`Installation.key` 和 `Installation.state`，完成导入、验证、更新、回退和卸载。区分新装和指定已安装前端的离线升级入口，升级检查目标 ID、版本及兼容性，取得玩家对文件来源的确认后才交给 T019。
 - [ ] T019 [US6] 在 `src/clients/frontend-host.ts` 和 `src/clients/service-worker.ts` 实现受控包入口及消息端口，将权威授权与 iframe 生命周期关联。向 T018 提供候选独立实例的就绪或失败结果，以受控入口、实例握手和协议协商为判据，处理超时及失败候选的端口撤销。
 - [ ] T020 [P] [US6] 在 `src/clients/official-3d/game.ts` 迁移 3D 视图，将 T042 的正常游戏操作、待决策和终局反馈接到统一协议，支持触控、鼠标及目标拾取，并加载打包的 Three.js 和本地资产。
 - [ ] T021 [P] [US6] 在 `src/clients/launcher/home.ts`、`scripts/build-frontends.ts` 和 `tests/acceptance/frontend-fixture/entry.html` 提供按需安装入口、单独官方包及兼容示例包，记录示例包构建与接入方式。
