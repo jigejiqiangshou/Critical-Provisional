@@ -15,15 +15,16 @@ T002–T004 均依赖 T001。若目标手机无法满足关键能力，按 [计�
 
 - [ ] T005 [P] 在 `src/clients/service-worker.ts` 和 `src/clients/offline-ready.ts` 实现版本一致的主体缓存、专用包入口及离线就绪判定，覆盖升级后仍能启动已经安装的兼容包。
 - [ ] T006 [P] 在 `src/deck-catalog/sqlite.worker.ts`、`src/deck-catalog/catalog.ts` 和 `src/deck-catalog/schema.sql` 落实独占存储与指定版本的只读目录，按[数据模型](data-model.md)实现 `Card.id`、`Release.id`、`Release.rulesVersion`。
-- [ ] T007 [P] 在 `src/match/player-protocol.ts`、`src/match/player-interface.ts` 定义消息 schema、稳定 ID、版本协商、修订、授权和可见事件流，按[数据模型](data-model.md)实现 `CommandReceipt.key`、`CommandReceipt.result`、`View.sequence`、`View.scope`、`FrontendConnection.capability`。
+- [ ] T007 [P] 在 `src/match/player-protocol.ts`、`src/match/player-interface.ts` 定义消息 schema、稳定 ID、版本协商、修订、授权和可见事件流。按业务契约把 M02 的授权、回执查找、裁定和确认串行化到同一会话队列，并按已确认回执、仅登记请求摘要和新命令分别处理。按[数据模型](data-model.md)实现 `CommandReceipt.key`、`CommandReceipt.result`、`View.sequence`、`View.scope`、`FrontendConnection.capability`。
 - [ ] T008 [P] 在 `src/match/core.ts` 和 `src/match/rules.ts` 建立无 DOM 的结算入口、随机输入、顺序与暂停恢复，按[数据模型](data-model.md)实现 `Match.revision`、`Match.snapshotRef`、`Decision.id`、`Decision.owner`、`Decision.continuation`。
 - [ ] T009 [P] 在 `src/ai-decision/model.ts` 和 `src/clients/ai-player.ts` 定义独立模型契约、适配器及过期判定，按[数据模型](data-model.md)实现 `ModelJob.requestId`、`ModelJob.basis`、`ModelJob.result`。
-- [ ] T032 在 `src/match/recovery-store.ts` 与 `src/match/recovery.sql` 按[数据模型](data-model.md)实现 `Recovery.latest`、`Recovery.history`，提供会话初始化、对局确认和续局所用的持久化入口。每次确认以独立对局 SQLite 库的同一事务提交快照、历史与相应命令回执。提交成功后才返回正式回执和发布可见事件，失败保留最近确认状态。
-- [ ] T015 [US2] 在 `src/match/effects.ts` 用通用步骤实现带待决策的效果及响应窗口结算，检查同 ID 重试与新 ID 旧决策的不同结果。按 FR-012 记录效果样本的结构差异和触发批量重构的判据，满足时在 `src/deck-catalog/effect-definitions.ts` 批量迁移到统一抽象。
+- [ ] T032 在 `src/match/recovery-store.ts` 与 `src/match/recovery.sql` 按[数据模型](data-model.md)实现 `Recovery.latest`、`Recovery.history`，提供会话初始化、对局确认和续局所用的持久化入口。由独占写入者在独立对局 SQLite 库中以同一事务确认快照、历史与相应命令回执。规则拒绝单独写入去重键和请求摘要，摘要写失败返回存储失败，拒绝结果按当前局面重新裁定。提交成功后才返回正式回执和发布可见事件，失败保留最近确认状态。
+- [ ] T015 [US2] 在 `src/match/effects.ts` 用通用步骤实现带待决策的效果及响应窗口结算，检查同 ID 重试与新 ID 旧决策的不同结果。按 FR-012 记录效果样本的结构差异和触发批量重构的判据，满足时定义统一效果抽象，并用代表样本验证触发、暂停与结算顺序。受影响效果的批量迁移由 T045 完成。
 - [ ] T042 在 `src/match/rules.ts` 和 `src/match/player-interface.ts` 将 LG-01–LG-08 对应的开局与换牌、出牌、攻击、进化、技能、回响、回合推进、终焉和胜负判定、百川冰泉全部接入正式结算和玩家协议。把触发、选择及暂停恢复接到 T015 的效果步骤。用 T002 的固定状态和牌表驱动核心初始化与席位命令，核对关键状态、结算顺序和胜负，按既有规格验收已记录的差异。启动器的会话创建联验在 T010、T013 执行。
+- [ ] T045 在 `src/deck-catalog/effect-definitions.ts` 迁移首个官方发行版中所有需要规则结算的卡牌效果。逐条将旧版效果入口映射到 T015、T042 的规则表达，并记录卡牌稳定 ID、旧版效果来源和对应的新定义。达到 FR-012 判据的效果使用 T015 确定的统一抽象。在 `tests/contract/initial-effects.test.ts` 核对迁移清单覆盖首版所有旧效果，缺失映射、未实现效果或不可识别的触发器均阻断首版构建，并执行旧版对照样本及迁移中新发现的结构差异样本。
 - [ ] T041 在 `scripts/build-initial-release.ts` 生成首个正式发行版资源并随主体构建打包，记录 `quote/` 中旧版卡牌和预设牌表的来源、稳定卡牌 ID 映射及对应规则版本。在 `src/deck-catalog/initial-release.ts` 从主体本地资源装载，以规则能力、整库数据和引用校验通过为前提，事务写入首个不可变发行版。将首版就绪接到 T005 的离线准备判定。在 `tests/contract/initial-release.test.ts` 验证空存储可读到首版和合法预设、中断回滚、重试不重复发行，且已有数据再次启动后保持原样。
 
-T005–T009 在共同契约确定后可以同时实施，随后合并验证。T005 采用 T004 的入口原型结论，T006 采用 T003 的存储原型结论。T032 依赖 T003、T007、T008。T015 依赖 T002、T007、T008、T032，T042 依赖 T015 及 T002 的样本。T041 依赖 T005、T006、T042，首个发行版通过校验后再联跑 US1。
+T005–T009 在共同契约确定后可以同时实施，随后合并验证。T005 采用 T004 的入口原型结论，T006 采用 T003 的存储原型结论。T032 依赖 T003、T007、T008。T015 依赖 T002、T007、T008、T032，T042 依赖 T015 及 T002 的样本。T045 依赖 T015、T042。T041 依赖 T005、T006、T045，首个发行版通过校验后再联跑 US1。
 
 ## 阶段 3 · US1 真人对 AI 初始化（P1）
 
@@ -40,21 +41,21 @@ T011 依赖 T032、T041。T012 依赖 T009、T042。T013 依赖 T011、T012，�
 
 独立通过条件为以固定状态验证合法应答后的继续结算，以及无效应答后的暂停状态。
 
-- [ ] T014 [US2] 在 `tests/contract/decision.test.ts` 固定暂停与合法应答样本，以及重复、冲突、过期、越权和非法选择反例。用已用命令 ID 验证 M02 在查找回执前核验连接、会话与席位授权。已撤权连接、错误席位或错误会话均无法查询回执或得知其是否存在，权威状态及待决策维持原样。
+- [ ] T014 [US2] 在 `tests/contract/decision.test.ts` 固定暂停与合法应答样本，以及重复、冲突、过期、越权和非法选择反例。用已用命令 ID 验证 M02 在查找回执前核验连接、会话与席位授权。已撤权连接、错误席位或错误会话均无法查询回执或得知其是否存在，权威状态及待决策维持原样。并发提交两次同 ID 同内容请求，断言只确认一次且两次回执一致。用不同 ID 并发提交在同一修订各自有效的两个动作，断言仅一个基于该修订确认，另一请求被拒且无额外修订、事件或确认点。
 - [ ] T016 [US2] 在 `src/clients/official-2d/game.ts` 接入 T042 的正常游戏操作、待决策 UI 和终局反馈，通过统一协议显示候选、交付结果并对照其他可见投影。在 `tests/acceptance/choice-2d.spec.ts` 验证正常操作触发待决策、暂停和继续结算。
 
 ## 阶段 5 · US6 前端可选安装与冷启动（P1）
 
 独立通过条件为在手机及电脑导入同一兼容示例包并离线冷启动；无效包被拒绝且旧包仍能运行。
 
-- [ ] T017 [US6] 在 `tests/contract/frontend-package.test.ts` 和 `tests/acceptance/install-offline.spec.ts` 建立离线导入、版本不兼容、存储失败、授权撤销和宿主数据隔离场景。验证断网时从已安装第三方前端条目选择同 ID 新版本，确认来源后才进入候选启动。取消确认保留原活动版，从新装入口导入同一文件须报告 ID 冲突。验证候选在受控入口加载、握手及协议协商成功后才切换为活动版。入口失败、握手超时或协议协商失败时撤销候选端口，上一活动版与仍有效的授权继续可用。
-- [ ] T018 [US6] 在 `src/clients/launcher/install.ts` 和 `src/clients/launcher/package-store.ts` 按[数据模型](data-model.md)实现 `FrontendPackage.manifest`、`Installation.key` 和 `Installation.state`，完成导入、验证、更新、回退和卸载。区分新装和指定已安装前端的离线升级入口，升级检查目标 ID、版本及兼容性，取得玩家对文件来源的确认后才交给 T019。
-- [ ] T019 [US6] 在 `src/clients/frontend-host.ts` 和 `src/clients/service-worker.ts` 实现受控包入口及消息端口，将权威授权与 iframe 生命周期关联。向 T018 提供候选独立实例的就绪或失败结果，以受控入口、实例握手和协议协商为判据，处理超时及失败候选的端口撤销。
+- [ ] T017 [US6] 在 `tests/contract/frontend-package.test.ts` 和 `tests/acceptance/install-offline.spec.ts` 建立离线导入、版本不兼容、存储失败、授权撤销和宿主数据隔离场景。验证断网时从已安装第三方前端条目选择同 ID 新版本，确认来源后才进入候选启动。取消确认保留原活动版，从新装入口导入同一文件须报告 ID 冲突。分别验证初装和升级候选在受控入口加载、握手及协议协商成功并完成原子提交后才成为活动版。入口失败、握手超时、协议协商失败或活动记录提交失败时清理候选端口及暂存。初装失败后同 ID 可重新导入，升级失败后上一活动版与仍有效的授权继续可用。
+- [ ] T018 [US6] 在 `src/clients/launcher/install.ts` 和 `src/clients/launcher/package-store.ts` 按[数据模型](data-model.md)实现 `FrontendPackage.manifest`、`Installation.key` 和 `Installation.state`，完成导入、验证、更新、回退和卸载。新装与升级均在验证及确认来源之后暂存并交给 T019。升级另检查所选条目的 ID 及版本。启动检查通过后原子提交入口和活动记录，提交失败时清理暂存。
+- [ ] T019 [US6] 在 `src/clients/frontend-host.ts` 和 `src/clients/service-worker.ts` 实现受控包入口及消息端口，将权威授权与 iframe 生命周期关联。向 T018 提供候选独立实例的就绪或失败结果，以受控入口、实例握手和协议协商为判据，处理超时及失败候选的端口撤销。候选只能加载自己的已验证暂存入口，活动记录提交后才进入正常业务授权流程。
 - [ ] T020 [P] [US6] 在 `src/clients/official-3d/game.ts` 迁移 3D 视图，将 T042 的正常游戏操作、待决策和终局反馈接到统一协议，支持触控、鼠标及目标拾取，并加载打包的 Three.js 和本地资产。
 - [ ] T021 [P] [US6] 在 `src/clients/launcher/home.ts`、`scripts/build-frontends.ts` 和 `tests/acceptance/frontend-fixture/entry.html` 提供按需安装入口、单独官方包及兼容示例包，记录示例包构建与接入方式。
 - [ ] T022 [US6] 在 `tests/acceptance/frontend-device.md` 实机执行 iOS、Android 与桌面冷启动和第三方授权测试。按[首次发行版与空存储验收](quickstart.md#首次发行版与空存储验收)从全新安装验证正常入口可准备官方内容，断网冷启动后用首版、合法预设和 T012 的替代模型联跑 2D、3D 的离线 PVE 及续局。
 
-T020 和 T021 在 T007、T016、T019 的接入契约确定后可并行，T020 使用 T042 的正式规则。T022 依赖 T013、T017–T021 和 T041，文件跨设备场景与 US3 联跑。
+T020 和 T021 在 T007、T016、T019 的接入契约确定后可并行，T020 使用 T042 的正式规则。T017 的样本可提前准备，完整初装和升级场景在 T018 与 T019 联通后验收。T022 依赖 T013、T017–T021 和 T041，文件跨设备场景与 US3 联跑。
 
 ## 阶段 6 · US3 卡组编辑与文件迁移（P2）
 
@@ -81,9 +82,9 @@ T020 和 T021 在 T007、T016、T019 的接入契约确定后可并行，T020 �
 
 ## 阶段 9 · 回放与整体验收
 
-- [ ] T031 [P] 在 `src/match/replay.ts` 和 `tests/contract/replay.test.ts` 按[数据模型](data-model.md)实现 `Replay.versions`、`Replay.inputs`，验证含随机结算的同终局复现、缺版本或记录不完整诊断与旧版限制。
+- [ ] T031 [P] 在 `src/match/replay.ts` 和 `tests/contract/replay.test.ts` 按[数据模型](data-model.md)实现 `Replay.versions`、`Replay.inputs`，验证含随机结算的同终局复现、缺版本或记录不完整诊断与旧版限制。经普通回放入口，用同一记录分别验证原有权席位、对手和观战端的投影。以含私有候选与随机输入的样本核对可见结果，并断言响应及更新无越权字段。
 - [ ] T043 在 `src/match/history-reproduce.ts` 接通可信宿主内获准维护者和隔离自动验收的历史复现入口。授权后只读选定确认点、核对规则与卡池版本及记录完整性，在隔离环境还原局面、待决策和截至该点的命令处理结果，并用原输入重跑后续行为。提供未授权、缺确认点、版本不匹配及记录不完整的诊断。
-- [ ] T033 在 `tests/acceptance/match-recovery.spec.ts` 验证重连、冷重启、已确认未回复的重试、探珠原候选及决策 ID、迟到 AI 决定和持久化失败。通过 T043 的授权入口独立复现每个确认点并重跑后续结算，核对原对局与历史记录保持原样，覆盖缺少确认点、版本不匹配、记录不完整和未授权的诊断。
+- [ ] T033 在 `tests/acceptance/match-recovery.spec.ts` 验证重连、冷重启、已确认未回复的重试、探珠原候选及决策 ID、迟到 AI 决定和持久化失败。通过 T043 的授权入口独立复现每个确认点并重跑后续结算，核对原对局与历史记录保持原样，覆盖缺少确认点、版本不匹配、记录不完整和未授权的诊断。另验证无效选项被拒后，用新命令正确完成选择并重启。原样重试旧命令须返回决策失效，同 ID 改内容须返回冲突，均无额外结算或可见更新。
 - [ ] T044 按 T012 的核查结果执行 FR-006 的条件退役。若旧 V6 依赖真实隐藏信息，在替代模型通过 T022 的离线 PVE 验收后，移除正常模型列表和会话配置仍引用的 V6 路径，验证普通配置无法再选用或启动该路径，并保留旧版样本及偏差记录。
 - [ ] T034 在 `tests/acceptance/release-results.md` 完成[验收指南](quickstart.md)的全部离线场景、跨前端协议及设备验证，记录三项澄清反例与旧版样本结果。汇总 T022 的空存储冷启动和开局结果，经 T025、T030 的正常入口补验使用首版离线打开构筑和创建草稿。按[架构边界复核](quickstart.md#架构边界复核)核对总图和受影响层的模块归属、状态所有权、交互方向与语义及关键场景的实际调用。M06 须从 AI 侧追溯到对局侧授权种子及同版正式解算器，且隔离试算不改变正式对局。
 
