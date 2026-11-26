@@ -10,9 +10,9 @@
     "build": "tsc --noEmit && vite build",
     "dev": "vite",
     "preview": "vite preview",
-    "test": "vitest run --passWithNoTests",
-    "test:baseline": "vitest run --passWithNoTests tests/baseline/",
-    "test:e2e": "playwright test --pass-with-no-tests"
+    "test": "vitest run",
+    "test:baseline": "vitest run tests/baseline/",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.1",

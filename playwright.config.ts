@@ -1,6 +1,11 @@
 import { defineConfig } from '@playwright/test'
 
-const baseURL = 'http://127.0.0.1:4173'
+const host = '127.0.0.1'
+const port = process.env.PLAYWRIGHT_PREVIEW_PORT ?? '4173'
+if (!/^[1-9][0-9]{0,4}$/.test(port) || Number(port) > 65_535) {
+  throw new Error('PLAYWRIGHT_PREVIEW_PORT must be a decimal port from 1 to 65535')
+}
+const baseURL = `http://${host}:${port}`
 
 export default defineConfig({
   testDir: './tests/acceptance',
@@ -8,7 +13,7 @@ export default defineConfig({
   use: { baseURL },
   projects: [{ name: 'chromium', use: { browserName: 'chromium' } }],
   webServer: {
-    command: 'npm run build && npm run preview -- --host 127.0.0.1 --port 4173 --strictPort',
+    command: `npm run build && npm run preview -- --host ${host} --port ${port} --strictPort`,
     url: baseURL,
     reuseExistingServer: false,
   },
