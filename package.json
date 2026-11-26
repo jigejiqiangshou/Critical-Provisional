@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "tsc --noEmit && vite build",
+    "preflight:cloud": "npm run build && node scripts/cloud-preflight.ts",
     "dev": "vite",
     "preview": "vite preview",
     "test": "vitest run",

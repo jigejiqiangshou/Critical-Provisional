@@ -11,7 +11,13 @@ export default defineConfig({
   testDir: './tests/acceptance',
   testMatch: '**/*.spec.ts',
   use: { baseURL },
-  projects: [{ name: 'chromium', use: { browserName: 'chromium' } }],
+  projects: [{
+    name: 'chromium',
+    use: {
+      browserName: 'chromium',
+      launchOptions: { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined },
+    },
+  }],
   webServer: {
     command: `npm run build && npm run preview -- --host ${host} --port ${port} --strictPort`,
     url: baseURL,
