@@ -16,5 +16,6 @@ export default defineConfig({
     command: `npm run build && npm run preview -- --host ${host} --port ${port} --strictPort`,
     url: baseURL,
     reuseExistingServer: false,
+    gracefulShutdown: { signal: 'SIGINT', timeout: 5000 },
   },
 })
