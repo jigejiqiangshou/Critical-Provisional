@@ -95,7 +95,7 @@ T020 和 T021 在 T007、T016、T019 的接入契约确定后可并行，T020 �
 
 每类取得首条代表性真实路径的证据后，立即执行 FR-018 的首次汇报和环境交接。完整验收依据 SC-012 和 SC-013。
 
-- [ ] T035 [US7] 在 T001 后配置云端隔离会话、锁定依赖、Playwright Chromium 和 WebGL 出帧预检，在 `tests/acceptance/cloud-environment.md` 记录实际环境、复验入口和预期输出。
+- [X] T035 [US7] 在 T001 后配置云端隔离会话、锁定依赖、Playwright Chromium 和 WebGL 出帧预检，在 `tests/acceptance/cloud-environment.md` 记录实际环境、复验入口和预期输出。
 - [ ] T036 [US7] 随各层正常入口完成，在 `tests/contract/cloud-layer-acceptance.test.ts` 按验收指南运行四层成功和失败路径，记录不变量、拒绝原因、代理执行证据及维护者手工操作次数。首条路径通过立即交接，最终验证 SC-012、SC-014。
 - [ ] T037 [US7] 随 T007、T011、T015 接通 `src/clients/debug/game.ts`，在 `tests/acceptance/debug.spec.ts` 经授权端口验证待决策应答、可见事件与失败反馈。保存复现入口和断言，验证 SC-012、SC-014。
 - [ ] T038 [US7] 在 T013、T016、T019、T021 和 T042 接通后，用 `tests/acceptance/cloud-official-2d.spec.ts` 驱动 2D 正式界面，保存动作反馈、终局和对应对局记录，验证 SC-013、SC-014。
