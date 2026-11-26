@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" href="./storage-192.png">
+    <link rel="apple-touch-icon" href="./storage-192.png">
+    <title>SQLite 存储验证</title>
+  </head>
+  <body>
+    <h1>SQLite 存储验证</h1>
+    <p id="display-mode"></p>
+    <p id="offline-status" role="status">正在准备离线资源</p>
+    <p id="database-status" role="status">正在打开存储</p>
+    <p id="records"></p>
+    <button id="write" disabled>提交一条记录</button>
+    <button id="rollback" disabled>触发约束回滚</button>
+    <button id="interrupt" disabled>模拟提交中断</button>
+    <button id="retry" disabled>重试取得存储</button>
+    <p><button id="persist">申请持久存储</button> <output id="persist-status"></output></p>
+    <script type="module" src="./storage-spike.ts"></script>
+  </body>
+</html>
