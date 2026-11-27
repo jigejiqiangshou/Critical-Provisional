@@ -3,11 +3,16 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#1b2433">
+    <meta name="critical-host-build" content="__CRITICAL_HOST_BUILD_VERSION__">
+    <link rel="manifest" href="./manifest.webmanifest">
     <title>临界</title>
   </head>
   <body>
     <main>
       <h1>临界</h1>
+      <output id="offline-status" aria-live="polite">正在检查离线资源</output>
     </main>
+    <script type="module" src="/src/clients/main.ts"></script>
   </body>
 </html>
