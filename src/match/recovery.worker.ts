@@ -153,9 +153,19 @@ function readOutcome(db: OpfsSAHPoolDatabase, sessionId: SessionId): MatchOutcom
 function loadLatest(db: OpfsSAHPoolDatabase, sessionId: SessionId): LatestConfirmation<unknown, unknown> | undefined {
   const match = matchRow(db, sessionId)
   if (!match) return undefined
-  const { confirmed, summaryThrough } = readPoint(pointRow(db, sessionId, match.current_revision), match.version_hash)
-  checkOutcome(match, confirmed)
-  return { sessionId, confirmed, metadata: decode(match.metadata), summaryThrough }
+  const point = readPoint(pointRow(db, sessionId, match.current_revision), match.version_hash)
+  checkOutcome(match, point.confirmed)
+  if (point.confirmed.revision > 0) {
+    const receipt = db.selectObject(
+      'SELECT * FROM commands WHERE session_id = ? AND confirmation_revision = ?',
+      [sessionId, point.confirmed.revision],
+    ) ?? incomplete()
+    checkReceipt(point, readCommand(receipt, match.version_hash))
+    const count = db.selectValue('SELECT count(*) FROM commands WHERE session_id = ? AND ordinal <= ?',
+      [sessionId, point.summaryThrough])
+    if (count !== point.summaryThrough) return incomplete()
+  }
+  return { sessionId, confirmed: point.confirmed, metadata: decode(match.metadata), summaryThrough: point.summaryThrough }
 }
 
 function commandRow(db: OpfsSAHPoolDatabase, key: CommandReceiptKey): Row | undefined {
@@ -190,6 +200,11 @@ function lookup(db: OpfsSAHPoolDatabase, key: CommandReceiptKey): CommandRequest
   return command
 }
 
+function checkReceipt(point: RecoveryPoint<unknown, unknown>, receipt: RecoveryCommand | undefined): void {
+  if (!receipt || receipt.confirmationRevision !== point.confirmed.revision ||
+    receipt.ordinal > point.summaryThrough || receipt.expectedRevision !== point.confirmed.revision - 1) incomplete()
+}
+
 function readHistory(db: OpfsSAHPoolDatabase, sessionId: SessionId): RecoveryHistory<unknown, unknown> | undefined {
   const match = matchRow(db, sessionId)
   if (!match) return undefined
@@ -213,10 +228,7 @@ function readHistory(db: OpfsSAHPoolDatabase, sessionId: SessionId): RecoveryHis
     if (point.confirmed.revision !== index || point.summaryThrough < through || point.summaryThrough > commands.length ||
       (index < points.length - 1 && point.confirmed.terminal)) return incomplete()
     through = point.summaryThrough
-    if (index > 0) {
-      const receipt = receipts.get(index)
-      if (!receipt || receipt.ordinal > through || receipt.expectedRevision !== index - 1) return incomplete()
-    }
+    if (index > 0) checkReceipt(point, receipts.get(index))
   }
   return { points, commands }
 }
