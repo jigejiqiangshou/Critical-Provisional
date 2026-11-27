@@ -1,5 +1,21 @@
 /.tools/
 
+node_modules/
+dist/
+build/
+coverage/
+/playwright-report/
+/test-results/
+*.log
+.env*
+!.env.example
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+.vscode/
+.idea/
+
 # Keep installed project skills versioned.
 !/.agents/
 !/.agents/skills/
