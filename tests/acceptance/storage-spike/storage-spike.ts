@@ -1,6 +1,6 @@
-import type { StorageSpikeCommand, StorageSpikeMessage } from '../../../src/deck-catalog/sqlite.worker'
+import type { StorageSpikeCommand, StorageSpikeMessage } from './sqlite.worker'
 
-const worker = new Worker(new URL('../../../src/deck-catalog/sqlite.worker.ts', import.meta.url), { type: 'module' })
+const worker = new Worker(new URL('./sqlite.worker.ts', import.meta.url), { type: 'module' })
 const status = document.querySelector<HTMLParagraphElement>('#database-status')!
 const records = document.querySelector<HTMLParagraphElement>('#records')!
 const offline = document.querySelector<HTMLParagraphElement>('#offline-status')!
