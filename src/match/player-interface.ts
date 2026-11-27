@@ -169,16 +169,26 @@ export function projectOfficialMatch(match: OfficialMatch, pool: CardPoolSnapsho
     progress.kind === 'waiting' ? progress.decision.continuation.activeSeat : null
   return {
     turn: state.turn, finale: state.finale, battleMode: state.battleMode, players, activeSeat, decision,
+    waiting: progress.kind === 'waiting',
     outcome: progress.kind === 'ended' ? { winner: progress.outcome.winner, reason: progress.outcome.reason } : null,
   }
 }
 
-function routeOfficialEvent(event: OfficialRuleEvent): RoutedPlayerEvent {
-  if (event.type === 'effect-decision') return routeEffectDecisionEvent(event)
-  return {
+function routeOfficialEvent(event: OfficialRuleEvent): RoutedPlayerEvent[] {
+  if (event.type === 'effect-decision') {
+    const routed = routeEffectDecisionEvent(event)
+    if (event.stage === 'offered' && event.choices.visibility === 'owner') {
+      return [
+        { visibility: { type: 'public' }, event: { type: 'decision', payload: { stage: 'waiting' } } },
+        routed,
+      ]
+    }
+    return [routed]
+  }
+  return [{
     visibility: event.privateTo === null ? { type: 'public' } : { type: 'seat', seatId: event.privateTo },
     event: { type: 'action', payload: { name: event.name, data: event.data } },
-  }
+  }]
 }
 
 /** Adapt M02 player intent to the sole authoritative MatchCore. */
@@ -207,7 +217,7 @@ export function createOfficialPlayerCore(core: OfficialCore): PlayerCore<Officia
         status: 'accepted',
         next: toConfirmedMatch(candidate.match),
         result: { confirmed: true },
-        events: candidate.events.map(routeOfficialEvent),
+        events: candidate.events.flatMap(routeOfficialEvent),
         history: { events: candidate.events, randomInputs: candidate.randomInputs },
       }
       candidates.set(accepted, candidate)
