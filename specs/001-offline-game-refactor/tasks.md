@@ -6,8 +6,8 @@
 
 - [X] T001 建立 TypeScript、Vite、Vitest、Playwright 工具链及 build/dev/test/test:baseline/test:e2e 命令，配置 `package.json`、`tsconfig.json`、`vite.config.ts` 和 `playwright.config.ts`。
 - [X] T002 [P] 在 `tests/baseline/legacy-samples.test.ts` 及 `tests/baseline/fixtures.json` 按[旧版对照样本](contracts/legacy-samples.md)固定 LG-01–LG-09 的旧版 2D、3D 完整输入及逐步断言，记录旧版差异与页面来源。
-- [ ] T003 [P] 在 `tests/acceptance/storage-device.md` 和 `src/deck-catalog/sqlite.worker.ts` 的原型中，用已安装的桌面 Chromium PWA 验证 SQLite OPFS 写入、冷重启、独占接管、回滚和配额失败。记录驱动与浏览器完整版本、复验入口和原型提交。
-- [ ] T004 [P] 在 `tests/acceptance/frontend-device.md` 与 `src/clients/frontend-spike.ts` 的原型中，用已安装的桌面 Chromium PWA 验证官方 3D 资源大小、离线准备和冷启动、实际出帧、本地文件选择、受控沙盒入口、消息端口撤销和宿主存储隔离。记录复验入口、原型提交及按文件字节计的开发暂定包体上限。
+- [X] T003 [P] 在 `tests/acceptance/storage-device.md` 和 `src/deck-catalog/sqlite.worker.ts` 的原型中，用已安装的桌面 Chromium PWA 验证 SQLite OPFS 写入、冷重启、独占接管、回滚和配额失败。记录驱动与浏览器完整版本、复验入口和原型提交。
+- [X] T004 [P] 在 `tests/acceptance/frontend-device.md` 与 `src/clients/frontend-spike.ts` 的原型中，用已安装的桌面 Chromium PWA 验证官方 3D 资源大小、离线准备和冷启动、实际出帧、本地文件选择、受控沙盒入口、消息端口撤销和宿主存储隔离。记录复验入口、原型提交及按文件字节计的开发暂定包体上限。
 
 T002–T004 均依赖 T001。关闭 T003、T004 前须从原工作区取得并复核原型与证据，将原型及复验入口保留在可克隆的项目历史中。阶段 2 使用桌面验证结论，Android 复验由 T048、T049 承接。
 
