@@ -5,6 +5,7 @@ export const frontendInstallationStore = 'installations'
 export interface VerifiedFrontendEntry {
   key: string
   html: string
+  packageId?: string
   stageInstance?: string
 }
 
