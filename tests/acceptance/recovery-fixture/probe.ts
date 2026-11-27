@@ -1,7 +1,7 @@
 import { MatchCore } from '../../../src/match/core'
 import type { Match } from '../../../src/match/core'
-import { PlayerInterface } from '../../../src/match/player-interface'
-import type { ConfirmedMatch, PlayerCore } from '../../../src/match/player-interface'
+import { PlayerInterface, toConfirmedMatch } from '../../../src/match/player-interface'
+import type { PlayerCore } from '../../../src/match/player-interface'
 import { PLAYER_PROTOCOL_V1 } from '../../../src/match/player-protocol'
 import type { CommandRequest, PlayerAction, ServerMessage } from '../../../src/match/player-protocol'
 import { openRecoveryStore } from '../../../src/match/recovery-store'
@@ -71,9 +71,11 @@ async function connect(opened: Store, core: Awaited<ReturnType<typeof newMatch>>
       pending = candidate
       return {
         status: 'accepted',
-        next: confirmation(candidate.match),
+        next: toConfirmedMatch(candidate.match),
         result: { marker: failurePayload ?? candidate.match.progress.kind },
-        events: [{ visibility: { type: 'public' }, event: { type: 'action', payload: candidate.match.progress.kind } }],
+        events: candidate.match.progress.kind === 'ended' ? [] : [
+          { visibility: { type: 'public' }, event: { type: 'action', payload: candidate.match.progress.kind } },
+        ],
         history: { randomInputs: candidate.randomInputs },
       }
     },
@@ -83,7 +85,7 @@ async function connect(opened: Store, core: Awaited<ReturnType<typeof newMatch>>
       confirmations++
     },
   }
-  const service = new PlayerInterface({ sessionId, confirmed: confirmation(core.read()), core: adapter, store: opened })
+  const service = new PlayerInterface({ sessionId, confirmed: toConfirmedMatch(core.read()), core: adapter, store: opened })
   const messages: ServerMessage[] = []
   const client = service.connect('recovery-probe', { send: message => messages.push(message), close() {} })
   await client.receive({ type: 'hello', versions: PLAYER_PROTOCOL_V1 })
@@ -118,13 +120,6 @@ function newMatch() {
   })
 }
 
-function confirmation(state: Snapshot): ConfirmedMatch<Snapshot> {
-  return {
-    revision: state.revision, versionHash: state.versionHash, state,
-    ...(state.progress.kind === 'ended' ? { terminal: true, outcome: state.progress.outcome } : {}),
-  }
-}
-
 const startDecision = { type: 'play-card', cardId: 'recovery-card' } as const
 const response = (id: string) => ({
   type: 'respond', decisionId: 'decision-1', choice: { type: 'select', targetIds: [id] },
@@ -135,7 +130,7 @@ const rejectedLargeKey = 'reject-while-full-' + 'x'.repeat(256 * 1024)
 async function setup() {
   const opened = store = await openStore()
   const core = await newMatch()
-  await opened.initialize({ sessionId, confirmed: confirmation(core.read()), metadata })
+  await opened.initialize({ sessionId, confirmed: toConfirmedMatch(core.read()), metadata })
   return { opened, core }
 }
 
@@ -151,7 +146,21 @@ async function captureError(operation: () => unknown) {
     await operation()
     return null
   } catch (error) {
-    return { message: String(error), code: (error as { code?: string })?.code }
+    const diagnostic = error as { code?: string; reason?: string }
+    return { message: String(error), code: diagnostic?.code, reason: diagnostic?.reason }
+  }
+}
+
+async function corrupt(operation: 'delete-receipt' | 'invalidate-action') {
+  const worker = new Worker(new URL('./receipt-corruptor.ts', import.meta.url), { type: 'module' })
+  try {
+    await new Promise<void>((resolve, reject) => {
+      worker.onmessage = ({ data }) => data === 'ok' ? resolve() : reject(new Error(String(data)))
+      worker.onerror = ({ message }) => reject(new Error(message))
+      worker.postMessage(operation)
+    })
+  } finally {
+    worker.terminate()
   }
 }
 
@@ -184,17 +193,36 @@ export const probe = {
     const { opened, latest } = await reopen()
     return {
       latest, outcome: await opened.readOutcome(sessionId), terminal: await opened.lookup(commandKey('terminal')),
+      history: await opened.readHistory(sessionId),
     }
   },
   async contend() {
     return captureError(async () => { store = await openStore() })
   },
+  async readCorruptRecord(operation: 'delete-receipt' | 'invalidate-action') {
+    const { opened, core } = await setup()
+    const client = await connect(opened, core)
+    await client.submit('opening', startDecision)
+    await opened.close()
+    await corrupt(operation)
+    const reopened = await openStore()
+    try {
+      return {
+        latest: await captureError(() => reopened.loadLatest(sessionId)),
+        history: await captureError(() => reopened.readHistory(sessionId)),
+      }
+    } finally {
+      await reopened.close()
+    }
+  },
   async setupAtomicFailure() {
     const { opened, core } = await setup()
     const directory = await navigator.storage.getDirectory()
-    return { versionHash: core.read().versionHash, opfsEntries: (await Array.fromAsync(
-      (directory as FileSystemDirectoryHandle & { keys(): AsyncIterable<string> }).keys(),
-    )).sort(), sessions: await opened.listSessions() }
+    const opfsEntries: string[] = []
+    for await (const name of (directory as FileSystemDirectoryHandle & { keys(): AsyncIterable<string> }).keys()) {
+      opfsEntries.push(name)
+    }
+    return { versionHash: core.read().versionHash, opfsEntries, sessions: await opened.listSessions() }
   },
   async writeUnderQuota() {
     if (!store) throw new Error('Open store first')
@@ -214,4 +242,10 @@ export const probe = {
   },
 }
 
-Object.assign(window, { recoveryProbe: probe })
+declare global {
+  interface Window {
+    recoveryProbe: typeof probe
+  }
+}
+
+window.recoveryProbe = probe

@@ -6,9 +6,6 @@ import { chromium, expect, test } from '@playwright/test'
 import type { BrowserContext, Page } from '@playwright/test'
 import { build, preview } from 'vite'
 import type { PreviewServer } from 'vite'
-import type { probe } from './recovery-fixture/probe'
-
-type ProbeWindow = Window & { recoveryProbe: typeof probe }
 
 let temporary: string
 let server: PreviewServer
@@ -48,7 +45,7 @@ test.afterAll(async () => {
 
 async function ready(page: Page) {
   await page.goto(url)
-  await page.waitForFunction(() => Boolean((window as ProbeWindow).recoveryProbe))
+  await page.waitForFunction(() => Boolean(window.recoveryProbe))
 }
 
 function rejection(reason: string) {
@@ -68,7 +65,7 @@ test('persistently restores the confirmed decision, receipts, cutoff and termina
   try {
     const page = context.pages()[0]
     await ready(page)
-    const result = await page.evaluate(() => (window as ProbeWindow).recoveryProbe.writeAndPause())
+    const result = await page.evaluate(() => window.recoveryProbe.writeAndPause())
     if (!result.latest) throw new Error('Expected a confirmed decision')
     bases = { opening: result.oldBasis, rejection: result.rejectionBasis }
     versionHash = result.latest.confirmed.versionHash
@@ -98,7 +95,7 @@ test('persistently restores the confirmed decision, receipts, cutoff and termina
     })
     const contender = await context.newPage()
     await ready(contender)
-    expect(await contender.evaluate(() => (window as ProbeWindow).recoveryProbe.contend())).toMatchObject({ code: 'occupied' })
+    expect(await contender.evaluate(() => window.recoveryProbe.contend())).toMatchObject({ code: 'occupied' })
   } finally {
     // Shut down Chromium without explicitly closing the worker or storage handle.
     await context.close()
@@ -108,7 +105,7 @@ test('persistently restores the confirmed decision, receipts, cutoff and termina
   try {
     const page = context.pages()[0]
     await ready(page)
-    const result = await page.evaluate(originalBases => (window as ProbeWindow).recoveryProbe.restoreAndFinish(originalBases), bases)
+    const result = await page.evaluate(originalBases => window.recoveryProbe.restoreAndFinish(originalBases), bases)
     expect(result.latest).toEqual(original)
     expect(result.retry).toEqual([
       expect.objectContaining({ result: { status: 'accepted', receipt: { commandId: 'opening', result: { marker: 'waiting' } } } }),
@@ -150,12 +147,15 @@ test('persistently restores the confirmed decision, receipts, cutoff and termina
   try {
     const page = context.pages()[0]
     await ready(page)
-    const result = await page.evaluate(() => (window as ProbeWindow).recoveryProbe.readEnding())
+    const result = await page.evaluate(() => window.recoveryProbe.readEnding())
     expect(result.outcome).toEqual({ winner: 'second', reason: 'conceded' })
     expect(result.latest.confirmed).toMatchObject({
       terminal: true, revision: 3, versionHash, state: { state: { value: 'first' } },
     })
-    expect(result.terminal).toMatchObject({ versionHash, result: { marker: 'ended' } })
+    expect(result.terminal).toBeUndefined()
+    expect(result.history?.commands.at(-1)).toMatchObject({
+      key: { commandId: 'terminal' }, versionHash, result: { marker: 'ended' },
+    })
   } finally {
     await context.close()
   }
@@ -163,7 +163,7 @@ test('persistently restores the confirmed decision, receipts, cutoff and termina
 
 test('does not confirm or publish an action when an actual OPFS write fails', async ({ page, context }) => {
   await ready(page)
-  const result = await page.evaluate(() => (window as ProbeWindow).recoveryProbe.setupAtomicFailure())
+  const result = await page.evaluate(() => window.recoveryProbe.setupAtomicFailure())
   expect(result.opfsEntries).toContain('.critical-provisional-matches')
   expect(result.sessions).toEqual([expect.objectContaining({ status: 'ready', versionHash: result.versionHash })])
   const cdp = await context.newCDPSession(page)
@@ -171,7 +171,7 @@ test('does not confirm or publish an action when an actual OPFS write fails', as
   const { usage } = await cdp.send('Storage.getUsageAndQuota', { origin })
   await cdp.send('Storage.overrideQuotaForOrigin', { origin, quotaSize: usage })
   try {
-    const failed = await page.evaluate(() => (window as ProbeWindow).recoveryProbe.writeUnderQuota())
+    const failed = await page.evaluate(() => window.recoveryProbe.writeUnderQuota())
     expect(failed.rejected).toEqual([{ status: 'rejected', reason: 'storage-failed' }])
     expect(failed.failed).toEqual([rejection('storage-failed')])
     expect(failed.confirmations).toBe(0)
@@ -181,10 +181,22 @@ test('does not confirm or publish an action when an actual OPFS write fails', as
     await cdp.detach()
   }
 
-  const unchanged = await page.evaluate(() => (window as ProbeWindow).recoveryProbe.inspectAfterFailure())
+  const unchanged = await page.evaluate(() => window.recoveryProbe.inspectAfterFailure())
   expect(unchanged.latest?.confirmed).toMatchObject({ revision: 0, versionHash: result.versionHash })
   expect(unchanged.history?.points).toHaveLength(1)
   expect(unchanged.history?.commands).toEqual([])
   expect(unchanged.failed).toBeUndefined()
   expect(unchanged.rejected).toBeUndefined()
 })
+
+for (const [fault, description] of [
+  ['delete-receipt', 'a checkpoint without its receipt'],
+  ['invalidate-action', 'a checkpoint with an invalid stored action'],
+] as const) {
+  test(`reports an incomplete record for ${description}`, async ({ page }) => {
+    await ready(page)
+    const broken = await page.evaluate(operation => window.recoveryProbe.readCorruptRecord(operation), fault)
+    expect(broken.latest).toMatchObject({ reason: 'incomplete-record' })
+    expect(broken.history).toMatchObject({ reason: 'incomplete-record' })
+  })
+}
