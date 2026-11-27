@@ -5,7 +5,7 @@ import type { EffectContinuation, EffectDecisionEvent } from '../../src/match/ef
 import { PlayerInterface, routeEffectDecisionEvent, toConfirmedMatch } from '../../src/match/player-interface'
 import type { PlayerCommandStore, PlayerCore } from '../../src/match/player-interface'
 import { PLAYER_PROTOCOL_V1 } from '../../src/match/player-protocol'
-import type { CommandReceipt, CommandRequestSummary, PlayerAction, ServerMessage, ViewScope } from '../../src/match/player-protocol'
+import type { CommandReceipt, CommandRequestSummary, JsonValue, PlayerAction, ServerMessage, ViewScope } from '../../src/match/player-protocol'
 import type { DecisionAnswer, Ruleset } from '../../src/match/rules'
 
 type State = { readonly trace: readonly string[] }
@@ -129,7 +129,7 @@ describe('FR-012 effect decisions through the authoritative core', () => {
 
   it.each([
     { answer: select('zhenyue'), result: ['zhenyue', 'resolved'] },
-    { answer: { kind: 'pass' } as const, result: ['pass', 'declined'] },
+    { answer: { kind: 'pass' } as const, result: ['declined'] },
   ])('suspends for the optional single LG-06 response and resumes $answer.kind', async ({ answer, result }) => {
     const { rules, create } = fixture({ mode: 'result', ids: ['zhenyue'], count: 1, canPass: true })
     const core = await create()
@@ -202,7 +202,7 @@ function playerFixture(core: Core) {
   }
   let proposed: Accepted | undefined
   const adapter: PlayerCore<CoreSnapshot, History> = {
-    project({ state }, scope) {
+    project({ state }, scope): JsonValue {
       const decision = state.progress.kind === 'waiting' ? state.progress.decision : undefined
       const candidates = decision?.choices.candidates.map(({ id }) => id) ?? []
       if (decision && (decision.choices.visibility === 'public' || (scope.type === 'seat' && scope.seatId === decision.owner))) {
@@ -271,6 +271,29 @@ function answer(decisionId: string, ...targetIds: string[]): PlayerAction {
 }
 
 describe('FR-012 effect decisions in M02 and M04', () => {
+  it('confirms an automatic choice with its trigger and returns a retry without publishing again', async () => {
+    const core = await fixture({ mode: 'result', ids: ['only-candidate'], count: 3 }).create()
+    const { connect, checkpoints } = playerFixture(core)
+    const attacker = await connect('attacker', { type: 'seat', seatId: 'attacker' })
+    const observer = await connect('spectator', { type: 'spectator' })
+    const basis = (await attacker.view()).basis
+    const receipt = await attacker.submit('one-resolution', basis, attack)
+    expect(receipt.status).toBe('accepted')
+    expect(await attacker.submit('one-resolution', basis, attack)).toEqual(receipt)
+    expect(core.read()).toMatchObject({
+      revision: 1, progress: { kind: 'active', activeSeat: 'attacker' },
+      state: { trace: ['before:0.25', 'only-candidate', 'resolved', 'after:0.75'] },
+    })
+    expect(checkpoints).toHaveLength(1)
+    expect(checkpoints[0]?.events.filter(event => event.type === 'effect-decision')).toEqual([
+      expect.objectContaining({
+        type: 'effect-decision', stage: 'resolved', resolution: 'automatic', answer: select('only-candidate'),
+      }),
+    ])
+    expect(attacker.events()).toHaveLength(1)
+    expect(observer.events()).toEqual(attacker.events())
+  })
+
   it.each(['public', 'owner'] as const)('projects %s decision events, logs their resolution, and settles command IDs once', async visibility => {
     const core = await fixture({
       mode: 'result', ids: ['private-candidate'], count: 1, canPass: true, visibility,
