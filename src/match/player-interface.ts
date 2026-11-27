@@ -1,3 +1,4 @@
+import type { Match } from './core'
 import {
   negotiatePlayerProtocol, parsePlayerMessage, parseProtocolRange, PLAYER_PROTOCOL_V1,
 } from './player-protocol'
@@ -5,6 +6,7 @@ import type {
   CommandReceipt, CommandReceiptKey, CommandRequest, CommandRequestSummary, JsonValue, PlayerAction,
   PlayerEvent, ProtocolRange, ProtocolVersion, QueryRequest, SeatId, ServerMessage, SessionId, ViewBasis, ViewScope,
 } from './player-protocol'
+import type { MatchOutcome } from './rules'
 
 type Awaitable<T> = T | Promise<T>
 
@@ -34,6 +36,20 @@ export interface ConfirmedMatch<State> {
   readonly versionHash: string
   readonly state: State
   readonly terminal?: boolean
+  readonly outcome?: MatchOutcome
+}
+
+/** Wrap the complete core snapshot for confirmation through the player interface. */
+export function toConfirmedMatch<State, Continuation>(
+  match: Match<State, Continuation>,
+): ConfirmedMatch<Match<State, Continuation>> {
+  const { revision, versionHash, progress } = match
+  return {
+    revision,
+    versionHash,
+    state: match,
+    ...(progress.kind === 'ended' ? { terminal: true, outcome: progress.outcome } : {}),
+  }
 }
 
 export interface RoutedPlayerEvent {

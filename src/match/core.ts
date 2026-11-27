@@ -74,7 +74,7 @@ function record(value: unknown): value is Record<string, unknown> {
   return prototype === Object.prototype || prototype === null
 }
 
-function stableJson(value: unknown, parents = new Set<object>()): string {
+export function stableJson(value: unknown, parents = new Set<object>()): string {
   if (value === null || typeof value === 'string' || typeof value === 'boolean' ||
     (typeof value === 'number' && Number.isFinite(value))) {
     return JSON.stringify(value)
