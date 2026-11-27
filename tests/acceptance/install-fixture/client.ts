@@ -18,6 +18,7 @@ export function packageClient(label: string, mode: 'normal' | 'reject-protocol' 
     hostDom: denied(() => parent.document.querySelector('#installer-test-marker')),
     localStorage: denied(() => localStorage.getItem('installer-test-marker')),
     indexedDb: denied(() => indexedDB.open('installer-test-marker')),
+    serviceWorker: denied(() => navigator.serviceWorker) || !('serviceWorker' in navigator),
     opaqueOrigin: self.origin === 'null'
   });
   const query = () => port?.postMessage({

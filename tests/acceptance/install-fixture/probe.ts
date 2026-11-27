@@ -1,7 +1,7 @@
 import { FrontendHost } from '../../../src/clients/frontend-host'
 import { FrontendInstaller } from '../../../src/clients/launcher/install'
 import { FrontendPackageStore } from '../../../src/clients/launcher/package-store'
-import { registerHostWorker } from '../../../src/clients/offline-ready'
+import { frontendEntryUrl, registerHostWorker } from '../../../src/clients/offline-ready'
 import { openFrontendDatabase, frontendEntryStore, frontendInstallationStore } from '../../../src/clients/frontend-entry'
 import { PlayerInterface } from '../../../src/match/player-interface'
 import type { CommandReceipt, CommandReceiptKey, CommandRequestSummary, ViewScope } from '../../../src/match/player-protocol'
@@ -155,6 +155,40 @@ async function requestFrontendEntries() {
   }
 }
 
+async function prepareEntry(key: string, instance: string, candidate: boolean) {
+  const controller = navigator.serviceWorker.controller
+  if (!controller) throw new Error('Expected a controlling service worker')
+  const { port1, port2 } = new MessageChannel()
+  const result = new Promise<boolean>(resolve => {
+    port1.onmessage = event => {
+      if (event.data?.type === 'prepared') resolve(true)
+      if (event.data?.type === 'served') {
+        resolve(false)
+        port1.close()
+      }
+    }
+  })
+  controller.postMessage({ type: 'critical.frontend-entry-prepare', key, instance, candidate }, [port2])
+  return await result
+}
+
+function navigateEntry(key: string, instance: string) {
+  const iframe = document.createElement('iframe')
+  iframe.sandbox.add('allow-scripts', 'allow-same-origin')
+  iframe.src = frontendEntryUrl(key, instance, scope).href
+  document.body.append(iframe)
+}
+
+async function stageEntry(id: string) {
+  const entryKey = crypto.randomUUID()
+  const instanceToken = crypto.randomUUID()
+  await store.stage({
+    entryKey, instanceToken,
+    manifest: { id, formatVersion: 1, version: '9.0.0', name: 'Verification entry', protocolMajor: 1, protocolMinMinor: 0 },
+  }, '<!doctype html><title>Staged verification entry</title>')
+  return { entryKey, instanceToken }
+}
+
 const probe = {
   selected,
   list: async () => (await store.list()).map(row => [row.manifest.id, row.manifest.version]),
@@ -164,6 +198,10 @@ const probe = {
   setFault: (fault: Fault) => { currentFault = fault },
   metrics: () => ({ queryProjectionCount, confirmationCount, confirmationPrompts }),
   entries: requestFrontendEntries,
+  activeEntry: async (id: string) => (await store.get(id))?.entryKey,
+  stageEntry,
+  prepareEntry,
+  navigateEntry,
   holdCommit: () => { holdCommit = new Promise<void>(done => { releaseCommit = done }) },
   isCommitWaiting: () => commitWaiting,
   releaseCommit: () => {

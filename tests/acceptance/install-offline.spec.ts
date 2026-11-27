@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -125,7 +126,7 @@ test('publishes only after the candidate checks and keeps the old authorized mat
     await expect(candidate.locator('#state')).toHaveText('welcomed')
     await candidate.locator('#query').evaluate(button => (button as HTMLButtonElement).click())
     await expect(candidate.locator('#isolation')).toHaveText(JSON.stringify({
-      hostDom: true, localStorage: true, indexedDb: true, opaqueOrigin: true,
+      hostDom: true, localStorage: true, indexedDb: true, serviceWorker: true, opaqueOrigin: true,
     }))
     expect(await page.evaluate(() => window.installProbe.metrics())).toMatchObject({ queryProjectionCount: 0, confirmationCount: 0 })
     expect(await candidate.locator('#result').textContent()).not.toContain('original-decision')
@@ -230,4 +231,51 @@ test('makes failed initial candidates retryable and retains the installed versio
   await old.locator('#respond').click()
   await expect(old.locator('#result')).toContainText('"status":"accepted"')
   expect(await page.evaluate(() => window.installProbe.metrics())).toMatchObject({ confirmationCount: 1 })
+})
+
+async function expectEntryStatus(page: Page, key: string, instance: string, status: number) {
+  const response = page.waitForResponse(candidate => {
+    const target = new URL(candidate.url())
+    return target.pathname === '/__critical__/frontend-entry' &&
+      target.searchParams.get('key') === key && target.searchParams.get('instance') === instance
+  })
+  await page.evaluate(({ key, instance }) => window.installProbe.navigateEntry(key, instance), { key, instance })
+  const navigation = await response
+  expect(navigation.fromServiceWorker()).toBe(true)
+  expect(navigation.status()).toBe(status)
+}
+
+async function prepareEntry(page: Page, key: string, instance: string, candidate: boolean) {
+  return await page.evaluate(({ key, instance, candidate }) => {
+    return window.installProbe.prepareEntry(key, instance, candidate)
+  }, { key, instance, candidate })
+}
+
+test('serves each managed navigation once for its prepared key, instance and mode', async ({ page }) => {
+  await page.goto(url)
+  await ready(page)
+  expect(await choosePackage(page, samples.initial)).toEqual({ version: '1.0.0' })
+  expect(await choosePackage(page, samples.differentId)).toEqual({ version: '1.1.0' })
+  const active = await page.evaluate(packageId => window.installProbe.activeEntry(packageId), id)
+  const different = await page.evaluate(packageId => window.installProbe.activeEntry(packageId), samples.differentId.id)
+  if (!active || !different) throw new Error('Expected two installed and independently managed entries')
+
+  const activeInstance = randomUUID()
+  await expectEntryStatus(page, active, activeInstance, 404)
+  expect(await prepareEntry(page, active, activeInstance, false)).toBe(true)
+  await expectEntryStatus(page, different, activeInstance, 404)
+  await expectEntryStatus(page, active, activeInstance, 200)
+  await expectEntryStatus(page, active, activeInstance, 404)
+
+  const staged = await page.evaluate(packageId => window.installProbe.stageEntry(packageId), id)
+  await expectEntryStatus(page, staged.entryKey, staged.instanceToken, 404)
+  const unrelatedInstance = randomUUID()
+  expect(await prepareEntry(page, staged.entryKey, unrelatedInstance, true)).toBe(true)
+  await expectEntryStatus(page, staged.entryKey, unrelatedInstance, 404)
+
+  expect(await prepareEntry(page, staged.entryKey, staged.instanceToken, false)).toBe(true)
+  await expectEntryStatus(page, staged.entryKey, staged.instanceToken, 404)
+  expect(await prepareEntry(page, staged.entryKey, staged.instanceToken, true)).toBe(true)
+  await expectEntryStatus(page, staged.entryKey, staged.instanceToken, 200)
+  await expectEntryStatus(page, staged.entryKey, staged.instanceToken, 404)
 })
