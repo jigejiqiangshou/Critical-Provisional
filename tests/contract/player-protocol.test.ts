@@ -58,6 +58,7 @@ function clientFor(
   player: Player,
   name: string,
   timeline: Array<{ client: string; message: WireMessage | 'close' }> = [],
+  onSend?: (message: WireMessage) => void,
 ) {
   const messages: WireMessage[] = []
   let closes = 0
@@ -66,6 +67,7 @@ function clientFor(
       const wire = structuredClone(message) as WireMessage
       messages.push(wire)
       timeline.push({ client: name, message: wire })
+      onSend?.(wire)
     },
     close() {
       closes++
@@ -94,6 +96,13 @@ type Client = ReturnType<typeof clientFor>
 
 async function hello(client: Client, versions = originalVersion) {
   await client.connection.receive({ type: 'hello', versions })
+}
+
+function nextMessage(port: MessagePort): Promise<unknown> {
+  return new Promise((resolve) => {
+    port.addEventListener('message', (event) => resolve(event.data), { once: true })
+    port.start()
+  })
 }
 
 async function join(player: Player, client: Client, scope: TestScope, versions = originalVersion) {
@@ -137,7 +146,7 @@ function latch() {
 
 // The wire clients are fixtures with independently defined messages. These small core and
 // store fixtures drive the protocol and expose whether rejected commands reached either port.
-function fixture(options: { coreUpdated?: boolean; holdConfirm?: ReturnType<typeof latch> } = {}) {
+function fixture(options: { coreUpdated?: boolean; holdConfirm?: ReturnType<typeof latch>; session?: string } = {}) {
   const saved = new Map<string, CommandRequestSummary | CommandReceipt>()
   let lookups = 0
   let adjudications = 0
@@ -145,7 +154,7 @@ function fixture(options: { coreUpdated?: boolean; holdConfirm?: ReturnType<type
   let summaries = 0
   const confirmationStarted = latch()
   const player = new PlayerInterface<TurnState>({
-    sessionId,
+    sessionId: options.session ?? sessionId,
     versions: options.coreUpdated ? compatibleVersion : originalVersion,
     confirmed: { revision: 0, versionHash: digest, state: { turn: 1 } },
     core: {
@@ -311,6 +320,32 @@ describe('player protocol at the client boundary', () => {
     expect(harness.adjudications).toBe(0)
   })
 
+  it('binds one running frontend instance to each real MessagePort', async () => {
+    const { player } = fixture()
+    const channel = new MessageChannel()
+    try {
+      const original = player.connectPort('alice', channel.port1)
+      const welcome = nextMessage(channel.port2)
+      channel.port2.postMessage({ type: 'hello', versions: originalVersion })
+      expect(await welcome).toEqual({ type: 'welcome', version: { major: 1, minor: 0 } })
+      expect(player.authorize(original, alice)).toBe(true)
+
+      expect(() => player.connectPort('another-frontend', channel.port1)).toThrow()
+      const otherSession = fixture({ session: 'match-2' }).player
+      expect(() => otherSession.connectPort('other-match-frontend', channel.port1)).toThrow()
+      expect(original.capability).toMatchObject({ instanceId: 'alice', sessionId, scope: alice })
+      const queried = nextMessage(channel.port2)
+      channel.port2.postMessage({ type: 'request', interaction: 'M03', requestId: 'view', sessionId })
+      expect(await queried).toMatchObject({
+        type: 'response', interaction: 'M03', requestId: 'view',
+        result: { status: 'ok', view: { scope: alice, snapshot: { turn: 1, hand: ['private-A'] } } },
+      })
+    } finally {
+      channel.port1.close()
+      channel.port2.close()
+    }
+  })
+
   it('does not consult stored receipts for an unauthorised session or seat', async () => {
     const harness = fixture()
     const client = clientFor(harness.player, 'alice')
@@ -436,6 +471,25 @@ describe('player protocol at the client boundary', () => {
     expect(await snapshot(watching, 'observer-after')).toEqual(observerBefore)
     expect(otherSeat.events()).toHaveLength(0)
     expect(watching.events()).toHaveLength(0)
+  })
+
+  it('gives a connection authorised during a receipt callback only the current snapshot', async () => {
+    const { player } = fixture()
+    const newcomer = clientFor(player, 'late-observer')
+    await hello(newcomer)
+    let joinedDuringReceipt = false
+    const origin = clientFor(player, 'alice', [], (message) => {
+      if (message.type === 'response' && message.interaction === 'M02') {
+        joinedDuringReceipt = player.authorize(newcomer.connection, spectator)
+      }
+    })
+    await join(player, origin, alice)
+    const before = await snapshot(origin, 'before')
+    await origin.connection.receive(command('confirm', 'one', before.basis))
+    expect(origin.response('confirm').status).toBe('accepted')
+    expect(joinedDuringReceipt).toBe(true)
+    expect(newcomer.events()).toHaveLength(0)
+    expect(await snapshot(newcomer, 'joined')).toMatchObject({ scope: spectator, sequence: 0, snapshot: { turn: 2 } })
   })
 
   it('delivers a terminal receipt only to the origin, publishes terminal updates and then closes active streams', async () => {
