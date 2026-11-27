@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-import { frontendEntryPath, isFrontendEntryToken, readVerifiedFrontendEntry } from './frontend-entry'
+import { frontendEntryMatches, frontendEntryPath, isFrontendEntryToken, readVerifiedFrontendEntry } from './frontend-entry'
 
 interface ShellBuild {
   version: string
@@ -17,6 +17,7 @@ const shellAssets = new Map(build.assets.map(([path, integrity]) => [new URL(pat
 const indexUrl = new URL('index.html', scope)
 const installRecord = new URL('__critical__/shell-install', scope)
 const entryPath = new URL(frontendEntryPath, scope).pathname
+const candidateNavigations = new Set<string>()
 const entryCsp = [
   "sandbox allow-scripts",
   "default-src 'none'",
@@ -100,7 +101,8 @@ async function serveFrontendEntry(request: Request, url: URL): Promise<Response>
 
   try {
     const entry = await readVerifiedFrontendEntry(scope, key)
-    if (!entry || entry.key !== key || typeof entry.html !== 'string') return missingEntry()
+    if (!frontendEntryMatches(entry, key, instance)) return missingEntry()
+    if (entry.stageInstance !== undefined && !candidateNavigations.delete(instance)) return missingEntry()
     return new Response(entry.html, {
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
@@ -137,9 +139,32 @@ worker.addEventListener('fetch', event => {
   if (integrity) event.respondWith(fetchShell(shellUrl, integrity))
 })
 
+async function prepareFrontendEntry(event: ExtendableMessageEvent): Promise<boolean> {
+  const { source, data } = event
+  if (!source || !('frameType' in source) || source.type !== 'window' || source.frameType === 'nested') return false
+  if (!source.url.startsWith(scope.href)) return false
+  const { key, instance, candidate } = data
+  if (!isFrontendEntryToken(key) || !isFrontendEntryToken(instance) || typeof candidate !== 'boolean') return false
+  const entry = await readVerifiedFrontendEntry(scope, key)
+  if (!frontendEntryMatches(entry, key, instance) || (entry.stageInstance !== undefined) !== candidate) return false
+  if (candidate) {
+    candidateNavigations.add(instance)
+    setTimeout(() => candidateNavigations.delete(instance), 30_000)
+  }
+  return true
+}
+
 worker.addEventListener('message', event => {
   const port = event.ports[0]
-  if (event.data?.type !== 'critical.host-cache-status' || !port) return
+  if (!port) return
+  if (event.data?.type === 'critical.frontend-entry-prepare') {
+    event.waitUntil(prepareFrontendEntry(event).then(
+      ready => port.postMessage(ready),
+      () => port.postMessage(false),
+    ).finally(() => port.close()))
+    return
+  }
+  if (event.data?.type !== 'critical.host-cache-status') return
   event.waitUntil(hasCompleteShell().then(
     complete => port.postMessage({ version: build.version, complete }),
     () => port.postMessage({ version: build.version, complete: false }),
