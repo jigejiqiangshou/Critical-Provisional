@@ -64,6 +64,12 @@ async function choosePackage(
   return page.evaluate(({ id, confirm }) => window.installProbe.selected(id, confirm), options)
 }
 
+type Fault = Parameters<Window['installProbe']['setFault']>[0]
+
+async function setFault(page: Page, fault: Fault = 'none') {
+  await page.evaluate(value => window.installProbe.setFault(value), fault)
+}
+
 function expectError(result: unknown, code: string) {
   expect(result).toEqual({ error: expect.objectContaining({ code }) })
 }
@@ -200,13 +206,13 @@ test('makes failed initial candidates retryable and retains the installed versio
   ] as const
 
   for (const failure of failures) {
-    await page.evaluate(fault => window.installProbe.setFault(fault), 'fault' in failure ? failure.fault : 'none')
+    await setFault(page, 'fault' in failure ? failure.fault : undefined)
     expectError(await choosePackage(page, failure.pack), failure.code)
     expect(await list(page)).toEqual([])
     await expect(page.locator(mount)).toHaveCount(0)
     expect(await page.evaluate(() => window.installProbe.entries())).toEqual([])
   }
-  await page.evaluate(() => window.installProbe.setFault('none'))
+  await setFault(page)
   expect(await choosePackage(page, samples.initial)).toEqual({ version: '1.0.0' })
   await page.evaluate(packageId => window.installProbe.openCurrent(packageId), id)
   const old = page.frameLocator(mount)
@@ -214,7 +220,7 @@ test('makes failed initial candidates retryable and retains the installed versio
   await expect(old.locator('#result')).toContainText('original-decision')
 
   for (const failure of failures) {
-    await page.evaluate(fault => window.installProbe.setFault(fault), 'fault' in failure ? failure.fault : 'none')
+    await setFault(page, 'fault' in failure ? failure.fault : undefined)
     expectError(await choosePackage(page, { ...failure.pack, version: samples.upgrade.version }, { id }), failure.code)
     expect(await list(page)).toEqual(initial)
     await expect(page.locator(mount)).toHaveCount(1)
