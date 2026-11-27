@@ -5,7 +5,7 @@
 ## 阶段 1 · 项目与验证原型
 
 - [X] T001 建立 TypeScript、Vite、Vitest、Playwright 工具链及 build/dev/test/test:baseline/test:e2e 命令，配置 `package.json`、`tsconfig.json`、`vite.config.ts` 和 `playwright.config.ts`。
-- [ ] T002 [P] 在 `tests/baseline/legacy-samples.test.ts` 及 `tests/baseline/fixtures.json` 按[旧版对照样本](contracts/legacy-samples.md)固定 LG-01–LG-09 的旧版 2D、3D 完整输入及逐步断言，记录旧版差异与页面来源。
+- [X] T002 [P] 在 `tests/baseline/legacy-samples.test.ts` 及 `tests/baseline/fixtures.json` 按[旧版对照样本](contracts/legacy-samples.md)固定 LG-01–LG-09 的旧版 2D、3D 完整输入及逐步断言，记录旧版差异与页面来源。
 - [ ] T003 [P] 在 `tests/acceptance/storage-device.md` 和 `src/deck-catalog/sqlite.worker.ts` 验证 iOS、Android、桌面安装后的 SQLite OPFS 写入、冷重启、独占接管和回滚，固定驱动版本、浏览器起始版本及设备结果。
 - [ ] T004 [P] 在 `tests/acceptance/frontend-device.md` 与 `src/clients/frontend-spike.ts` 验证官方 3D 大小、离线准备和渲染能力，以及实机本地文件选择、沙盒入口、消息端口和存储隔离，据采样固定包体上限。
 
