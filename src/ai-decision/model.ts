@@ -34,6 +34,9 @@ export interface ModelRunner<Observation, Action> {
   dispose?(): void
 }
 
+/** Host-owned boundary. Use the player protocol's parser to validate and reconstruct the public action. */
+export type ModelActionProjector<Action> = (result: unknown) => Action | undefined
+
 export interface ModelProvider<Observation, Action, Config = unknown> {
   readonly identity: ModelIdentity
   availability?(): Awaitable<true | string>
@@ -72,7 +75,11 @@ export interface ModelSeat<Observation, Action> {
 export class ModelService<Observation, Action, Config = unknown> {
   private readonly providers = new Map<string, ModelProvider<Observation, Action, Config>>()
 
-  constructor(providers: readonly ModelProvider<Observation, Action, Config>[]) {
+  constructor(
+    providers: readonly ModelProvider<Observation, Action, Config>[],
+    private readonly projectAction: ModelActionProjector<Action>,
+  ) {
+    if (typeof projectAction !== 'function') throw new TypeError('A model action projector is required')
     for (const provider of providers) {
       const { id } = provider.identity
       if (this.providers.has(id)) throw new Error(`Duplicate model ID: ${id}`)
@@ -104,7 +111,7 @@ export class ModelService<Observation, Action, Config = unknown> {
     try {
       const provider = this.providers.get(availability.model.id)!
       const runner = await provider.prepare({ seatId, config: structuredClone(config) })
-      return { ready: true, model: availability.model, seat: new PreparedModelSeat(seatId, runner) }
+      return { ready: true, model: availability.model, seat: new PreparedModelSeat(seatId, runner, this.projectAction) }
     } catch {
       return { ready: false, seatId, reason: 'model-preparation-failed' }
     }
@@ -120,7 +127,11 @@ class PreparedModelSeat<Observation, Action> implements ModelSeat<Observation, A
   private active?: PendingRequest<Action>
   private disposed = false
 
-  constructor(private readonly seatId: string, private readonly runner: ModelRunner<Observation, Action>) {}
+  constructor(
+    private readonly seatId: string,
+    private readonly runner: ModelRunner<Observation, Action>,
+    private readonly projectAction: ModelActionProjector<Action>,
+  ) {}
 
   request({ requestId, basis, observation }: ModelRequest<Observation>): ModelAcceptance<Action> {
     if (this.disposed) return { accepted: false, reason: 'closed' }
@@ -166,8 +177,13 @@ class PreparedModelSeat<Observation, Action> implements ModelSeat<Observation, A
     if (this.active !== active) return
 
     try {
-      const result = await this.runner.generate(request, active.controller.signal)
+      const generated = await this.runner.generate(request, active.controller.signal)
       if (this.active !== active) return
+      const result = this.projectAction(generated)
+      if (result === undefined) {
+        this.finish(active, { status: 'generation-failed' })
+        return
+      }
       this.finish(active, { status: 'generated', job: { requestId: request.requestId, basis, result: structuredClone(result) } })
     } catch {
       this.finish(active, { status: 'generation-failed' })
