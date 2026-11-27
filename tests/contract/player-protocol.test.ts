@@ -346,6 +346,33 @@ describe('player protocol at the client boundary', () => {
     }
   })
 
+  it('rejects rebinding a plain trusted transport without closing its original connection', async () => {
+    const { player } = fixture()
+    const anotherSession = fixture({ session: 'match-2' }).player
+    const received: WireMessage[] = []
+    let closes = 0
+    const port = {
+      send(message: unknown) { received.push(structuredClone(message) as WireMessage) },
+      close() { closes++ },
+    }
+    const original = player.connect('alice', port)
+    await original.receive({ type: 'hello', versions: originalVersion })
+    expect(player.authorize(original, alice)).toBe(true)
+    try {
+      expect(() => player.connect('other-frontend', port)).toThrow()
+      expect(() => anotherSession.connect('other-match-frontend', port)).toThrow()
+      expect(closes).toBe(0)
+      await original.receive({ type: 'request', interaction: 'M03', requestId: 'view', sessionId })
+      expect(received.at(-1)).toMatchObject({
+        type: 'response', requestId: 'view',
+        result: { status: 'ok', view: { scope: alice, snapshot: { turn: 1, hand: ['private-A'] } } },
+      })
+    } finally {
+      original.close()
+    }
+    expect(closes).toBe(1)
+  })
+
   it('does not consult stored receipts for an unauthorised session or seat', async () => {
     const harness = fixture()
     const client = clientFor(harness.player, 'alice')
