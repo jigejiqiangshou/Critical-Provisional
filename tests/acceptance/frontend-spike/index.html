@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1b2433">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <title>临界 3D 离线验证</title>
+  <style>
+    body { max-width: 48rem; margin: 1rem auto; padding: 0 1rem; font: 1rem/1.5 system-ui, sans-serif; }
+    button, input { margin: .3rem 0; }
+    output { display: block; }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; border: 1px solid #bbb; padding: .6rem; }
+    iframe { width: 100%; height: 21rem; border: 1px solid #bbb; }
+  </style>
+</head>
+<body>
+  <h1>临界 3D 离线验证</h1>
+  <output id="host-status" aria-live="polite">正在准备宿主</output>
+  <p><button id="prepare" type="button" disabled>准备并打开官方 3D 样本</button></p>
+  <p><a href="./third-party.critical-ui" download>下载第三方样本到本机</a></p>
+  <p><label for="import">选择本机第三方前端文件</label><br>
+    <input id="import" type="file" disabled></p>
+  <p>
+    <button id="open-official" type="button" disabled>打开已保存的 3D 样本</button>
+    <button id="open-local" type="button" disabled>打开已保存的第三方样本</button>
+    <button id="ping" type="button" disabled>验证专用端口</button>
+    <button id="close-frame" type="button" disabled>关闭样本</button>
+  </p>
+  <p><output id="package-status" aria-live="polite"></output></p>
+  <div id="viewport"></div>
+  <pre id="evidence" aria-label="验证记录"></pre>
+  <script type="module" src="../../../src/clients/frontend-spike.ts"></script>
+</body>
+</html>
