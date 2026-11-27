@@ -6,7 +6,7 @@
 
 验证入口需要安全上下文、WebAssembly、专用 Worker 中的 Web Locks 和 OPFS 同步访问句柄，以及安装和离线启动所需的 Service Worker 与 Cache Storage。桌面 Chromium `156.0.8078.79` 是本原型最早已通过的版本。Android 的 Chrome 版本由 T048 实测记录。驱动的持久化路线与兼容 VFS 候选见 [SQLite WASM 持久化文档](https://sqlite.org/wasm/doc/trunk/persistence.md)。
 
-原工作区提交 `8aeca9a39b601bff38fb615f4979b7fc7411d485` 的源文件、图标与验证文档已依据完整会话记录恢复至 `ae2ad05fef04f0e80d6be70e8c39228d96512ad0`。恢复时核对原提交的文件统计、PNG 字节数及原构建中的 Worker、WASM 和入口模块文件名与大小。
+已依据原工作区的会话记录恢复源文件、图标与验证文档，核对了文件统计、PNG 字节数及原构建中的 Worker、WASM 和入口模块文件名与大小。原提交 `8aeca9a39b601bff38fb615f4979b7fc7411d485` 的对象已按原哈希复原并纳入 Git 历史。
 
 ## 复验
 
@@ -28,6 +28,12 @@ npm exec -- vite preview --config tests/acceptance/storage-spike/vite.config.ts 
 
 使用 Playwright 驱动 Chromium 复验时，在持久配置文件用浏览器级 CDP 的 `PWA.install` 安装。以 `PWA.changeAppUserSettings` 选择 `displayMode: 'standalone'`，再用 `PWA.launch` 打开。检查页面 `#display-mode[data-mode=standalone]`。冷启动前结束浏览器，保留同一配置文件，停止预览服务并离线启动新浏览器进程。页面 `#database-status` 和 `#records` 的 `data-status`、`data-count` 可读取结果。
 
+### 已安装窗口的配额错误
+
+1. 使用单独的空 Chromium 配置文件。打开预览来源，等待 `#offline-status[data-status=ready]` 和 `#database-status[data-status=ready]`，完成 PWA 安装并关闭持有 SQLite 的标签页。在同一浏览器上下文保留一个控制标签页供 CDP 使用。
+2. 在该标签页的 CDP 会话中对预览来源调用 `Storage.clearDataForOrigin`，将 `storageTypes` 指定为 `file_systems`，保留 Service Worker 缓存。调用 `Storage.overrideQuotaForOrigin` 将同一来源的 `quotaSize` 设为 1024，再用 `Storage.getUsageAndQuota` 确认配额和 OPFS 无占用。
+3. 用 `PWA.launch` 从安装入口打开，确认 `#display-mode[data-mode=standalone]` 和 `#offline-status[data-status=ready]`。等待 `#database-status[data-status=error]`，确认文字报告配额超限，`#write`、`#rollback` 和 `#interrupt` 均禁用。
+
 ## 设备结果
 
 | 环境 | 安装与离线冷启动 | 独占与回滚 | 持久存储 |
@@ -38,5 +44,7 @@ npm exec -- vite preview --config tests/acceptance/storage-spike/vite.config.ts 
 原工作区在云端 Chromium 的单独空配置中，通过 CDP `Storage.overrideQuotaForOrigin` 将原型来源配额限制为 1024 字节。页面显示存储配额超限和离线资源准备失败，写入操作保持禁用。复验时在首次访问之前设置配额，检查 `#database-status` 和 `#offline-status` 的 `data-status` 均为 `error`，并检查三个写入按钮禁用。
 
 恢复后使用 Chromium `156.0.8078.79` 重新执行开发自查。安装窗口先报告占用，关闭持有者后接管并提交一条记录，约束回滚后计数仍为 1。中断事务内显示 2 条记录。关闭 Chromium 和预览服务，确认源站访问失败，再从同一配置文件的安装入口离线打开，读回 1 条记录。在单独空配置中复现了 1024 字节配额下的两项错误及三个写入按钮禁用。
+
+独立 Tester 在 Debian 13、Chromium `156.0.8078.79`、Node `24.22.3` 上复验提交 `88e35f30b246290e7abd1275b3d2740e620f239f`。原标签页提交 1 条后，安装窗口两次尝试均报告占用。关闭持有者后接管并读到 1 条，提交后计数为 2，触发约束回滚后仍为 2。未提交事务内计数为 3 时，以 `SIGKILL` 结束测试 Chromium 进程组。停止静态服务后，从同一浏览器配置文件的安装入口离线冷启动，读回 2 条并可离线提交至 3 条。另用单独已安装的配置文件复验配额负例。保留离线缓存、清空 OPFS 并应用 1024 字节配额后，安装窗口仍显示离线就绪，SQLite 报配额超限，三个写入按钮均禁用。
 
 T006 使用桌面 OPFS 与独占接管验证结论。T048 按发布前的 [Android 验收指南](../../specs/001-offline-game-refactor/quickstart.md) 记录实际设备、系统、浏览器、驱动和构建版本。
