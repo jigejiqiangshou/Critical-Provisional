@@ -213,6 +213,7 @@ function lockedResources<State, Action, Continuation, Event>(
     rules: Object.freeze({
       version: rules.version,
       artifact: copyJson(rules.artifact),
+      canInterrupt: rules.canInterrupt,
       resolveAction: rules.resolveAction,
       resumeDecision: rules.resumeDecision,
     }),
@@ -242,10 +243,12 @@ export class MatchCore<State, Action, Continuation, Event> {
   static async create<State, Action, Continuation, Event>(setup: {
     readonly rules: Ruleset<State, Action, Continuation, Event>
     readonly snapshot: CardPoolSnapshot
-    readonly state: State
     readonly activeSeat: SeatId
     readonly random: RandomState
-  }): Promise<MatchCore<State, Action, Continuation, Event>> {
+  } & (
+    | { readonly state: State }
+    | { readonly initialize: (random: () => number, snapshot: CardPoolSnapshot) => State }
+  )): Promise<MatchCore<State, Action, Continuation, Event>> {
     const { rules, snapshot } = lockedResources(setup.rules, setup.snapshot)
     if (!validId(rules.version) || !validId(snapshot.id) || snapshot.rulesVersion !== rules.version) {
       throw new TypeError('Match requires matching rule and card pool versions')
@@ -253,7 +256,9 @@ export class MatchCore<State, Action, Continuation, Event> {
     if (!validId(setup.activeSeat) || !validRandom(setup.random) || setup.random.consumed !== 0) {
       throw new TypeError('Match requires an initial seat and unused random input')
     }
-    const initial = copyJson({ state: setup.state, activeSeat: setup.activeSeat, random: setup.random })
+    const random = randomInput(setup.random)
+    const state = 'initialize' in setup ? setup.initialize(random.next, snapshot) : setup.state
+    const initial = copyJson({ state, activeSeat: setup.activeSeat, random: random.state() })
     const versionHash = await computeVersionHash(rules, snapshot)
     const match: Match<State, Continuation> = Object.freeze({
       revision: 0,
@@ -297,6 +302,11 @@ export class MatchCore<State, Action, Continuation, Event> {
     return new MatchCore(rules, snapshot, match as unknown as Match<State, Continuation>)
   }
 
+  /** The trusted adapter uses the locked card faces to build authorized views. */
+  readSnapshot(): CardPoolSnapshot {
+    return this.#snapshot
+  }
+
   read(): Match<State, Continuation> {
     return this.#current
   }
@@ -315,8 +325,10 @@ export class MatchCore<State, Action, Continuation, Event> {
     let resolution: RuleResolution<State, Continuation, Event>
     try {
       if (command.kind === 'action') {
-        if (progress.kind === 'waiting') return { kind: 'rejected', reason: 'decision-pending' }
-        if (command.seat !== progress.activeSeat) return { kind: 'rejected', reason: 'wrong-seat' }
+        if (!this.#rules.canInterrupt?.(command.action)) {
+          if (progress.kind === 'waiting') return { kind: 'rejected', reason: 'decision-pending' }
+          if (command.seat !== progress.activeSeat) return { kind: 'rejected', reason: 'wrong-seat' }
+        }
         resolution = this.#rules.resolveAction({ ...context, action: command.action })
       } else {
         if (progress.kind !== 'waiting' || command.seat !== progress.decision.owner) {
