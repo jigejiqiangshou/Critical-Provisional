@@ -22,15 +22,35 @@
 
 ## 阶段 2 · 公共基础
 
-T005–T009 从阶段 1 验收基线并行开发，经独立审查、独立测试和集成复验后合入 `work`。集成提交 `3f2b899` 通过干净安装、生产构建、98 项 Vitest、2 项 Chromium 端到端和云 WebGL 预检。完成状态见 [任务清单](tasks.md)。
+T005–T009 从阶段 1 验收基线并行开发，经独立审查、独立测试和集成复验后合入 `work`。集成提交 `3f2b899` 通过干净安装、生产构建、98 项 Vitest、2 项 Chromium 端到端和云 WebGL 预检。验收状态记录在 `b2ea2d9`。截至本次交接，49 项中有 10 项完成，即 T001–T009 与 T035。 [任务清单](tasks.md)
 
 | 任务 | 本轮工作 | 当前进度 |
 |---|---|---|
-| T005 | 主体版本缓存、受控前端包入口及离线就绪判定 | 已验收。Chromium 验证更新包缺失或损坏时保留现有版本，完整更新后可从已安装入口离线冷启并运行原兼容包。 |
-| T006 | SQLite OPFS 独占存储、指定发行版的只读目录及 M05 统一牌表校验 | 已验收。实测 SQLite 独占接管、事务失败回滚、重复发行拒绝及重启读回，T003 原型输出与阶段 1 一致。 |
-| T007 | 玩家协议、版本协商、会话命令队列、授权与可见事件 | 已验收。16 项协议测试覆盖单端升级、握手拒绝、回执去重、授权投影和终局关闭。 |
-| T008 | 无界面对局核心、确定性随机输入、暂停与恢复 | 已验收。7 项核心测试覆盖内容哈希、同修订竞争、确认前状态、暂停恢复和随机重放。 |
-| T009 | AI 模型契约、席位适配与过期结果判定 | 已验收。8 项模型测试覆盖请求关联、过期结果丢弃、终局取消和输出投影。另通过正式玩家接口联验原席位的 M02。 |
+| T005 | 主体版本缓存、受控前端包入口及离线就绪判定 | 已验收，`02268b4`。Chromium 验证更新包缺失或损坏时保留现有版本，完整更新后可从已安装入口离线冷启并运行原兼容包。[独立测试](../../tests/acceptance/offline-shell.spec.ts) |
+| T006 | SQLite OPFS 独占存储、指定发行版的只读目录及 M05 统一牌表校验 | 已验收，`fc16fb3`。在 `a511a3c` 实测独占接管、事务失败回滚、重复发行拒绝及重启读回，T003 的 10 个构建文件与阶段 1 逐字节一致。 |
+| T007 | 玩家协议、版本协商、会话命令队列、授权与可见事件 | 已验收，`ad2cc0b`。16 项协议测试覆盖单端升级、握手拒绝、端口重复绑定、回执去重、授权投影和终局关闭。[独立测试](../../tests/contract/player-protocol.test.ts) |
+| T008 | 无界面对局核心、确定性随机输入、暂停与恢复 | 已验收，`8f6fefa`。7 项核心测试覆盖内容哈希、同修订竞争、确认前状态、暂停恢复和随机重放。[独立测试](../../tests/contract/match-core.test.ts) |
+| T009 | AI 模型契约、席位适配与过期结果判定 | 已验收，`eb43291`。8 项模型测试覆盖请求关联、过期结果丢弃、终局取消和输出投影。另通过正式协议解析器和玩家接口联验原 AI 席位的 M02。[独立测试](../../tests/contract/ai-model.test.ts) |
+
+## 会话续接 · T032
+
+T032 的 Developer、Reviewer、Tester 已分派，三名 Agent 均在产出候选前中断。Developer 建立了 `task/t032-recovery-store` 并核对了对局核心、玩家接口和现有 SQLite Worker。该分支停在 `b2ea2d9`，与当时的 `work` 相同，工作树干净。Tester 尚未写入测试，Reviewer 尚未出具报告。
+
+T005–T009 的实现和独立测试分支均可从 `work` 追溯。当前会话没有需另行发布的任务提交。唯一不在 `work` 历史中的本地分支 `archive/work-8702d40` 是启动时保留的主分支快照，对应 `origin/main` 的 `8702d40`，与本次实施无关。
+
+> /speckit-implement 从最新 `origin/work` 继续。先读本实施记录、任务清单、计划、数据模型和验收指南。T001–T009 与 T035 已验收。T032 从最新 `work` 建独立开发分支和工作树，由三名不同的 Agent 分别实现、审查、测试。Lead 负责调度、集成和标记任务。T032 通过后依次按 `tasks.md` 解锁 T015、T042、T045、T041。保留 FR-018 的首次业务闭环汇报及 T048/T049 的本地 Android 最终验收。
+
+T032 接入 [玩家接口](../../src/match/player-interface.ts)的 `PlayerCommandStore` 和[对局核心](../../src/match/core.ts)的持久化状态。独立测试应从正式存储入口验证真实 SQLite OPFS 的排他写入、会话初始化、确认失败保留旧状态、快照与回执同事务提交、拒绝摘要的确认点范围、重启后读取回执和已确认终局结果。首个满足 FR-018 条件的正常业务路径取得证据后，按[验收指南](quickstart.md#证据首次通过与交接)即时汇报。
+
+在仓库根目录复验已合入基线。当前预期为 98 项 Vitest、2 项 Chromium 端到端及 WebGL 预检通过。
+
+```sh
+SPECIFY_FEATURE_DIRECTORY=specs/001-offline-game-refactor SPECIFY_FEATURE_NO_PERSIST=1 .specify/scripts/bash/check-prerequisites.sh --json --require-spec --require-tasks --include-tasks
+npm_config_cache=/tmp/critical-npm-cache npm ci
+npm run test
+PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:e2e -- tests/acceptance/offline-shell.spec.ts --workers=1
+PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run preflight:cloud
+```
 
 ## 待验收与后续依赖
 
