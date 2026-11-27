@@ -3,6 +3,7 @@ import sqlite3InitModule from '@sqlite.org/sqlite-wasm'
 import type { OpfsSAHPoolDatabase, SqlValue } from '@sqlite.org/sqlite-wasm'
 import { MatchRecoveryError, stableJson } from './core'
 import type { CommandConfirmation, ConfirmedMatch } from './player-interface'
+import { parsePlayerAction } from './player-protocol'
 import type { CommandReceiptKey, CommandRequestSummary, JsonValue, PlayerAction, SessionId } from './player-protocol'
 import { RecoveryStorageError } from './recovery-errors'
 import type {
@@ -120,10 +121,13 @@ function readPoint(row: Row, versionHash: SqlValue): RecoveryPoint<unknown, unkn
   const confirmed = decode(row.snapshot)
   if (!validSnapshot(confirmed) || confirmed.revision !== row.revision || !revision(row.summary_through)) return incomplete()
   checkHash(confirmed.versionHash, versionHash)
+  const storedAction = row.action === null ? undefined : decode(row.action)
+  const action = parsePlayerAction(storedAction)
+  if (confirmed.revision === 0 ? storedAction !== undefined : !action) return incomplete()
   return {
     confirmed,
     summaryThrough: row.summary_through,
-    ...(row.action === null ? {} : { action: decode(row.action) as PlayerAction }),
+    ...(action === undefined ? {} : { action }),
     ...(row.history === null ? {} : { history: decode(row.history) }),
   }
 }
@@ -286,11 +290,11 @@ function recordRejection(db: OpfsSAHPoolDatabase, summary: CommandRequestSummary
 }
 
 function confirm(db: OpfsSAHPoolDatabase, confirmation: CommandConfirmation<unknown>) {
-  const { previous, next, action, receipt, history } = confirmation
+  const { previous, next, receipt, history } = confirmation
+  const action = parsePlayerAction(confirmation.action)
   const { sessionId, seatId, commandId } = receipt.key
   if (!validSnapshot(previous) || previous.terminal || !validSnapshot(next) ||
-    next.revision !== previous.revision + 1 || receipt.expectedRevision !== previous.revision ||
-    typeof action !== 'object' || action === null) {
+    next.revision !== previous.revision + 1 || receipt.expectedRevision !== previous.revision || !action) {
     throw new RecoveryStorageError('storage-failed', 'Invalid match confirmation')
   }
   db.transaction('IMMEDIATE', tx => {
