@@ -9,6 +9,7 @@ import type {
 type Awaitable<T> = T | Promise<T>
 
 const boundMessagePorts = new WeakSet<MessagePort>()
+const boundProtocolPorts = new WeakSet<PlayerProtocolPort>()
 
 export interface PlayerProtocolPort {
   send(message: ServerMessage): void
@@ -150,6 +151,8 @@ export class PlayerInterface<State, History = unknown> {
 
   // The host binds a specific transport to a running frontend instance.
   connect(instanceId: string, port: PlayerProtocolPort): FrontendConnection {
+    if (boundProtocolPorts.has(port)) throw new Error('Player protocol port is already bound')
+    boundProtocolPorts.add(port)
     const state: ConnectionState = { instanceId, port, revisions: new Map(), sequence: 0 }
     const connection: FrontendConnection = {
       get capability() { return state.capability && structuredClone(state.capability) },
