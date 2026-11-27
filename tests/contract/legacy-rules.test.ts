@@ -31,7 +31,7 @@ type LegacyState = {
   pending: { owner: Seat; candidates?: readonly LegacyCard[] } | null
 }
 type LegacyAction = {
-  randomValues?: readonly number[]; shuffleDrawOrders?: readonly (readonly string[])[]
+  name: string; randomValues?: readonly number[]; shuffleDrawOrders?: readonly (readonly string[])[]
 }
 
 const sessionId = 'formal-rules-legacy-comparison'
@@ -457,10 +457,16 @@ describe.each(editions)('migration rules against legacy %s', edition => {
     expect(paused.state.seats.A.hp).toBe(50)
     expect(paused.state.seats.B.ap).toBe(1)
     expect(paused.state.seats.B.board[0].attacked).toBe(false)
-    expect(JSON.stringify((await clients.A.view()).snapshot)).toContain(trap)
+    const responder = (await clients.A.view()).snapshot
+    expect(responder).toMatchObject({ waiting: true, decision: { id: decision.id, owner: 'A' } })
+    expect(JSON.stringify(responder)).toContain(trap)
     for (const client of [clients.B, clients.observer]) {
-      expect(JSON.stringify((await client.view()).snapshot)).not.toContain(trap)
+      const view = (await client.view()).snapshot
+      expect(view).toMatchObject({ waiting: true, decision: null })
+      expect(JSON.stringify(view)).not.toContain(trap)
+      expect(client.events()).toContainEqual({ type: 'decision', payload: { stage: 'waiting' } })
       expect(JSON.stringify(client.events())).not.toContain(trap)
+      expect(JSON.stringify(client.events())).not.toContain(decision.id)
     }
     if (variant === 'invalid') {
       await rejectedWithoutChange(core, clients, 'A', 'invalid-response', select(decision.id, 'out-of-range'))
@@ -475,6 +481,9 @@ describe.each(editions)('migration rules against legacy %s', edition => {
       compare(core, observed(record, edition))
     }
     expect(core.read().random.consumed).toBe(0)
+    for (const client of [clients.A, clients.B, clients.observer]) {
+      expect((await client.view()).snapshot).toMatchObject({ waiting: false, decision: null })
+    }
   })
 
   it.each(['threshold', 'below-threshold'])('LG-07 starts the next turn after evaluating %s', async variant => {
@@ -599,4 +608,39 @@ describe('D04 locked rules capabilities', () => {
     expect(Object.isFrozen(capabilities.effects)).toBe(true)
     expect(capabilities.effects).not.toContain('unsupported-fixture-effect')
   })
+})
+
+it('LG-08 does not expose the sampled discard order to either seat or observers', async () => {
+  const edition = '2d'
+  const record = sample('LG-08', 'playable')
+  const source = initial(record, edition)
+  const original = names(source.seats.A.ice)
+  const alternate = [...original.slice(0, 2), original[3], original[2]]
+  const first = await playSample(input(record, 0).randomValues ?? [])
+  const second = await playSample(shuffleInputs(original, alternate))
+  expect(first.internalDiscard).not.toEqual(second.internalDiscard)
+  expect(first.publicOutputs).toEqual(second.publicOutputs)
+
+  async function playSample(samples: readonly number[]) {
+    const core = await coreFor(record, edition, samples)
+    const clients = await peers(core)
+    expectAccepted(await clients.A.submit('spring', {
+      type: 'activate-skill', sourceId: component(source.seats.A.board, '探珠'), skillId: 'pearl',
+    }))
+    const decision = waiting(core)
+    expectAccepted(await clients.A.submit('play-from-spring',
+      select(decision.id, component(source.seats.A.ice, '火鸦'))))
+    const publicOutputs = await Promise.all([clients.A, clients.B, clients.observer].map(async client => {
+      const view = (await client.view()).snapshot as { players: readonly { seat: Seat; discard: JsonValue }[] }
+      const publicDiscard = view.players.find(player => player.seat === 'A')?.discard
+      const events = client.events().filter(event =>
+        event.type === 'action' && event.payload && typeof event.payload === 'object' &&
+        'name' in event.payload && event.payload.name === 'ice-discarded')
+      expect(events).toHaveLength(2)
+      expect(publicDiscard).toHaveLength(2)
+      return { events, publicDiscard }
+    }))
+    for (const output of publicOutputs) expect(output).toEqual(publicOutputs[0])
+    return { publicOutputs, internalDiscard: core.read().state.seats.A.discard.map(({ id }) => id) }
+  }
 })
