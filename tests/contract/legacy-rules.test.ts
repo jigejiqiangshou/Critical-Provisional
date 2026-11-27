@@ -31,7 +31,7 @@ type LegacyState = {
   pending: { owner: Seat; candidates?: readonly LegacyCard[] } | null
 }
 type LegacyAction = {
-  name: string; randomValues?: readonly number[]; shuffleDrawOrders?: readonly (readonly string[])[]
+  randomValues?: readonly number[]; shuffleDrawOrders?: readonly (readonly string[])[]
 }
 
 const sessionId = 'formal-rules-legacy-comparison'
@@ -259,7 +259,7 @@ async function peers(core: OfficialCore, persistence = commandStore<MatchSnapsho
   }
 }
 
-function compare(core: OfficialCore, reference: LegacyState, omit: readonly Seat[] = []) {
+function compare(core: OfficialCore, reference: LegacyState) {
   const current = core.read()
   const state = current.state
   expect(state.turn).toBe(reference.turn)
@@ -272,7 +272,7 @@ function compare(core: OfficialCore, reference: LegacyState, omit: readonly Seat
   if (!reference.pending && reference.activeSeat && !reference.winner) {
     expect(current.progress).toMatchObject({ kind: 'active', activeSeat: reference.activeSeat })
   }
-  for (const seat of seats.filter(candidate => !omit.includes(candidate))) {
+  for (const seat of seats) {
     const actual = state.seats[seat]
     const expected = reference.seats[seat]
     expect({ hp: actual.hp, ap: actual.ap }).toEqual({ hp: expected.hp, ap: expected.ap })
@@ -361,6 +361,14 @@ describe.each(editions)('migration rules against legacy %s', edition => {
       expectAccepted(await clients.A.submit('damage-then-draw', play))
       const history = clients.persistence.history
       expect(history).toHaveLength(1)
+      expect(history[0].history).toMatchObject({
+        events: [{ name: 'unit-damaged' }, { name: 'unit-destroyed' }, { name: 'draw' }],
+      })
+      const drawnInstanceId = core.read().state.seats.A.hand[0].id
+      expect(JSON.stringify(clients.A.events())).toContain(drawnInstanceId)
+      for (const client of [clients.B, clients.observer]) {
+        expect(JSON.stringify(client.events())).not.toContain(drawnInstanceId)
+      }
     }
     compare(core, observed(record, edition))
     expect(core.read().random.consumed).toBe(0)
@@ -488,6 +496,14 @@ describe.each(editions)('migration rules against legacy %s', edition => {
     if (!below) {
       expect(core.read().state.seats.A.hand).toHaveLength(6)
       expect(core.read().state.seats.B.hand).toHaveLength(8)
+      const timeline = clients.persistence.history[0].history
+      expect(timeline).toMatchObject({
+        events: [
+          { name: 'hand-limit-discard' }, { name: 'finale-started' },
+          ...Array.from({ length: 13 }, () => ({ name: 'draw' })),
+          { name: 'turn-started' }, { name: 'draw' },
+        ],
+      })
       const battling = core.read()
       expectAccepted(await clients.B.submit('finale-strike', {
         type: 'attack', attackerId: component(source.seats.B.board, '火鸦'), targetId: coreTargetId('A'),
@@ -550,7 +566,7 @@ describe.each(editions)('migration rules against legacy %s', edition => {
     compare(core, observed(record, edition))
     const [confirmation] = clients.persistence.history
     expect(confirmation).toMatchObject({
-      action: { type: 'concede' }, next: { terminal: true, outcome: { winner: 'B', reason: expect.any(String) } },
+      action: { type: 'concede' }, next: { terminal: true, outcome: { winner: 'B', reason: 'conceded' } },
     })
     expect(core.read().random.consumed).toBe(0)
     expect(clients.persistence.history).toHaveLength(1)
@@ -558,5 +574,23 @@ describe.each(editions)('migration rules against legacy %s', edition => {
       expect(client.connection.capability).toBeUndefined()
       expect(client.events()).toContainEqual(expect.objectContaining({ type: 'terminal' }))
     }
+  })
+})
+
+describe('D04 locked rules capabilities', () => {
+  it('returns a version-specific, read-only list of implemented triggers and effects', () => {
+    expect(getRuleCapabilities('unsupported-fixture-version')).toBeUndefined()
+    const capabilities = getRuleCapabilities(OFFICIAL_RULES_VERSION)
+    expect(capabilities).toMatchObject({
+      triggers: expect.arrayContaining(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit']),
+      effects: expect.arrayContaining([
+        'damage-unit', 'draw', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
+      ]),
+    })
+    if (!capabilities) throw new Error('Current rules version has no D04 capabilities')
+    expect(Object.isFrozen(capabilities)).toBe(true)
+    expect(Object.isFrozen(capabilities.triggers)).toBe(true)
+    expect(Object.isFrozen(capabilities.effects)).toBe(true)
+    expect(capabilities.effects).not.toContain('unsupported-fixture-effect')
   })
 })
