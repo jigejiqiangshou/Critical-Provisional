@@ -3,7 +3,7 @@ import fixtures from '../baseline/fixtures.json'
 import { MatchCore } from '../../src/match/core'
 import type { Card, JsonObject, Release } from '../../src/deck-catalog/catalog'
 import { createOfficialPlayerCore, PlayerInterface, toConfirmedMatch } from '../../src/match/player-interface'
-import type { CommandConfirmation, PlayerCommandStore } from '../../src/match/player-interface'
+import type { CommandConfirmation, OfficialHistory, PlayerCommandStore } from '../../src/match/player-interface'
 import { PLAYER_PROTOCOL_V1 } from '../../src/match/player-protocol'
 import type { CommandReceipt, CommandRequestSummary, PlayerAction, ServerMessage, ViewScope } from '../../src/match/player-protocol'
 import {
@@ -244,8 +244,6 @@ async function coreFor(scenario: LegacyCase, edition: Edition, inputs: readonly 
 
 type OfficialCore = Awaited<ReturnType<typeof coreFor>>
 type MatchSnapshot = ReturnType<OfficialCore['read']>
-type OfficialHistory = NonNullable<Awaited<ReturnType<ReturnType<typeof createOfficialPlayerCore>['adjudicate']>> extends infer Result
-  ? Extract<Result, { status: 'accepted' }> extends { history?: infer History } ? History : never : never>
 
 async function peers(core: OfficialCore, persistence = commandStore<MatchSnapshot, OfficialHistory>()) {
   const player = new PlayerInterface({
@@ -317,7 +315,7 @@ describe.each(editions)('migration rules against legacy %s', edition => {
     const oldHand = names(open.seats.A.hand)
     const oldDeck = names(open.seats.A.deck)
     const matchInputs = [...sameDrawOrder(order[0]), ...sameDrawOrder(order[1])]
-    if (replacement) matchInputs.push(...shuffleInputs([...oldDeck, ...oldHand], replacement))
+    if (replacement) matchInputs.push(...shuffleInputs([...oldHand, ...oldDeck], replacement))
     const core = await createOfficialMatch({
       snapshot: createOfficialSnapshot(release(edition)),
       seats: [{ seatId: 'A', deck: order[0].map(cardId) }, { seatId: 'B', deck: order[1].map(cardId) }],
@@ -361,9 +359,10 @@ describe.each(editions)('migration rules against legacy %s', edition => {
       expectAccepted(await clients.A.submit('damage-then-draw', play))
       const history = clients.persistence.history
       expect(history).toHaveLength(1)
-      expect(history[0].history).toMatchObject({
-        events: [{ name: 'unit-damaged' }, { name: 'unit-destroyed' }, { name: 'draw' }],
-      })
+      const result = history[0].history?.events
+        .flatMap(event => event.type === 'rule-event' ? [event.name] : [])
+        .filter(name => ['unit-damaged', 'unit-destroyed', 'draw'].includes(name))
+      expect(result).toEqual(['unit-damaged', 'unit-destroyed', 'draw'])
       const drawnInstanceId = core.read().state.seats.A.hand[0].id
       expect(JSON.stringify(clients.A.events())).toContain(drawnInstanceId)
       for (const client of [clients.B, clients.observer]) {
@@ -500,10 +499,17 @@ describe.each(editions)('migration rules against legacy %s', edition => {
       expect(timeline).toMatchObject({
         events: [
           { name: 'hand-limit-discard' }, { name: 'finale-started' },
-          ...Array.from({ length: 13 }, () => ({ name: 'draw' })),
-          { name: 'turn-started' }, { name: 'draw' },
+          { name: 'draw', data: { seat: 'A', cardIds: expect.any(Array) } },
+          { name: 'draw', data: { seat: 'B', cardIds: expect.any(Array) } },
+          { name: 'turn-started' }, { name: 'draw', data: { seat: 'B', cardIds: expect.any(Array) } },
         ],
       })
+      const batchSizes = timeline?.events.flatMap(event => {
+        if (event.type !== 'rule-event' || event.name !== 'draw') return []
+        const data = event.data as { cardIds: readonly string[] }
+        return [data.cardIds.length]
+      })
+      expect(batchSizes).toEqual([6, 7, 1])
       const battling = core.read()
       expectAccepted(await clients.B.submit('finale-strike', {
         type: 'attack', attackerId: component(source.seats.B.board, '火鸦'), targetId: coreTargetId('A'),
