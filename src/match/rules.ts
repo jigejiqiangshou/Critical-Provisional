@@ -76,9 +76,19 @@ export interface RuleContext<State> {
 export interface Ruleset<State, Action, Continuation, Event> {
   readonly version: string
   readonly artifact: JsonValue
+  /** A rule-declared interruption can run while another seat has priority. */
+  canInterrupt?(action: Action): boolean
   resolveAction(context: RuleContext<State> & { readonly action: Action }): RuleResolution<State, Continuation, Event>
   resumeDecision(context: RuleContext<State> & {
     readonly decision: PendingDecision<Continuation>
     readonly answer: DecisionAnswer
   }): RuleResolution<State, Continuation, Event>
 }
+
+export { createOfficialMatch, getRuleCapabilities, officialRules } from './official-rules'
+export type { OfficialCore, OfficialRuleEvent } from './official-rules'
+export { coreTargetId, createOfficialSeatState, createOfficialSnapshot, OFFICIAL_RULES_VERSION } from './official-state'
+export type {
+  OfficialCardData, OfficialCardInstance, OfficialEffect, OfficialMatchState, OfficialSeatSetup, OfficialSeatState,
+  OfficialTrigger, OfficialUnit,
+} from './official-state'
