@@ -1,7 +1,7 @@
 # 阶段实施记录 · 《临界》离线工程化重构
 
-**记录日期** — 2026-11-27
-**范围** — 阶段 1 验收、阶段 2 实施进度与跨阶段 T035
+**记录日期** — 2026-11-28
+**范围** — 已验收任务、T042 中断回收与后续实施交接
 **依据** — [规格](spec.md)、[计划](plan.md)、[任务清单](tasks.md)、[验收指南](quickstart.md)
 
 ## 目标平台
@@ -32,29 +32,47 @@ T005–T009 从阶段 1 验收基线并行开发，经独立审查、独立测�
 | T008 | 无界面对局核心、确定性随机输入、暂停与恢复 | 已验收，`8f6fefa`。7 项核心测试覆盖内容哈希、同修订竞争、确认前状态、暂停恢复和随机重放。[独立测试](../../tests/contract/match-core.test.ts) |
 | T009 | AI 模型契约、席位适配与过期结果判定 | 已验收，`eb43291`。8 项模型测试覆盖请求关联、过期结果丢弃、终局取消和输出投影。另通过正式协议解析器和玩家接口联验原 AI 席位的 M02。[独立测试](../../tests/contract/ai-model.test.ts) |
 
-## 会话续接 · T032
+## 本次会话验收
 
-T032 的 Developer、Reviewer、Tester 已分派，三名 Agent 均在产出候选前中断。Developer 建立了 `task/t032-recovery-store` 并核对了对局核心、玩家接口和现有 SQLite Worker。该分支停在 `b2ea2d9`，与当时的 `work` 相同，工作树干净。Tester 尚未写入测试，Reviewer 尚未出具报告。
+`tasks.md` 共 49 项，15 项已验收并标记 `[X]`，34 项待完成。已验收项为 T001–T009、T015、T017–T019、T032 和 T035。独立 Developer、Reviewer、Tester 的实现、审查和测试通过后，由 Lead 合并和更新勾选。阶段 2 尚待 T042、T045、T041。US6 已通过安装链路，正式前端及终版设备联验仍待进行。
 
-T005–T009 的实现和独立测试分支均可从 `work` 追溯。当前会话没有需另行发布的任务提交。唯一不在 `work` 历史中的本地分支 `archive/work-8702d40` 是启动时保留的主分支快照，对应 `origin/main` 的 `8702d40`，与本次实施无关。
+| 任务 | 集成与证据 |
+|---|---|
+| T032 | `64834f9` 集成，`b593534` 标记。4 项真实 Chromium SQLite OPFS 测试覆盖独占写入、冷重启、配额耗尽、确认点缺回执与损坏历史动作。[独立测试](../../tests/acceptance/recovery-store.spec.ts) |
+| T015 | `8cc20f8` 集成，`e4fdd97` 标记。17 项独立测试覆盖选择、放弃、响应恢复、去重和公开投影。修复并复验了公开投影泄露随机采样顺序的问题。[结构记录](effect-structure.md) · [独立测试](../../tests/contract/effects.test.ts) |
+| T017–T019 | `e920dc7` 集成，`2e18aa7` 标记。独立测试覆盖离线安装与升级、旧实例仍可完成升级前待决策、失败回滚、授权撤销及单次入口绑定。原型入口兼容性通过。[契约测试](../../tests/contract/frontend-package.test.ts) · [浏览器测试](../../tests/acceptance/install-offline.spec.ts) |
 
-> /speckit-implement 从最新 `origin/work` 继续。先读本实施记录、任务清单、计划、数据模型和验收指南。T001–T009 与 T035 已验收。T032 从最新 `work` 建独立开发分支和工作树，由三名不同的 Agent 分别实现、审查、测试。Lead 负责调度、集成和标记任务。T032 通过后依次按 `tasks.md` 解锁 T015、T042、T045、T041。保留 FR-018 的首次业务闭环汇报及 T048/T049 的本地 Android 最终验收。
+`2e18aa7` 对应的集成验收通过生产构建、124 项 Vitest 和 9 项桌面 Chromium 端到端测试。同步后的开发基线另通过云 WebGL 出帧预检。Android 正式复验仍按 T048、T049 执行。
 
-T032 接入 [玩家接口](../../src/match/player-interface.ts)的 `PlayerCommandStore` 和[对局核心](../../src/match/core.ts)的持久化状态。独立测试应从正式存储入口验证真实 SQLite OPFS 的排他写入、会话初始化、确认失败保留旧状态、快照与回执同事务提交、拒绝摘要的确认点范围、重启后读取回执和已确认终局结果。首个满足 FR-018 条件的正常业务路径取得证据后，按[验收指南](quickstart.md#证据首次通过与交接)即时汇报。
+## 会话续接 · T042
 
-在仓库根目录复验已合入基线。当前预期为 98 项 Vitest、2 项 Chromium 端到端及 WebGL 预检通过。
+独立 Tester 的用量中断发生在补充隐私回归期间。其未提交变更已原样单独提交。T042 在 `tasks.md` 保持 `[ ]`，两条候选分支分别保存，供下个会话从最新 `work` 创建独立工作树后接续。
+
+| 分支 | 检查点 | 接续内容 |
+|---|---|---|
+| `task/t042-official-rules` | `a27d6124a125d1c99108c390d27701a877445806` | `6129525` 接入正式结算、M02–M04 与 D04。`a27d612` 增加不泄露候选或决策 ID 的公开等待状态。最新提交尚无独立审查或测试通过记录。 |
+| `test/t042-rules` | `38c7168428984c84c6af14ef4e0f0ee866b35bf3` | `2c618f3` 集成初始候选 `6129525`。该组合通过 43 项独立测试，覆盖两套旧版 21 个变体与 D04。`38c7168` 保存中断前的 LG-06 公开等待和 LG-08 顺序隔离回归，尚未执行，分支尚未叠加 `a27d612`。 |
+
+`task/t017-acceptance-fixtures` 的原始提交 `a3dd534` 以等价补丁 `38d2b95` 随 T017 已进入 `work`，无需再次交接。T032、T015、T018、T019 及各已验收测试分支的成果均可从 `work` 追溯。
+
+T042 审查仍需处理 LG-08 已选脉冲的结算顺序。按场景 10，先弃置未选卡，再结算已选脉冲的效果，最后弃置该脉冲。原审查对 M03 泄露弃牌抽样顺序的发现已撤回，精确候选的公开弃牌已排序。保留 Tester 的隔离回归以防复发。下一轮由 Developer 核对并修正脉冲弃置时点，由 Reviewer 审查最终候选，由 Tester 合并最终候选到独立测试工作树并补充顺序断言。Lead 在独立审查、独立测试、集成复验全部通过后合并和勾选 T042，再按依赖推进 T045、T041。T042 的合约试验使用测试授权与内存确认记录，尚无从 M01 创建会话的 FR-018 正常业务闭环证据。
+
+> /speckit-implement 从最新 `origin/work` 继续。先读本实施记录、任务清单、计划、数据模型、业务契约和验收指南。接回 `task/t042-official-rules` 与 `test/t042-rules` 的检查点，基于最新 `work` 分别创建独立工作树，保持 Developer、Reviewer、Tester 三角色独立。先修复并复验 T042，再按 `tasks.md` 解锁下游任务。保留 FR-018 首次真实闭环汇报及 T048、T049 Android 实机验收。ACP
+
+在仓库根目录复验合入基线。合入 T042 前，可在独立测试工作树用 `npm test -- tests/contract/legacy-rules.test.ts` 复验对应候选。
 
 ```sh
 SPECIFY_FEATURE_DIRECTORY=specs/001-offline-game-refactor SPECIFY_FEATURE_NO_PERSIST=1 .specify/scripts/bash/check-prerequisites.sh --json --require-spec --require-tasks --include-tasks
 npm_config_cache=/tmp/critical-npm-cache npm ci
-npm run test
-PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:e2e -- tests/acceptance/offline-shell.spec.ts --workers=1
+npm run build
+npm test
+PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:e2e -- --workers=1
 PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run preflight:cloud
 ```
 
 ## 待验收与后续依赖
 
-- **阶段 2** T032 的前置任务已验收。T015、T042、T045、T041 继续按任务依赖推进。T005 与 T019 沿用 T004 的桌面入口结论。桌面验证观察到初始不透明 iframe 导航可能绕过 Service Worker。原型由入口响应的 CSP 建立不透明来源，并在核对受控入口、实例标记与来源后才发端口。源站的包入口回退应返回惰性 404。
+- **阶段 2** T032、T015 已验收。T042、T045、T041 继续按任务依赖推进。T005 与 T019 沿用 T004 的桌面入口结论。桌面验证观察到初始不透明 iframe 导航可能绕过 Service Worker。原型由入口响应的 CSP 建立不透明来源，并在核对受控入口、实例标记与来源后才发端口。源站的包入口回退应返回惰性 404。
 - **桌面正式验收** 继续通过对应业务任务取得 SC-010 的首版准备、开局、构筑和创建草稿证据，以及 SC-011 的前端包验证证据。
 - **Android 最终验收** 由本地 Codex 在正式构建交接后完成。T048 补齐手机 OPFS 证据，T049 完成 Android 安装、断网、文件选择、3D、授权隔离和跨设备文件测试。记录设备版本及实测包体字节，两端通过后确定正式包体上限。
 
