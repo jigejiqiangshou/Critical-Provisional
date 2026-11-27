@@ -206,7 +206,7 @@ function playerFixture(core: Core) {
       const decision = state.progress.kind === 'waiting' ? state.progress.decision : undefined
       if (decision && (decision.choices.visibility === 'public' || (scope.type === 'seat' && scope.seatId === decision.owner))) {
         const choices = projectEffectChoices(decision.choices)
-        return { progress: state.progress.kind, decisionId: decision.id, candidates: choices.candidates.map(({ id }) => id) }
+        return { progress: state.progress.kind, decisionId: decision.id, choices }
       }
       return { progress: state.progress.kind }
     },
@@ -375,7 +375,7 @@ describe('LG-08 sampling order and the public decision process', () => {
       expect(progress.decision.choices.candidates.map(({ id }) => id)).toEqual(sampledIds)
       const responderView = await defender.view()
       for (const client of [attacker, defender, observer]) {
-        expect((await client.view()).snapshot).toMatchObject({ candidates: canonicalIds })
+        expect((await client.view()).snapshot).toMatchObject({ choices: { candidates: canonicalIds.map(id => ({ id })) } })
         expect(client.events()).toEqual([
           expect.objectContaining({ payload: expect.objectContaining({
             stage: 'offered', choices: expect.objectContaining({ candidates: canonicalIds.map(id => ({ id })) }),
