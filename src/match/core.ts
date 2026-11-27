@@ -350,9 +350,14 @@ export class MatchCore<State, Action, Continuation, Event> {
         nextProgress = { kind: 'ended', outcome: resolution.outcome }
         break
     }
+    const nextRandom = random.state()
     if (!validProgress(nextProgress, nextDecisionId) ||
-      !natural(nextDecisionId) || !natural(current.revision + 1) || !validRandom(random.state())) {
+      !natural(nextDecisionId) || !natural(current.revision + 1) || !validRandom(nextRandom)) {
       throw new TypeError('Rules returned invalid settlement progress')
+    }
+    if (nextRandom.consumed === current.random.consumed &&
+      stableJson([resolution.state, nextProgress]) === stableJson([current.state, current.progress])) {
+      return { kind: 'rejected', reason: 'no-state-change' }
     }
 
     const candidate: MatchCandidate<State, Continuation, Event> = copyJson({
@@ -363,7 +368,7 @@ export class MatchCore<State, Action, Continuation, Event> {
         revision: current.revision + 1,
         state: resolution.state,
         progress: nextProgress,
-        random: random.state(),
+        random: nextRandom,
         nextDecisionId,
       },
       events: resolution.events,

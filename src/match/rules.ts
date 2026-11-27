@@ -70,7 +70,8 @@ interface RuleContext<State> {
 
 /** Synchronous, deterministic rules. The versioned artifact describes the actual
  * loaded rules, including a digest of any executable rule components it uses.
- * The outcome, input data and continuation must be JSON-serializable.
+ * The outcome, input data and continuation must be JSON-serializable. A
+ * resolution must advance state, progress or random input to be confirmable.
  */
 export interface Ruleset<State, Action, Continuation, Event> {
   readonly version: string
