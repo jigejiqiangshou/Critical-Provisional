@@ -5,12 +5,22 @@ export const frontendInstallationStore = 'installations'
 export interface VerifiedFrontendEntry {
   key: string
   html: string
+  stageInstance?: string
 }
 
 const entryTokenPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 export function isFrontendEntryToken(value: string | null): value is string {
   return value !== null && entryTokenPattern.test(value)
+}
+
+export function frontendEntryMatches(
+  entry: VerifiedFrontendEntry | undefined,
+  key: string,
+  instance: string,
+): entry is VerifiedFrontendEntry {
+  return entry?.key === key && typeof entry.html === 'string' &&
+    (entry.stageInstance === undefined || entry.stageInstance === instance)
 }
 
 /**
