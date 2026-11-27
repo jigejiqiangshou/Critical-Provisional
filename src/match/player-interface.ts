@@ -7,7 +7,7 @@ import type {
   CommandReceipt, CommandReceiptKey, CommandRequest, CommandRequestSummary, JsonValue, PlayerAction,
   PlayerEvent, ProtocolRange, ProtocolVersion, QueryRequest, SeatId, ServerMessage, SessionId, ViewBasis, ViewScope,
 } from './player-protocol'
-import type { MatchOutcome } from './rules'
+import type { DecisionChoices, MatchOutcome } from './rules'
 
 type Awaitable<T> = T | Promise<T>
 
@@ -58,26 +58,41 @@ export interface RoutedPlayerEvent {
   readonly event: PlayerEvent
 }
 
+/** Project authorized candidates in stable identifier order, independent of sampling. */
+export function projectEffectChoices(choices: DecisionChoices): JsonValue {
+  const candidates = [...choices.candidates].sort((left, right) => {
+    if (left.id < right.id) return -1
+    if (left.id > right.id) return 1
+    return 0
+  })
+  return {
+    candidates: candidates.map(({ id, payload }): JsonValue => {
+      if (payload === undefined) return { id }
+      return { id, payload }
+    }),
+    min: choices.min, max: choices.max, ordered: choices.ordered,
+    canPass: choices.canPass, visibility: choices.visibility,
+  }
+}
+
 /** Project the same public decision process to seats and spectators. */
 export function routeEffectDecisionEvent(decision: EffectDecisionEvent): RoutedPlayerEvent {
   const { choices, owner, stage } = decision
+  const routing = {
+    visibility: choices.visibility === 'public' ? { type: 'public' as const } : { type: 'seat' as const, seatId: owner },
+  }
+  const payload = { stage, owner, choices: projectEffectChoices(choices) }
+  if (decision.stage === 'offered') return { ...routing, event: { type: 'decision', payload } }
+
+  let answer = decision.answer
+  if (answer?.kind === 'select' && !choices.ordered) {
+    answer = { kind: 'select', candidateIds: [...answer.candidateIds].sort() }
+  }
   return {
-    visibility: choices.visibility === 'public' ? { type: 'public' } : { type: 'seat', seatId: owner },
+    ...routing,
     event: {
       type: 'decision',
-      payload: {
-        stage, owner,
-        choices: {
-          candidates: choices.candidates.map(({ id, payload }): JsonValue => {
-            if (payload === undefined) return { id }
-            return { id, payload }
-          }),
-          min: choices.min, max: choices.max, ordered: choices.ordered,
-          canPass: choices.canPass, visibility: choices.visibility,
-        },
-        ...(decision.stage === 'resolved' ? { resolution: decision.resolution } : {}),
-        ...(decision.stage === 'resolved' && decision.answer ? { answer: decision.answer } : {}),
-      },
+      payload: { ...payload, resolution: decision.resolution, ...(answer ? { answer } : {}) },
     },
   }
 }
