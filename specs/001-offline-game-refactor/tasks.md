@@ -6,8 +6,8 @@
 
 - [X] T001 建立 TypeScript、Vite、Vitest、Playwright 工具链及 build/dev/test/test:baseline/test:e2e 命令，配置 `package.json`、`tsconfig.json`、`vite.config.ts` 和 `playwright.config.ts`。
 - [X] T002 [P] 在 `tests/baseline/legacy-samples.test.ts` 及 `tests/baseline/fixtures.json` 按[旧版对照样本](contracts/legacy-samples.md)固定 LG-01–LG-09 的旧版 2D、3D 完整输入及逐步断言，记录旧版差异与页面来源。
-- [ ] T003 [P] 在 `tests/acceptance/storage-device.md` 和 `src/deck-catalog/sqlite.worker.ts` 验证 iOS、Android、桌面安装后的 SQLite OPFS 写入、冷重启、独占接管和回滚，固定驱动版本、浏览器起始版本及设备结果。
-- [ ] T004 [P] 在 `tests/acceptance/frontend-device.md` 与 `src/clients/frontend-spike.ts` 验证官方 3D 大小、离线准备和渲染能力，以及实机本地文件选择、沙盒入口、消息端口和存储隔离，据采样固定包体上限。
+- [ ] T003 [P] 在 `tests/acceptance/storage-device.md` 和 `src/deck-catalog/sqlite.worker.ts` 在已安装的 Android Chrome 和桌面 Chromium PWA 中验证 SQLite OPFS 写入、冷重启、独占接管和回滚，固定驱动版本、浏览器起始版本及设备结果。
+- [ ] T004 [P] 在 `tests/acceptance/frontend-device.md` 与 `src/clients/frontend-spike.ts` 在 Android Chrome 和桌面 Chromium 实机上验证官方 3D 大小、离线准备、渲染能力、本地文件选择、沙盒入口、消息端口和存储隔离，据采样固定包体上限。
 
 T002–T004 均依赖 T001。若目标手机无法满足关键能力，按 [计划](plan.md#迁移顺序)比较兼容方案并更新决策后进入完整实现。
 
@@ -53,7 +53,7 @@ T011 依赖 T006 的 M05、T032 和 T041。T012 依赖 T009、T042。T013 依赖
 - [ ] T019 [US6] 在 `src/clients/frontend-host.ts` 和 `src/clients/service-worker.ts` 实现受控包入口及消息端口，将权威授权与 iframe 生命周期关联。向 T018 提供候选独立实例的就绪或失败结果，以受控入口、实例握手和协议协商为判据，处理超时及失败候选的端口撤销。候选只能加载自己的已验证暂存入口。首次导入在活动记录提交成功后方可授予业务权限。提供与实例退出、导航关联的通用端口撤销机制。升级记录提交成功后关闭候选的检查端口并结束该实例，继续为当前运行的旧实例提供已固定的入口和有效连接。下次打开时启动新版并按正常流程授权。
 - [ ] T020 [P] [US6] 在 `src/clients/official-3d/game.ts` 迁移 3D 视图，将 T042 的正常游戏操作、待决策、认输入口和终局反馈接到统一协议，支持触控、鼠标及目标拾取，并加载打包的 Three.js 和本地资产。
 - [ ] T021 [P] [US6] 在 `src/clients/launcher/home.ts`、`scripts/build-frontends.ts` 和 `tests/acceptance/frontend-fixture/entry.html` 提供按需安装入口、单独官方包及兼容示例包，记录示例包构建与接入方式。
-- [ ] T022 [US6] 在 `tests/acceptance/frontend-device.md` 实机执行 iOS、Android 与桌面冷启动和第三方授权测试。按[首次发行版与空存储验收](quickstart.md#首次发行版与空存储验收)从全新安装验证正常入口可准备官方内容，断网冷启动后用首版、合法预设和 T012 的 V6 联跑 2D、3D 的离线 PVE 及续局。
+- [ ] T022 [US6] 在 `tests/acceptance/frontend-device.md` 在 Android Chrome 与桌面 Chromium 实机执行冷启动和第三方授权测试。按[首次发行版与空存储验收](quickstart.md#首次发行版与空存储验收)从全新安装验证正常入口可准备官方内容，断网冷启动后用首版、合法预设和 T012 的 V6 联跑 2D、3D 的离线 PVE 及续局。
 
 T020 和 T021 在 T007、T016、T019 的接入契约确定后可并行，T020 使用 T042 的正式规则。T017 的样本可提前准备，完整初装和升级场景在 T018 与 T019 联通后验收。T022 依赖 T013、T017–T021 和 T041，文件跨设备场景与 US3 联跑。
 
