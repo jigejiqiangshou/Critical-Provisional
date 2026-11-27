@@ -8,6 +8,8 @@ import type {
 
 type Awaitable<T> = T | Promise<T>
 
+const boundMessagePorts = new WeakSet<MessagePort>()
+
 export interface PlayerProtocolPort {
   send(message: ServerMessage): void
   close(): void
@@ -159,6 +161,8 @@ export class PlayerInterface<State, History = unknown> {
   }
 
   connectPort(instanceId: string, port: MessagePort): FrontendConnection {
+    if (boundMessagePorts.has(port)) throw new Error('MessagePort is already bound')
+    boundMessagePorts.add(port)
     const connection = this.connect(instanceId, {
       send: message => port.postMessage(message),
       close: () => {
@@ -360,13 +364,15 @@ export class PlayerInterface<State, History = unknown> {
       return this.#reject(connection, request, 'storage-failed')
     }
     this.#confirmed = next
+    // An authorization issued during delivery starts at the new snapshot.
+    const recipients = [...this.#connections].filter(([, state]) => state.capability)
     try {
       this.#core.confirm?.(adjudication)
     } catch {
       this.#faulted = true
     }
     this.#receipt(connection, request, receipt)
-    this.#publish(adjudication.events, connection, request.commandId)
+    this.#publish(recipients, adjudication.events, connection, request.commandId)
     if (next.terminal || this.#faulted) {
       for (const active of this.#connections.keys()) this.#close(active)
     }
@@ -387,9 +393,13 @@ export class PlayerInterface<State, History = unknown> {
     })
   }
 
-  #publish(events: readonly RoutedPlayerEvent[], origin: FrontendConnection, commandId: string): void {
-    // Snapshot recipients before callbacks can open new connections.
-    for (const [connection, state] of [...this.#connections]) {
+  #publish(
+    recipients: readonly [FrontendConnection, ConnectionState][],
+    events: readonly RoutedPlayerEvent[],
+    origin: FrontendConnection,
+    commandId: string,
+  ): void {
+    for (const [connection, state] of recipients) {
       const { capability, view } = state
       if (!capability || !view || !this.#connections.has(connection)) continue
       const { scope } = capability
