@@ -60,7 +60,7 @@ export type RuleResolution<State, Continuation, Event> =
     readonly outcome: MatchOutcome
   })
 
-interface RuleContext<State> {
+export interface RuleContext<State> {
   readonly state: Readonly<State>
   readonly snapshot: CardPoolSnapshot
   readonly seat: SeatId
