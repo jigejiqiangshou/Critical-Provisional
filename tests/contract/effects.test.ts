@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { MatchCore } from '../../src/match/core'
 import { createEffectRuntime } from '../../src/match/effects'
 import type { EffectContinuation, EffectDecisionEvent } from '../../src/match/effects'
-import { PlayerInterface, routeEffectDecisionEvent, toConfirmedMatch } from '../../src/match/player-interface'
+import { PlayerInterface, projectEffectChoices, routeEffectDecisionEvent, toConfirmedMatch } from '../../src/match/player-interface'
 import type { PlayerCommandStore, PlayerCore } from '../../src/match/player-interface'
 import { PLAYER_PROTOCOL_V1 } from '../../src/match/player-protocol'
 import type { CommandReceipt, CommandRequestSummary, JsonValue, PlayerAction, ServerMessage, ViewScope } from '../../src/match/player-protocol'
@@ -204,9 +204,9 @@ function playerFixture(core: Core) {
   const adapter: PlayerCore<CoreSnapshot, History> = {
     project({ state }, scope): JsonValue {
       const decision = state.progress.kind === 'waiting' ? state.progress.decision : undefined
-      const candidates = decision?.choices.candidates.map(({ id }) => id) ?? []
       if (decision && (decision.choices.visibility === 'public' || (scope.type === 'seat' && scope.seatId === decision.owner))) {
-        return { progress: state.progress.kind, decisionId: decision.id, candidates }
+        const choices = projectEffectChoices(decision.choices)
+        return { progress: state.progress.kind, decisionId: decision.id, candidates: choices.candidates.map(({ id }) => id) }
       }
       return { progress: state.progress.kind }
     },
@@ -348,5 +348,58 @@ describe('FR-012 effect decisions in M02 and M04', () => {
       expect(JSON.stringify(attacker.events())).not.toContain('private-candidate')
       expect(JSON.stringify(spectator.events())).not.toContain('private-candidate')
     }
+  })
+})
+
+describe('LG-08 sampling order and the public decision process', () => {
+  const sampledIds = ['zinc', 'amber', 'cobalt'] as const
+  const canonicalIds = ['amber', 'cobalt', 'zinc'] as const
+
+  it.each([
+    { ordered: false, canPass: false, selected: canonicalIds, resolution: 'automatic' },
+    { ordered: false, canPass: true, selected: canonicalIds, resolution: 'answer' },
+    { ordered: true, canPass: false, selected: ['cobalt', 'zinc', 'amber'], resolution: 'answer' },
+  ])('does not publish internal sampling order for $resolution (ordered=$ordered)', async ({
+    ordered, canPass, selected, resolution,
+  }) => {
+    const core = await fixture({ mode: 'result', ids: sampledIds, count: 3, ordered, canPass }).create()
+    const { connect, checkpoints } = playerFixture(core)
+    const attacker = await connect('attacker', { type: 'seat', seatId: 'attacker' })
+    const defender = await connect('defender', { type: 'seat', seatId: 'defender' })
+    const observer = await connect('spectator', { type: 'spectator' })
+    expect((await attacker.submit('sample', (await attacker.view()).basis, attack)).status).toBe('accepted')
+
+    const progress = core.read().progress
+    if (resolution === 'answer') {
+      if (progress.kind !== 'waiting') throw new Error('Expected answer after sampling')
+      expect(progress.decision.choices.candidates.map(({ id }) => id)).toEqual(sampledIds)
+      const responderView = await defender.view()
+      for (const client of [attacker, defender, observer]) {
+        expect((await client.view()).snapshot).toMatchObject({ candidates: canonicalIds })
+        expect(client.events()).toEqual([
+          expect.objectContaining({ payload: expect.objectContaining({
+            stage: 'offered', choices: expect.objectContaining({ candidates: canonicalIds.map(id => ({ id })) }),
+          }) }),
+        ])
+      }
+      const submitted = answer(progress.decision.id, 'cobalt', 'zinc', 'amber')
+      expect((await defender.submit('resolve-sample', responderView.basis, submitted)).status).toBe('accepted')
+    }
+
+    const publicResult = expect.objectContaining({ payload: expect.objectContaining({
+      stage: 'resolved', resolution, choices: expect.objectContaining({ candidates: canonicalIds.map(id => ({ id })) }),
+      answer: select(...selected),
+    }) })
+    for (const client of [attacker, defender, observer]) {
+      const wireEvents = client.events()
+      expect(wireEvents).toHaveLength(resolution === 'answer' ? 2 : 1)
+      expect(wireEvents.at(-1)).toEqual(publicResult)
+      expect(wireEvents).toEqual(observer.events())
+    }
+    const internalResolved = checkpoints.at(-1)?.events.find(event => event.type === 'effect-decision')
+    expect(internalResolved).toMatchObject({
+      choices: { candidates: sampledIds.map(id => ({ id })) },
+      answer: select(...(ordered ? selected : sampledIds)),
+    })
   })
 })
