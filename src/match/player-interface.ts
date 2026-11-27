@@ -1,3 +1,4 @@
+import type { EffectDecisionEvent } from './effects'
 import type { Match } from './core'
 import {
   negotiatePlayerProtocol, parsePlayerMessage, parseProtocolRange, PLAYER_PROTOCOL_V1,
@@ -55,6 +56,30 @@ export function toConfirmedMatch<State, Continuation>(
 export interface RoutedPlayerEvent {
   readonly visibility: { readonly type: 'public' } | { readonly type: 'seat'; readonly seatId: SeatId }
   readonly event: PlayerEvent
+}
+
+/** Project the same public decision process to seats and spectators. */
+export function routeEffectDecisionEvent(decision: EffectDecisionEvent): RoutedPlayerEvent {
+  const { choices, owner, stage } = decision
+  return {
+    visibility: choices.visibility === 'public' ? { type: 'public' } : { type: 'seat', seatId: owner },
+    event: {
+      type: 'decision',
+      payload: {
+        stage, owner,
+        choices: {
+          candidates: choices.candidates.map(({ id, payload }): JsonValue => {
+            if (payload === undefined) return { id }
+            return { id, payload }
+          }),
+          min: choices.min, max: choices.max, ordered: choices.ordered,
+          canPass: choices.canPass, visibility: choices.visibility,
+        },
+        ...(decision.stage === 'resolved' ? { resolution: decision.resolution } : {}),
+        ...(decision.stage === 'resolved' && decision.answer ? { answer: decision.answer } : {}),
+      },
+    },
+  }
 }
 
 export interface AdjudicationInput<State> {
