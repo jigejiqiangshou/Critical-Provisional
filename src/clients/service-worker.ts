@@ -17,7 +17,15 @@ const shellAssets = new Map(build.assets.map(([path, integrity]) => [new URL(pat
 const indexUrl = new URL('index.html', scope)
 const installRecord = new URL('__critical__/shell-install', scope)
 const entryPath = new URL(frontendEntryPath, scope).pathname
-const candidateNavigations = new Set<string>()
+
+interface PreparedNavigation {
+  readonly key: string
+  readonly candidate: boolean
+  used: boolean
+  finish(served: boolean): void
+}
+
+const frontendNavigations = new Map<string, PreparedNavigation>()
 const entryCsp = [
   "sandbox allow-scripts",
   "default-src 'none'",
@@ -99,11 +107,20 @@ async function serveFrontendEntry(request: Request, url: URL): Promise<Response>
     !isFrontendEntryToken(key) || !isFrontendEntryToken(instance)
   ) return missingEntry()
 
+  const navigation = frontendNavigations.get(instance)
+  if (navigation && (navigation.key !== key || navigation.used)) return missingEntry()
+  if (navigation) navigation.used = true
+
   try {
     const entry = await readVerifiedFrontendEntry(scope, key)
     if (!frontendEntryMatches(entry, key, instance)) return missingEntry()
-    if (entry.stageInstance !== undefined && !candidateNavigations.delete(instance)) return missingEntry()
-    return new Response(entry.html, {
+    const candidate = entry.stageInstance !== undefined
+    // Older shell records have neither package identity nor a staged instance.
+    if (!navigation && (entry.packageId !== undefined || candidate)) return missingEntry()
+    if (navigation && (frontendNavigations.get(instance) !== navigation || navigation.candidate !== candidate)) {
+      return missingEntry()
+    }
+    const response = new Response(entry.html, {
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
         'Content-Security-Policy': entryCsp,
@@ -111,8 +128,12 @@ async function serveFrontendEntry(request: Request, url: URL): Promise<Response>
         'Cache-Control': 'no-store',
       },
     })
+    navigation?.finish(true)
+    return response
   } catch {
     return missingEntry()
+  } finally {
+    navigation?.finish(false)
   }
 }
 
@@ -139,29 +160,43 @@ worker.addEventListener('fetch', event => {
   if (integrity) event.respondWith(fetchShell(shellUrl, integrity))
 })
 
-async function prepareFrontendEntry(event: ExtendableMessageEvent): Promise<boolean> {
+async function prepareFrontendEntry(event: ExtendableMessageEvent, port: MessagePort): Promise<void> {
   const { source, data } = event
-  if (!source || !('frameType' in source) || source.type !== 'window' || source.frameType === 'nested') return false
-  if (!source.url.startsWith(scope.href)) return false
   const { key, instance, candidate } = data
-  if (!isFrontendEntryToken(key) || !isFrontendEntryToken(instance) || typeof candidate !== 'boolean') return false
-  const entry = await readVerifiedFrontendEntry(scope, key)
-  if (!frontendEntryMatches(entry, key, instance) || (entry.stageInstance !== undefined) !== candidate) return false
-  if (candidate) {
-    candidateNavigations.add(instance)
-    setTimeout(() => candidateNavigations.delete(instance), 30_000)
+  if (
+    !source || !('frameType' in source) || source.type !== 'window' || source.frameType === 'nested' ||
+    !source.url.startsWith(scope.href) || !isFrontendEntryToken(key) || !isFrontendEntryToken(instance) ||
+    typeof candidate !== 'boolean' || frontendNavigations.has(instance)
+  ) {
+    port.postMessage({ type: 'served', ready: false })
+    return
   }
-  return true
+
+  await new Promise<void>(resolve => {
+    const navigation: PreparedNavigation = {
+      key,
+      candidate,
+      used: false,
+      finish: served => {
+        if (frontendNavigations.get(instance) !== navigation) return
+        frontendNavigations.delete(instance)
+        clearTimeout(timer)
+        try { port.postMessage({ type: 'served', ready: served }) } finally { resolve() }
+      },
+    }
+    const timer = setTimeout(() => navigation.finish(false), 30_000)
+    frontendNavigations.set(instance, navigation)
+    port.addEventListener('close', () => navigation.finish(false))
+    port.onmessage = () => navigation.finish(false)
+    port.postMessage({ type: 'prepared' })
+  })
 }
 
 worker.addEventListener('message', event => {
   const port = event.ports[0]
   if (!port) return
   if (event.data?.type === 'critical.frontend-entry-prepare') {
-    event.waitUntil(prepareFrontendEntry(event).then(
-      ready => port.postMessage(ready),
-      () => port.postMessage(false),
-    ).finally(() => port.close()))
+    event.waitUntil(prepareFrontendEntry(event, port).finally(() => port.close()))
     return
   }
   if (event.data?.type !== 'critical.host-cache-status') return

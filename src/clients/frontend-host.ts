@@ -63,25 +63,38 @@ function restrictFrameNavigation(document: Document, entry: URL) {
 }
 
 interface Probe {
-  readonly result: Promise<boolean>
+  readonly prepared: Promise<boolean>
+  readonly served: Promise<boolean>
   close(): void
 }
 
 function probeEntry(controller: ServiceWorker, key: string, instance: string, candidate: boolean): Probe {
   const { port1, port2 } = new MessageChannel()
-  let cancel: () => void
-  const result = new Promise<boolean>(resolve => {
-    cancel = () => resolve(false)
-    port1.onmessage = ({ data }) => resolve(data === true)
-    port1.onmessageerror = () => resolve(false)
-    try {
-      controller.postMessage({ type: 'critical.frontend-entry-prepare', key, instance, candidate }, [port2])
-    } catch {
-      port2.close()
-      resolve(false)
+  let prepare!: (ready: boolean) => void
+  let serve!: (ready: boolean) => void
+  const prepared = new Promise<boolean>(resolve => { prepare = resolve })
+  const served = new Promise<boolean>(resolve => { serve = resolve })
+  const close = () => {
+    port1.close()
+    prepare(false)
+    serve(false)
+  }
+  port1.onmessage = ({ data }) => {
+    if (data?.type === 'prepared') prepare(true)
+    else if (data?.type === 'served') {
+      serve(data.ready === true)
+      close()
     }
-  })
-  return { result, close: () => { port1.close(); cancel() } }
+  }
+  port1.onmessageerror = close
+  port1.addEventListener('close', close)
+  try {
+    controller.postMessage({ type: 'critical.frontend-entry-prepare', key, instance, candidate }, [port2])
+  } catch {
+    port2.close()
+    close()
+  }
+  return { prepared, served, close }
 }
 
 export class FrontendHost {
@@ -164,6 +177,7 @@ export class FrontendHost {
     return await new Promise<FrontendInstance>((resolve, reject) => {
       let closed = false
       let loaded = false
+      let served = false
       let ready = false
       let handedOff = false
       let negotiating = false
@@ -193,7 +207,7 @@ export class FrontendHost {
         if (workers.controller !== controller) close('entry-load-failed')
       }
       const sendPort = () => {
-        if (closed || !loaded || !ready || handedOff) return
+        if (closed || !served || !loaded || !ready || handedOff) return
         const frame = iframe.contentWindow
         if (!frame || workers.controller !== controller) return close('entry-load-failed')
         try {
@@ -210,7 +224,7 @@ export class FrontendHost {
         sendPort()
       }
 
-      const timer = window.setTimeout(() => close(loaded ? 'handshake-timeout' : 'entry-load-failed'), this.#timeoutMs)
+      const timer = window.setTimeout(() => close(loaded && served ? 'handshake-timeout' : 'entry-load-failed'), this.#timeoutMs)
       const observer = new MutationObserver(records => {
         const removed = records.some(record => Array.from(record.removedNodes).some(node => node.contains(iframe)))
         if (removed || !iframe.isConnected || iframe.parentNode !== this.#mount) close()
@@ -284,13 +298,18 @@ export class FrontendHost {
       window.addEventListener('pagehide', leave, { once: true })
       workers.addEventListener('controllerchange', controlChanged)
       signal?.addEventListener('abort', leave, { once: true })
-      void probe.result.then(available => {
-        probe.close()
+      void probe.prepared.then(available => {
         if (closed) return
         if (!available || workers.controller !== controller) return close('entry-load-failed')
         this.#mount.append(iframe)
         observer.observe(document, { childList: true, subtree: true })
       }).catch(() => close('entry-load-failed'))
+      void probe.served.then(available => {
+        if (closed) return
+        if (!available) return close('entry-load-failed')
+        served = true
+        sendPort()
+      })
     })
   }
 }
