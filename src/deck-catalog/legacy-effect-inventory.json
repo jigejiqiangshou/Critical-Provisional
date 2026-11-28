@@ -1,0 +1,3964 @@
+[
+  {
+    "id": "legacy:%E6%AF%95%E6%96%B9",
+    "name": "毕方",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 558
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 946
+      }
+    ],
+    "card": {
+      "name": "毕方",
+      "attr": "朱雀",
+      "type": "unit",
+      "atk": 2,
+      "hp": 1,
+      "kw": [
+        "突袭",
+        "遗蜕"
+      ],
+      "deathrattle": {
+        "type": "draw",
+        "n": 1
+      },
+      "text": "独足神鸟，一羽燎原。突袭。遗蜕：抽 1 张牌。"
+    }
+  },
+  {
+    "id": "legacy:%E7%81%AB%E9%B8%A6",
+    "name": "火鸦",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 559
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 947
+      }
+    ],
+    "card": {
+      "name": "火鸦",
+      "attr": "朱雀",
+      "type": "unit",
+      "atk": 3,
+      "hp": 2,
+      "skill": {
+        "name": "余火",
+        "oncePerTurn": true,
+        "effect": {
+          "type": "deathAtkBuff",
+          "n": 1
+        },
+        "lock": true
+      },
+      "text": "流火成群，遮天蔽日。技能「余火」：本回合，你的单位每被消灭 1 个，此单位就攻击力 +1。如果你发动此技能，此单位本回合就不能攻击。每回合，你只能发动此技能 1 次。"
+    }
+  },
+  {
+    "id": "legacy:%E9%87%91%E4%B9%8C",
+    "name": "金乌",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 560
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 948
+      }
+    ],
+    "card": {
+      "name": "金乌",
+      "attr": "朱雀",
+      "type": "unit",
+      "atk": 3,
+      "hp": 2,
+      "passive": {
+        "type": "bonusCore",
+        "n": 2
+      },
+      "text": "日中之灵，其羽如金。如果此单位攻击对方核心，则额外造成 2 点伤害。"
+    }
+  },
+  {
+    "id": "legacy:%E7%84%B0%E7%BE%BD",
+    "name": "焰羽",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 561
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 949
+      }
+    ],
+    "card": {
+      "name": "焰羽",
+      "attr": "朱雀",
+      "type": "unit",
+      "atk": 1,
+      "hp": 2,
+      "enter": [
+        {
+          "type": "look",
+          "top": 5,
+          "pick": 1,
+          "filter": {
+            "kind": "unit"
+          },
+          "rest": "shuffle"
+        }
+      ],
+      "text": "振羽引途。进场：看牌库顶 5 选 1 张单位加入手牌，其余洗回牌库。"
+    }
+  },
+  {
+    "id": "legacy:%E7%82%8E%E7%BA%B9",
+    "name": "炎纹",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 562
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 950
+      }
+    ],
+    "card": {
+      "name": "炎纹",
+      "attr": "朱雀",
+      "type": "spell",
+      "effect": [
+        {
+          "type": "unit",
+          "n": 3
+        },
+        {
+          "type": "draw",
+          "n": 1
+        }
+      ],
+      "text": "火纹灼骨。对目标单位造成 3 点伤害，然后抽 1 张。"
+    }
+  },
+  {
+    "id": "legacy:%E7%83%BD%E7%81%AB%E4%BB%A4",
+    "name": "烽火令",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 563
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 951
+      }
+    ],
+    "card": {
+      "name": "烽火令",
+      "attr": "朱雀",
+      "type": "spell",
+      "effect": [
+        {
+          "type": "discard",
+          "n": 1
+        },
+        {
+          "type": "search",
+          "filter": {
+            "kind": "unit",
+            "attr": "朱雀",
+            "n": 1,
+            "to": "hand"
+          }
+        }
+      ],
+      "text": "弃 1 张手牌：从牌库检索 1 张朱雀单位，加入手牌。"
+    }
+  },
+  {
+    "id": "legacy:%E7%A6%BB%E7%81%AB",
+    "name": "离火",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 564
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 952
+      }
+    ],
+    "card": {
+      "name": "离火",
+      "attr": "朱雀",
+      "type": "spell",
+      "effect": {
+        "type": "unit",
+        "n": 5
+      },
+      "text": "离火灼骨。对目标单位造成 5 点伤害。"
+    }
+  },
+  {
+    "id": "legacy:%E7%83%88%E7%84%B0%E5%A5%94%E8%A2%AD",
+    "name": "烈焰奔袭",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 565
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 953
+      }
+    ],
+    "card": {
+      "name": "烈焰奔袭",
+      "attr": "朱雀",
+      "type": "spell",
+      "effect": {
+        "type": "rushAtk",
+        "n": 1
+      },
+      "text": "目标朱雀单位本回合获得「突袭」，攻击力 +1。"
+    }
+  },
+  {
+    "id": "legacy:%E7%87%8E%E5%8E%9F",
+    "name": "燎原",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 566
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 954
+      }
+    ],
+    "card": {
+      "name": "燎原",
+      "attr": "朱雀",
+      "type": "spell",
+      "effect": {
+        "type": "aoe",
+        "n": 3
+      },
+      "fieldLock": "朱雀",
+      "text": "对对方所有单位造成 3 点伤害。如果你发动此效果，本回合你就不能发动其他朱雀卡的效果。"
+    }
+  },
+  {
+    "id": "legacy:%E4%B8%89%E8%B6%B3%E9%87%91%E4%B9%8C",
+    "name": "三足金乌",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 567
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 955
+      }
+    ],
+    "card": {
+      "name": "三足金乌",
+      "attr": "朱雀",
+      "type": "unit",
+      "atk": 5,
+      "hp": 4,
+      "kw": [
+        "突袭",
+        "进化"
+      ],
+      "evolveFrom": "火鸦",
+      "evoStage": 1,
+      "passive": {
+        "type": "bonusCore",
+        "n": 2
+      },
+      "text": "进化自火鸦。日中之精，其羽如金。突袭。如果此单位攻击对方核心，则额外造成 2 点伤害。"
+    }
+  },
+  {
+    "id": "legacy:%E6%9C%B1%E5%8E%8C",
+    "name": "朱厌",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 568
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 956
+      }
+    ],
+    "card": {
+      "name": "朱厌",
+      "attr": "朱雀",
+      "type": "unit",
+      "atk": 5,
+      "hp": 4,
+      "passive": {
+        "type": "preStrike",
+        "n": 1
+      },
+      "text": "赤身瑞兽，见则兵起。如果此单位攻击，则先对目标造成 1 点穿透伤害。"
+    }
+  },
+  {
+    "id": "legacy:%E6%9C%B1%E9%9B%80%C2%B7%E9%99%B5%E5%85%89",
+    "name": "朱雀·陵光",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 569
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 957
+      }
+    ],
+    "card": {
+      "name": "朱雀·陵光",
+      "attr": "朱雀",
+      "type": "unit",
+      "atk": 8,
+      "hp": 9,
+      "kw": [
+        "进化"
+      ],
+      "evolveFrom": "毕方",
+      "skill": {
+        "name": "焚天",
+        "oncePerTurn": true,
+        "effect": {
+          "type": "unit",
+          "n": 5
+        },
+        "lock": true
+      },
+      "enter": [
+        {
+          "type": "search",
+          "filter": {
+            "kind": "pulse",
+            "attr": "朱雀",
+            "n": 1,
+            "to": "hand"
+          }
+        }
+      ],
+      "divine": {
+        "name": "涅槃",
+        "need": 3,
+        "needAttr": "朱雀",
+        "dur": 2,
+        "mech": {
+          "type": "divineAtkAp",
+          "n": 1
+        },
+        "effect": "你的朱雀单位攻击力 +1，且你的每一个回合额外 +1 AP",
+        "divineType": "zhuque"
+      },
+      "text": "进化自毕方。南明离火，光耀九霄。技能「焚天」：对目标单位造成 5 点伤害。如果你发动此技能，此单位本回合就不能攻击。登场：检索 1 张朱雀脉冲加入手牌。神威「涅槃」：如果你的场上有至少 3 个朱雀单位，就可以发动：持续 2 轮：你的朱雀单位攻击力 +1，且你的每一个回合额外 +1 AP。（旗舰）每回合，你只能发动此技能 1 次。"
+    }
+  },
+  {
+    "id": "legacy:%E7%A5%9D%E8%9E%8D",
+    "name": "祝融",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 570
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 958
+      }
+    ],
+    "card": {
+      "name": "祝融",
+      "attr": "朱雀",
+      "type": "unit",
+      "atk": 8,
+      "hp": 8,
+      "skill": {
+        "name": "烈焰",
+        "oncePerTurn": true,
+        "effect": {
+          "type": "aoe",
+          "n": 2
+        },
+        "lock": true
+      },
+      "summonCondition": {
+        "type": "ownUnits",
+        "attr": "朱雀",
+        "n": 4
+      },
+      "text": "火神降世。技能「烈焰」：对对方所有单位造成 2 点伤害。如果你发动此技能，本回合你的单位就不能攻击。你的场上必须至少有 4 个朱雀单位，才能召唤此单位。每回合，你只能发动此技能 1 次。"
+    }
+  },
+  {
+    "id": "legacy:%E4%B8%89%E6%98%A7%E7%9C%9F%E7%81%AB",
+    "name": "三昧真火",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 571
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 959
+      }
+    ],
+    "card": {
+      "name": "三昧真火",
+      "attr": "朱雀",
+      "type": "spell",
+      "effect": {
+        "type": "destroyUnit"
+      },
+      "fieldLock": "朱雀",
+      "text": "消灭目标单位。如果你发动此效果，本回合你就不能发动其他朱雀卡的效果。"
+    }
+  },
+  {
+    "id": "legacy:%E7%83%AC%E9%B8%A2",
+    "name": "烬鸢",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 572
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 960
+      }
+    ],
+    "card": {
+      "name": "烬鸢",
+      "attr": "朱雀",
+      "type": "unit",
+      "atk": 4,
+      "hp": 5,
+      "kw": [
+        "进化"
+      ],
+      "evolveFrom": "火鸦",
+      "evoStage": 1,
+      "onEvent": {
+        "trigger": "unitDeath",
+        "side": "own",
+        "effect": {
+          "type": "unit",
+          "n": 2
+        }
+      },
+      "text": "进化自火鸦。火羽纷飞，余烬燎原。如果你的单位被消灭，则对对方单位造成 2 点伤害。"
+    }
+  },
+  {
+    "id": "legacy:%E7%82%BD%E7%BE%BD",
+    "name": "炽羽",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 573
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 961
+      }
+    ],
+    "card": {
+      "name": "炽羽",
+      "attr": "朱雀",
+      "type": "spell",
+      "effect": [
+        {
+          "type": "discard",
+          "n": 1
+        },
+        {
+          "type": "draw",
+          "n": 2
+        },
+        {
+          "type": "condBuff",
+          "condAttr": "朱雀",
+          "buffAtk": 1
+        }
+      ],
+      "text": "弃 1 张手牌：抽 2 张牌。如果弃掉的是朱雀牌，本回合你的朱雀单位就攻击力 +1。"
+    }
+  },
+  {
+    "id": "legacy:%E5%BE%81%E5%8F%AC",
+    "name": "征召",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 574
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 962
+      }
+    ],
+    "card": {
+      "name": "征召",
+      "attr": "朱雀",
+      "type": "spell",
+      "effect": {
+        "type": "search",
+        "filter": {
+          "kind": "unit",
+          "attr": "朱雀",
+          "n": 1,
+          "to": "hand"
+        }
+      },
+      "once": "sameName",
+      "text": "从牌库检索 1 张朱雀单位加入手牌。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E5%A4%A9%E7%81%AB",
+    "name": "天火",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 575
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 963
+      }
+    ],
+    "card": {
+      "name": "天火",
+      "attr": "朱雀",
+      "type": "trap",
+      "trap": {
+        "trigger": "enter",
+        "effect": [
+          {
+            "type": "unit",
+            "n": 3
+          },
+          {
+            "type": "drawIfKill",
+            "n": 1
+          }
+        ]
+      },
+      "text": "打出后盖放。如果对方单位入场，你可以翻开并对其造成 3 点伤害；如果其熔毁，就抽 1 张牌。"
+    }
+  },
+  {
+    "id": "legacy:%E6%B6%85%E6%A7%83%E4%BD%99%E7%83%AC",
+    "name": "涅槃余烬",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 576
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 964
+      }
+    ],
+    "card": {
+      "name": "涅槃余烬",
+      "attr": "朱雀",
+      "type": "trap",
+      "trap": {
+        "trigger": "coreDamaged",
+        "effect": {
+          "type": "reflect",
+          "n": 3
+        }
+      },
+      "text": "打出后盖放。如果你的核心受到伤害，你可以翻开并对伤害来源造成 3 点伤害。"
+    }
+  },
+  {
+    "id": "legacy:%E7%84%9A%E7%B2%AE",
+    "name": "焚粮",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 577
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 965
+      }
+    ],
+    "card": {
+      "name": "焚粮",
+      "attr": "朱雀",
+      "type": "spell",
+      "effect": {
+        "type": "burnFuel",
+        "min": 1,
+        "buffPer": 2
+      },
+      "text": "焚粮为薪，士气如灼。弃任意张数的手牌单位（至少 1 张）：本回合选 1 个你的单位，其攻击力 +2×弃掉的数量。"
+    }
+  },
+  {
+    "id": "legacy:%E7%84%B0%E8%BF%B9",
+    "name": "焰迹",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 578
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 966
+      }
+    ],
+    "card": {
+      "name": "焰迹",
+      "attr": "朱雀",
+      "type": "trap",
+      "trap": {
+        "trigger": "attackCore",
+        "side": "own",
+        "effect": {
+          "type": "hitCore"
+        }
+      },
+      "text": "火过留痕，燎原不绝。打出后盖放。如果你的单位攻击对方核心结算后，你可以翻开并追加 N 点伤害，N 为你的弃牌区中的单位数（N 为 0 不翻开）。"
+    }
+  },
+  {
+    "id": "legacy:%E6%9C%B1%E9%9B%80%E7%BE%BD",
+    "name": "朱雀羽",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 579
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 967
+      }
+    ],
+    "card": {
+      "name": "朱雀羽",
+      "attr": "朱雀",
+      "type": "unit",
+      "atk": 2,
+      "hp": 2,
+      "deathrattle": {
+        "type": "deathDiscardDraw",
+        "discard": 1,
+        "draw": 2,
+        "optional": true
+      },
+      "text": "朱雀落羽，余烬不灭。如果此单位被消灭，你可以将 1 张手牌置入弃牌区；如果你如此做，就抽 2 张牌。"
+    }
+  },
+  {
+    "id": "legacy:%E5%86%B0%E5%A4%B7",
+    "name": "冰夷",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 582
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 970
+      }
+    ],
+    "card": {
+      "name": "冰夷",
+      "attr": "玄武",
+      "type": "unit",
+      "atk": 2,
+      "hp": 4,
+      "kw": [
+        "守护",
+        "遗蜕"
+      ],
+      "deathrattle": {
+        "type": "draw",
+        "n": 1
+      },
+      "text": "冰夷为甲，万夫莫开。守护。遗蜕：抽 1 张牌。"
+    }
+  },
+  {
+    "id": "legacy:%E7%8E%84%E9%BE%9F",
+    "name": "玄龟",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 583
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 971
+      }
+    ],
+    "card": {
+      "name": "玄龟",
+      "attr": "玄武",
+      "type": "unit",
+      "atk": 2,
+      "hp": 8,
+      "kw": [
+        "守护",
+        "护盾"
+      ],
+      "shield": 3,
+      "text": "负岳镇海，不动如山。"
+    }
+  },
+  {
+    "id": "legacy:%E8%9E%A3%E8%9B%87",
+    "name": "螣蛇",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 584
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 972
+      }
+    ],
+    "card": {
+      "name": "螣蛇",
+      "attr": "玄武",
+      "type": "unit",
+      "atk": 3,
+      "hp": 9,
+      "kw": [
+        "护盾",
+        "过热"
+      ],
+      "shield": 5,
+      "overheat": 3,
+      "text": "腾蛇乘雾，游于北冥。护盾 5。过热 3（攻击后自身受到 3 点伤害）。"
+    }
+  },
+  {
+    "id": "legacy:%E7%8E%84%E6%AD%A6%C2%B7%E6%89%A7%E6%98%8E",
+    "name": "玄武·执明",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 585
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 973
+      }
+    ],
+    "card": {
+      "name": "玄武·执明",
+      "attr": "玄武",
+      "type": "unit",
+      "atk": 5,
+      "hp": 12,
+      "kw": [
+        "守护",
+        "进化"
+      ],
+      "evolveFrom": "冰夷",
+      "evoStage": 1,
+      "skill": {
+        "name": "镇海",
+        "oncePerTurn": true,
+        "effect": {
+          "type": "shieldAll",
+          "n": 2
+        }
+      },
+      "enter": [
+        {
+          "type": "search",
+          "filter": {
+            "kind": "pulse",
+            "attr": "玄武",
+            "n": 1,
+            "to": "hand"
+          }
+        }
+      ],
+      "divine": {
+        "name": "玄冥",
+        "need": 3,
+        "needAttr": "玄武",
+        "dur": 3,
+        "mech": {
+          "type": "divineGuardAtk",
+          "n": 2
+        },
+        "effect": "你的所有单位获得「守护」，且攻击力 +2",
+        "divineType": "xuanwu"
+      },
+      "text": "进化自冰夷。执明镇北，四灵之首。守护。技能「镇海」：你的所有单位获得「护盾 2」。登场：检索 1 张玄武脉冲加入手牌。神威「玄冥」：如果你的场上有至少 3 个玄武单位，就可以发动：持续 3 轮：你的所有单位获得「守护」，且攻击力 +2。（旗舰）每回合，你只能发动此技能 1 次。"
+    }
+  },
+  {
+    "id": "legacy:%E5%86%B0%E5%B0%89",
+    "name": "冰尉",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 586
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 974
+      }
+    ],
+    "card": {
+      "name": "冰尉",
+      "attr": "玄武",
+      "type": "unit",
+      "atk": 3,
+      "hp": 7,
+      "kw": [
+        "守护",
+        "进化"
+      ],
+      "evolveFrom": "冰夷",
+      "evoStage": 1,
+      "enter": [
+        {
+          "type": "shieldAllOthers",
+          "n": 1
+        }
+      ],
+      "text": "进化自冰夷。冰卒列阵，寒气森然。守护。登场：你的其他单位获得护盾 1。"
+    }
+  },
+  {
+    "id": "legacy:%E5%8C%97%E5%86%A5%E9%B2%B2",
+    "name": "北冥鲲",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 587
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 975
+      }
+    ],
+    "card": {
+      "name": "北冥鲲",
+      "attr": "玄武",
+      "type": "unit",
+      "atk": 8,
+      "hp": 12,
+      "kw": [
+        "守护"
+      ],
+      "passive": {
+        "type": "teamHp",
+        "n": 1
+      },
+      "summonCondition": {
+        "type": "ownGrave",
+        "n": 15
+      },
+      "text": "北冥有鱼，其名为鲲。守护。你的其他单位获得 +1 最大生命。你的弃牌区必须至少有 15 张牌，才能召唤此单位。"
+    }
+  },
+  {
+    "id": "legacy:%E5%85%B1%E5%B7%A5",
+    "name": "共工",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 588
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 976
+      }
+    ],
+    "card": {
+      "name": "共工",
+      "attr": "玄武",
+      "type": "unit",
+      "atk": 6,
+      "hp": 9,
+      "kw": [
+        "守护",
+        "护盾"
+      ],
+      "shield": 3,
+      "enter": [
+        {
+          "type": "discard",
+          "n": 1
+        }
+      ],
+      "text": "水神怒触不周山。守护。护盾 3。入场：弃 1 张手牌。"
+    }
+  },
+  {
+    "id": "legacy:%E5%AF%92%E6%B8%8A",
+    "name": "寒渊",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 589
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 977
+      }
+    ],
+    "card": {
+      "name": "寒渊",
+      "attr": "玄武",
+      "type": "spell",
+      "effect": [
+        {
+          "type": "discard",
+          "n": 2
+        },
+        {
+          "type": "search",
+          "filter": {
+            "kind": "unit",
+            "attr": "玄武",
+            "n": 2,
+            "to": "hand"
+          }
+        }
+      ],
+      "text": "北冥之底，万载寒渊。弃 2 张手牌：从牌库检索 2 张玄武单位加入手牌。"
+    }
+  },
+  {
+    "id": "legacy:%E5%BC%B1%E6%B0%B4",
+    "name": "弱水",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 590
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 978
+      }
+    ],
+    "card": {
+      "name": "弱水",
+      "attr": "玄武",
+      "type": "spell",
+      "effect": {
+        "type": "stun"
+      },
+      "once": "sameName",
+      "text": "使目标单位眩晕（其下一个回合不能攻击）。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E5%8C%97%E5%86%A5%E4%B9%8B%E6%B8%8A",
+    "name": "北冥之渊",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 591
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 979
+      }
+    ],
+    "card": {
+      "name": "北冥之渊",
+      "attr": "玄武",
+      "type": "spell",
+      "effect": {
+        "type": "lock"
+      },
+      "fieldLock": "玄武",
+      "text": "令对方的下一个回合 AP -1。如果你发动此效果，本回合你就不能发动其他玄武卡的效果。"
+    }
+  },
+  {
+    "id": "legacy:%E5%87%9D%E9%9C%9C",
+    "name": "凝霜",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 592
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 980
+      }
+    ],
+    "card": {
+      "name": "凝霜",
+      "attr": "玄武",
+      "type": "spell",
+      "effect": {
+        "type": "shieldUnit",
+        "n": 5
+      },
+      "text": "目标单位获得「护盾 5」。"
+    }
+  },
+  {
+    "id": "legacy:%E9%BE%9F%E6%81%AF",
+    "name": "龟息",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 593
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 981
+      }
+    ],
+    "card": {
+      "name": "龟息",
+      "attr": "玄武",
+      "type": "spell",
+      "effect": {
+        "type": "healShieldCore",
+        "heal": 6,
+        "shield": 3
+      },
+      "once": "sameName",
+      "text": "回复你的核心 6 点生命，且其获得「护盾 3」。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E6%B8%8A%E7%9E%B3",
+    "name": "渊瞳",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 594
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 982
+      }
+    ],
+    "card": {
+      "name": "渊瞳",
+      "attr": "玄武",
+      "type": "unit",
+      "atk": 2,
+      "hp": 4,
+      "enter": [
+        {
+          "type": "discard",
+          "n": 1
+        },
+        {
+          "type": "draw",
+          "n": 1
+        }
+      ],
+      "text": "渊底之瞳，窥见所需。进场：弃 1 张手牌，抽 1 张。"
+    }
+  },
+  {
+    "id": "legacy:%E8%A1%80%E6%B6%9F",
+    "name": "血涟",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 595
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 983
+      }
+    ],
+    "card": {
+      "name": "血涟",
+      "attr": "玄武",
+      "type": "spell",
+      "effect": [
+        {
+          "type": "payLife",
+          "n": 3
+        },
+        {
+          "type": "shieldUnit",
+          "n": 3
+        },
+        {
+          "type": "look",
+          "top": 8,
+          "pick": 1,
+          "filter": {
+            "kind": "unit",
+            "attr": "玄武"
+          },
+          "rest": "shuffle"
+        }
+      ],
+      "text": "以血为引。支付 3 点核心生命：目标单位获得护盾 3，然后看牌库顶 8 选 1 张玄武单位加入手牌，其余洗回牌库。"
+    }
+  },
+  {
+    "id": "legacy:%E6%B8%8A%E5%BC%95",
+    "name": "渊引",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 596
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 984
+      }
+    ],
+    "card": {
+      "name": "渊引",
+      "attr": "玄武",
+      "type": "spell",
+      "effect": [
+        {
+          "type": "discard",
+          "n": 2
+        },
+        {
+          "type": "search",
+          "filter": {
+            "kind": "unit",
+            "attr": "玄武",
+            "n": 1,
+            "to": "hand"
+          }
+        }
+      ],
+      "text": "弃 2 张手牌：从牌库检索 1 张玄武单位加入手牌。"
+    }
+  },
+  {
+    "id": "legacy:%E7%8E%84%E5%8F%AC",
+    "name": "玄召",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 597
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 985
+      }
+    ],
+    "card": {
+      "name": "玄召",
+      "attr": "玄武",
+      "type": "spell",
+      "effect": {
+        "type": "search",
+        "filter": {
+          "kind": "unit",
+          "attr": "玄武",
+          "n": 1,
+          "to": "hand"
+        }
+      },
+      "once": "sameName",
+      "text": "从牌库检索 1 张玄武单位加入手牌。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E5%86%B0%E5%B0%81",
+    "name": "冰封",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 598
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 986
+      }
+    ],
+    "card": {
+      "name": "冰封",
+      "attr": "玄武",
+      "type": "trap",
+      "trap": {
+        "trigger": "attacking",
+        "effect": {
+          "type": "stunAttacker"
+        }
+      },
+      "text": "打出后盖放。如果对方单位攻击，你可以翻开并使其眩晕。"
+    }
+  },
+  {
+    "id": "legacy:%E5%AF%92%E9%89%B4",
+    "name": "寒鉴",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 599
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 987
+      }
+    ],
+    "card": {
+      "name": "寒鉴",
+      "attr": "玄武",
+      "type": "trap",
+      "trap": {
+        "trigger": "spellTarget",
+        "effect": {
+          "type": "cancelSpell"
+        }
+      },
+      "text": "打出后盖放。如果对方的法术指定你的单位，你可以翻开并使其无效。"
+    }
+  },
+  {
+    "id": "legacy:%E8%A7%82%E6%B0%B4",
+    "name": "观水",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 600
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 988
+      }
+    ],
+    "card": {
+      "name": "观水",
+      "attr": "玄武",
+      "type": "unit",
+      "atk": 4,
+      "hp": 6,
+      "kw": [
+        "守护"
+      ],
+      "once": "sameName",
+      "summonCondition": {
+        "type": "lifeBehind"
+      },
+      "passive": {
+        "type": "lifeDiffAura",
+        "per": 10,
+        "cap": 3,
+        "deathDraw": 2
+      },
+      "text": "渊深自映，处下而盈。守护。你的核心生命必须低于对方，才能部署此单位。逆境：你的核心生命每比对方低 10 点，就 +1 档（至多 3 档）；每有 1 档，就使你的检索效果多找 1 张；只要档位至少为 1，你的单位每死亡 1 个，就抽 1 张牌（每回合至多因此抽 1+档位 张）。"
+    }
+  },
+  {
+    "id": "legacy:%E5%80%9F%E5%8A%BF",
+    "name": "借势",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 601
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 989
+      }
+    ],
+    "card": {
+      "name": "借势",
+      "attr": "玄武",
+      "type": "spell",
+      "once": "sameName",
+      "effect": {
+        "type": "borrowMight",
+        "half": true,
+        "killDraw": 1,
+        "fallback": "draw1"
+      },
+      "text": "借力打力，因势利导。每回合，你只能使用 1 张同名卡。本回合你的单位攻击力 +X（X 为对方场上攻击力最高单位的攻击力的一半，向下取整；如果 X 为 0，就改为抽 1 张牌）。本回合，你的单位每消灭 1 个对方单位，就抽 1 张牌。"
+    }
+  },
+  {
+    "id": "legacy:%E8%93%84%E6%BE%9C",
+    "name": "蓄澜",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 602
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 990
+      }
+    ],
+    "card": {
+      "name": "蓄澜",
+      "attr": "玄武",
+      "type": "spell",
+      "once": "sameName",
+      "effect": {
+        "type": "gatheringTide",
+        "per": 2,
+        "cap": 3,
+        "fallback": "draw1"
+      },
+      "text": "水蓄而决，其势难当。每回合，你只能使用 1 张同名卡。本回合你的单位攻击力 +2×蓄力值（蓄力值为你连续未部署单位的回合数，含本回合至多 3；如果蓄力为 0，就改为抽 1 张牌）。打出时消耗全部蓄力值；部署单位后蓄力清零。"
+    }
+  },
+  {
+    "id": "legacy:%E7%AB%AD%E6%B3%BD",
+    "name": "竭泽",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 603
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 991
+      }
+    ],
+    "card": {
+      "name": "竭泽",
+      "attr": "玄武",
+      "type": "spell",
+      "once": "sameName",
+      "effect": [
+        {
+          "type": "discard",
+          "n": 1
+        },
+        {
+          "type": "drawByPool",
+          "base": 30,
+          "div": 10,
+          "cap": 3
+        }
+      ],
+      "text": "水落石出，泽竭而渔。每回合，你只能使用 1 张同名卡。弃 1 张手牌：抽 X 张牌，X 为 1 + ⌊(30 − 双方牌库剩余合计) / 10⌋（至多 3）。"
+    }
+  },
+  {
+    "id": "legacy:%E5%9B%9E%E6%B5%81",
+    "name": "回流",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 604
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 992
+      }
+    ],
+    "card": {
+      "name": "回流",
+      "attr": "玄武",
+      "type": "spell",
+      "once": "sameName",
+      "selfAttackLock": true,
+      "effect": [
+        {
+          "type": "discard",
+          "n": 2
+        },
+        {
+          "type": "graveRecover",
+          "n": 1
+        }
+      ],
+      "text": "周流不息，退而复还。每回合，你只能使用 1 张同名卡。弃 2 张手牌，本回合你的单位不能攻击。从你的弃牌区任选 1 张牌，加入你的手牌。"
+    }
+  },
+  {
+    "id": "legacy:%E5%A4%A9%E7%8B%BC",
+    "name": "天狼",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 607
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 995
+      }
+    ],
+    "card": {
+      "name": "天狼",
+      "attr": "白虎",
+      "type": "unit",
+      "atk": 4,
+      "hp": 4,
+      "passive": {
+        "type": "bonusCore",
+        "n": 1
+      },
+      "text": "天狼啸月，寒光凛冽。如果此单位攻击对方核心，则额外造成 1 点伤害。"
+    }
+  },
+  {
+    "id": "legacy:%E6%AE%8B%E7%89%99",
+    "name": "残牙",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 608
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 996
+      }
+    ],
+    "card": {
+      "name": "残牙",
+      "attr": "白虎",
+      "type": "unit",
+      "atk": 3,
+      "hp": 3,
+      "kw": [
+        "突袭"
+      ],
+      "text": "虎口余刃，断而后利。突袭。可进化为「破军」。"
+    }
+  },
+  {
+    "id": "legacy:%E7%99%BD%E9%A2%9D%E8%99%8E",
+    "name": "白额虎",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 609
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 997
+      }
+    ],
+    "card": {
+      "name": "白额虎",
+      "attr": "白虎",
+      "type": "unit",
+      "atk": 3,
+      "hp": 4,
+      "kw": [
+        "献祭"
+      ],
+      "sacrifice": {
+        "type": "buffUnitAtk",
+        "n": 3
+      },
+      "text": "献祭：牺牲此单位，令一个你的白虎单位本回合攻击力 +3。"
+    }
+  },
+  {
+    "id": "legacy:%E6%96%AD%E9%87%91",
+    "name": "断金",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 610
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 998
+      }
+    ],
+    "card": {
+      "name": "断金",
+      "attr": "白虎",
+      "type": "spell",
+      "effect": {
+        "type": "vsShieldUnit",
+        "n": 8
+      },
+      "text": "对一个带护盾的单位造成 8 点伤害，无视护盾。"
+    }
+  },
+  {
+    "id": "legacy:%E8%99%8E%E5%95%B8",
+    "name": "虎啸",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 611
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 999
+      }
+    ],
+    "card": {
+      "name": "虎啸",
+      "attr": "白虎",
+      "type": "trap",
+      "trap": {
+        "trigger": "enter",
+        "effect": {
+          "type": "unit",
+          "n": 3
+        }
+      },
+      "text": "打出后盖放。如果对方单位入场，你可以翻开并对其造成 3 点伤害。"
+    }
+  },
+  {
+    "id": "legacy:%E8%A3%82%E9%87%91",
+    "name": "裂金",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 612
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1000
+      }
+    ],
+    "card": {
+      "name": "裂金",
+      "attr": "白虎",
+      "type": "spell",
+      "effect": [
+        {
+          "type": "unit",
+          "n": 5
+        },
+        {
+          "type": "drawIfKill",
+          "n": 1
+        }
+      ],
+      "text": "对目标单位造成 5 点伤害；如果其熔毁，就抽 1 张。"
+    }
+  },
+  {
+    "id": "legacy:%E5%BA%9A%E9%87%91",
+    "name": "庚金",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 613
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1001
+      }
+    ],
+    "card": {
+      "name": "庚金",
+      "attr": "白虎",
+      "type": "spell",
+      "effect": {
+        "type": "pierceBuff"
+      },
+      "once": "sameName",
+      "text": "本回合一个你的白虎单位获得「穿透」。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E7%A0%B4%E5%86%9B",
+    "name": "破军",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 614
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1002
+      }
+    ],
+    "card": {
+      "name": "破军",
+      "attr": "白虎",
+      "type": "unit",
+      "atk": 9,
+      "hp": 6,
+      "kw": [
+        "锋锐",
+        "进化"
+      ],
+      "evolveFrom": "残牙",
+      "evoStage": 1,
+      "atkGrowth": {
+        "attr": "白虎",
+        "n": 1
+      },
+      "text": "进化自残牙。破军为锋，杀伐四方。只要此单位在场，你的白虎单位每攻击 1 次，就攻击力 +1。锋锐：攻击后本回合攻击力 +1（高攻单位至多 +3）。"
+    }
+  },
+  {
+    "id": "legacy:%E8%93%90%E6%94%B6",
+    "name": "蓐收",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 615
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1003
+      }
+    ],
+    "card": {
+      "name": "蓐收",
+      "attr": "白虎",
+      "type": "unit",
+      "atk": 6,
+      "hp": 6,
+      "kw": [
+        "锋锐"
+      ],
+      "skill": {
+        "name": "刑杀",
+        "oncePerTurn": true,
+        "effect": {
+          "type": "aoe",
+          "n": 2
+        }
+      },
+      "summonCondition": {
+        "type": "ownUnitName",
+        "name": "天狼",
+        "n": 1
+      },
+      "text": "金神主刑杀。锋锐。技能「刑杀」：对对方所有单位造成 2 点伤害。你的场上必须至少有 1 个天狼，才能召唤此单位。每回合，你只能发动此技能 1 次。"
+    }
+  },
+  {
+    "id": "legacy:%E6%AD%83%E8%A1%80",
+    "name": "歃血",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 616
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1004
+      }
+    ],
+    "card": {
+      "name": "歃血",
+      "attr": "白虎",
+      "type": "spell",
+      "effect": [
+        {
+          "type": "payLife",
+          "n": 2
+        },
+        {
+          "type": "unit",
+          "n": 4
+        },
+        {
+          "type": "ignoreShieldAll",
+          "filter": {
+            "attr": "白虎"
+          }
+        }
+      ],
+      "text": "歃血为誓。支付 2 点核心生命：对目标单位造成 4 点伤害，然后本回合你的白虎单位无视护盾。"
+    }
+  },
+  {
+    "id": "legacy:%E8%99%8E%E7%AC%A6",
+    "name": "虎符",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 617
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1005
+      }
+    ],
+    "card": {
+      "name": "虎符",
+      "attr": "白虎",
+      "type": "spell",
+      "effect": [
+        {
+          "type": "discard",
+          "n": 1
+        },
+        {
+          "type": "look",
+          "top": 8,
+          "pick": 1,
+          "filter": {
+            "kind": "unit",
+            "attr": "白虎"
+          },
+          "to": "hand",
+          "rest": "shuffle"
+        }
+      ],
+      "text": "弃 1 张手牌：看牌库顶 8 选 1 张白虎单位，加入手牌，其余洗回牌库。"
+    }
+  },
+  {
+    "id": "legacy:%E7%99%BD%E8%99%8E%C2%B7%E7%9B%91%E5%85%B5",
+    "name": "白虎·监兵",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 618
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1006
+      }
+    ],
+    "card": {
+      "name": "白虎·监兵",
+      "attr": "白虎",
+      "type": "unit",
+      "atk": 8,
+      "hp": 8,
+      "kw": [
+        "锋锐",
+        "进化"
+      ],
+      "evolveFrom": "天狼",
+      "evoStage": 1,
+      "passive": {
+        "type": "bonusVsShield",
+        "n": 3
+      },
+      "enter": [
+        {
+          "type": "search",
+          "filter": {
+            "kind": "pulse",
+            "attr": "白虎",
+            "n": 1,
+            "to": "hand"
+          }
+        }
+      ],
+      "divine": {
+        "name": "锋鸣",
+        "need": 3,
+        "needAttr": "白虎",
+        "dur": 2,
+        "mech": {
+          "type": "divineFengrui",
+          "atk": 2
+        },
+        "effect": "你的白虎单位攻击力 +2，且获得「突袭」与「穿透」，持续 2 轮",
+        "divineType": "baihu"
+      },
+      "text": "进化自天狼。监兵执锐，锋芒无匹。锋锐。如果此单位攻击的目标带有护盾，则此单位对其造成的伤害 +3。登场：检索 1 张白虎脉冲加入手牌。神威「锋鸣」：如果你场上有至少 3 个白虎单位，就可以发动：你的所有白虎单位攻击力 +2，且获得「突袭」与「穿透」，持续 2 轮。（旗舰）"
+    }
+  },
+  {
+    "id": "legacy:%E8%B4%AA%E7%8B%BC",
+    "name": "贪狼",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 619
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1007
+      }
+    ],
+    "card": {
+      "name": "贪狼",
+      "attr": "白虎",
+      "type": "unit",
+      "atk": 8,
+      "hp": 8,
+      "kw": [
+        "锋锐"
+      ],
+      "summonCondition": {
+        "type": "coreHpAtMost",
+        "n": 25
+      },
+      "text": "星宿主杀，无坚不摧。锋锐。你的核心生命必须不高于 25，才能召唤此单位。"
+    }
+  },
+  {
+    "id": "legacy:%E7%99%BD%E8%99%B9",
+    "name": "白虹",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 620
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1008
+      }
+    ],
+    "card": {
+      "name": "白虹",
+      "attr": "白虎",
+      "type": "spell",
+      "effect": {
+        "type": "aoePierce",
+        "n": 4
+      },
+      "fieldLock": "白虎",
+      "text": "对所有对方单位造成 4 点穿透伤害。如果你发动此效果，本回合你就不能发动其他白虎卡的效果。"
+    }
+  },
+  {
+    "id": "legacy:%E9%94%90%E8%99%8E",
+    "name": "锐虎",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 621
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1009
+      }
+    ],
+    "card": {
+      "name": "锐虎",
+      "attr": "白虎",
+      "type": "unit",
+      "atk": 5,
+      "hp": 4,
+      "kw": [
+        "突袭",
+        "锋锐"
+      ],
+      "text": "锐牙新砺，一击致命。突袭。锋锐。"
+    }
+  },
+  {
+    "id": "legacy:%E8%99%8E%E8%B4%B2",
+    "name": "虎贲",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 622
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1010
+      }
+    ],
+    "card": {
+      "name": "虎贲",
+      "attr": "白虎",
+      "type": "spell",
+      "effect": {
+        "type": "search",
+        "filter": {
+          "kind": "unit",
+          "attr": "白虎",
+          "n": 1,
+          "to": "hand"
+        }
+      },
+      "once": "sameName",
+      "text": "从牌库检索 1 张白虎单位加入手牌。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E9%9D%92%E9%B8%BE",
+    "name": "青鸾",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 625
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1013
+      }
+    ],
+    "card": {
+      "name": "青鸾",
+      "attr": "青龙",
+      "type": "unit",
+      "atk": 3,
+      "hp": 3,
+      "kw": [
+        "隐匿"
+      ],
+      "enter": [
+        {
+          "type": "draw",
+          "n": 1
+        }
+      ],
+      "text": "青鸾衔书，隐于云间。隐匿。登场：抽 1 张牌。"
+    }
+  },
+  {
+    "id": "legacy:%E8%9E%AD%E9%BE%99",
+    "name": "螭龙",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 626
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1014
+      }
+    ],
+    "card": {
+      "name": "螭龙",
+      "attr": "青龙",
+      "type": "unit",
+      "atk": 5,
+      "hp": 3,
+      "kw": [
+        "隐匿"
+      ],
+      "passive": {
+        "type": "teamAtk",
+        "n": 1
+      },
+      "text": "无角之龙，潜行九渊。隐匿。你场上每有 1 个其他单位，此单位就攻击力 +1。"
+    }
+  },
+  {
+    "id": "legacy:%E9%9D%92%E8%8B%97",
+    "name": "青苗",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 627
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1015
+      }
+    ],
+    "card": {
+      "name": "青苗",
+      "attr": "青龙",
+      "type": "unit",
+      "atk": 1,
+      "hp": 3,
+      "kw": [
+        "遗蜕"
+      ],
+      "deathrattle": {
+        "type": "draw",
+        "n": 1
+      },
+      "text": "青青翠苗，生生不息。遗蜕：抽 1 张牌。"
+    }
+  },
+  {
+    "id": "legacy:%E7%89%BA%E6%9C%A8",
+    "name": "牺木",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 628
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1016
+      }
+    ],
+    "card": {
+      "name": "牺木",
+      "attr": "青龙",
+      "type": "unit",
+      "atk": 1,
+      "hp": 4,
+      "kw": [
+        "献祭"
+      ],
+      "sacrifice": {
+        "type": "draw",
+        "n": 2
+      },
+      "text": "献祭：牺牲此单位，抽 2 张牌。"
+    }
+  },
+  {
+    "id": "legacy:%E5%BA%94%E9%BE%99",
+    "name": "应龙",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 629
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1017
+      }
+    ],
+    "card": {
+      "name": "应龙",
+      "attr": "青龙",
+      "type": "unit",
+      "atk": 6,
+      "hp": 6,
+      "kw": [
+        "共鸣",
+        "进化"
+      ],
+      "evolveFrom": "螭龙",
+      "evoStage": 1,
+      "passive": {
+        "type": "teamAtk",
+        "n": 1
+      },
+      "text": "进化自螭龙。有翼神龙，群英共鸣。你场上每有 1 个其他单位，此单位就攻击力 +1。"
+    }
+  },
+  {
+    "id": "legacy:%E6%9C%A8%E7%81%B5",
+    "name": "木灵",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 630
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1018
+      }
+    ],
+    "card": {
+      "name": "木灵",
+      "attr": "青龙",
+      "type": "unit",
+      "atk": 5,
+      "hp": 6,
+      "kw": [
+        "进化"
+      ],
+      "evolveFrom": "青苗",
+      "evoStage": 1,
+      "passive": {
+        "type": "teamBuff",
+        "atk": 1,
+        "hp": 1
+      },
+      "text": "进化自青苗。草木有灵，生生不息。你的其他单位获得 +1/+1。"
+    }
+  },
+  {
+    "id": "legacy:%E5%BB%BA%E6%9C%A8",
+    "name": "建木",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 631
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1019
+      }
+    ],
+    "card": {
+      "name": "建木",
+      "attr": "青龙",
+      "type": "unit",
+      "atk": 7,
+      "hp": 9,
+      "kw": [
+        "进化"
+      ],
+      "evolveFrom": "木灵",
+      "evoStage": 2,
+      "passive": {
+        "type": "teamBuff",
+        "atk": 2,
+        "hp": 2
+      },
+      "text": "进化自木灵。建木通天，万物凭依。你的其他单位获得 +2/+2。"
+    }
+  },
+  {
+    "id": "legacy:%E9%9D%92%E9%BE%99%C2%B7%E5%AD%9F%E7%AB%A0",
+    "name": "青龙·孟章",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 632
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1020
+      }
+    ],
+    "card": {
+      "name": "青龙·孟章",
+      "attr": "青龙",
+      "type": "unit",
+      "atk": 6,
+      "hp": 8,
+      "kw": [
+        "隐匿",
+        "进化"
+      ],
+      "evolveFrom": "青鸾",
+      "evoStage": 1,
+      "skill": {
+        "name": "生发",
+        "oncePerTurn": true,
+        "effect": {
+          "type": "buffUnit",
+          "atk": 2,
+          "hp": 2
+        }
+      },
+      "enter": [
+        {
+          "type": "search",
+          "filter": {
+            "kind": "pulse",
+            "attr": "青龙",
+            "n": 1,
+            "to": "hand"
+          }
+        }
+      ],
+      "divine": {
+        "name": "汲灵",
+        "need": 4,
+        "needAttr": "任意",
+        "dur": 2,
+        "mech": {
+          "type": "divineBuffRush",
+          "atk": 1,
+          "hp": 1
+        },
+        "effect": "你的所有单位获得 +1/+1 与「突袭」",
+        "divineType": "qinglong"
+      },
+      "text": "进化自青鸾。孟章司春，万物生长。隐匿。技能「生发」：目标你的单位获得 +2/+2（本回合，生命值部分即时获得）。登场：检索 1 张青龙脉冲加入手牌。神威「汲灵」：如果你的场上有至少 4 个单位，就可以发动：持续 2 轮：你的所有单位获得 +1/+1 与「突袭」。（旗舰）每回合，你只能发动此技能 1 次。"
+    }
+  },
+  {
+    "id": "legacy:%E5%8F%A5%E8%8A%92",
+    "name": "句芒",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 633
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1021
+      }
+    ],
+    "card": {
+      "name": "句芒",
+      "attr": "青龙",
+      "type": "unit",
+      "atk": 5,
+      "hp": 8,
+      "skill": {
+        "name": "生发",
+        "oncePerTurn": true,
+        "effect": {
+          "type": "buffUnit",
+          "atk": 2,
+          "hp": 2
+        }
+      },
+      "fieldLock": "青龙",
+      "text": "春神司生发。技能「生发」：目标你的单位获得 +2/+2（本回合，生命值部分即时获得）。如果你发动此效果，本回合你就不能发动其他青龙卡的效果。每回合，你只能发动此技能 1 次。"
+    }
+  },
+  {
+    "id": "legacy:%E6%98%A5%E9%A3%8E",
+    "name": "春风",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 634
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1022
+      }
+    ],
+    "card": {
+      "name": "春风",
+      "attr": "青龙",
+      "type": "spell",
+      "effect": {
+        "type": "heal",
+        "n": 5
+      },
+      "once": "sameName",
+      "text": "回复你的核心 5 点生命。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E6%9C%A8%E7%94%B2",
+    "name": "木甲",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 635
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1023
+      }
+    ],
+    "card": {
+      "name": "木甲",
+      "attr": "青龙",
+      "type": "spell",
+      "effect": {
+        "type": "buffUnit",
+        "atk": 3,
+        "hp": 3
+      },
+      "once": "sameName",
+      "text": "目标单位本回合获得 +3/+3（生命值部分即时获得）。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E7%BC%9A%E9%BE%99%E7%B4%A2",
+    "name": "缚龙索",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 636
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1024
+      }
+    ],
+    "card": {
+      "name": "缚龙索",
+      "attr": "青龙",
+      "type": "spell",
+      "effect": [
+        {
+          "type": "stun"
+        },
+        {
+          "type": "unit",
+          "n": 2
+        }
+      ],
+      "once": "sameName",
+      "text": "龙索缚形，动弹不得。目标单位眩晕，并对其造成 2 点伤害。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E6%98%A5%E9%9B%A8",
+    "name": "春雨",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 637
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1025
+      }
+    ],
+    "card": {
+      "name": "春雨",
+      "attr": "青龙",
+      "type": "spell",
+      "effect": [
+        {
+          "type": "buffUnit",
+          "atk": 1,
+          "hp": 1
+        },
+        {
+          "type": "shieldUnit",
+          "n": 1
+        }
+      ],
+      "once": "sameName",
+      "text": "春雨贵如油。目标你的单位获得 +1/+1 与护盾 1。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E9%9D%92%E7%BF%A0",
+    "name": "青翠",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 638
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1026
+      }
+    ],
+    "card": {
+      "name": "青翠",
+      "attr": "青龙",
+      "type": "spell",
+      "effect": {
+        "type": "buffUnit",
+        "atk": 2,
+        "hp": 2
+      },
+      "once": "sameName",
+      "text": "青翠凝碧，万物勃发。目标你的单位本回合获得 +2/+2（生命值部分即时获得）。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E7%A7%BB%E6%A0%BD",
+    "name": "移栽",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 639
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1027
+      }
+    ],
+    "card": {
+      "name": "移栽",
+      "attr": "青龙",
+      "type": "spell",
+      "effect": [
+        {
+          "type": "discard",
+          "n": 1
+        },
+        {
+          "type": "search",
+          "filter": {
+            "kind": "unit",
+            "attr": "青龙",
+            "n": 1,
+            "to": "hand"
+          }
+        }
+      ],
+      "text": "弃 1 张手牌：从牌库检索 1 张青龙单位，加入手牌。"
+    }
+  },
+  {
+    "id": "legacy:%E8%97%A4%E7%BC%9A",
+    "name": "藤缚",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 640
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1028
+      }
+    ],
+    "card": {
+      "name": "藤缚",
+      "attr": "青龙",
+      "type": "trap",
+      "trap": {
+        "trigger": "enter",
+        "effect": {
+          "type": "unit",
+          "n": 5
+        }
+      },
+      "text": "打出后盖放。如果对方单位入场，你可以翻开并对其造成 5 点伤害。"
+    }
+  },
+  {
+    "id": "legacy:%E9%9D%92%E5%B8%9D%E4%BE%8D",
+    "name": "青帝侍",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 641
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1029
+      }
+    ],
+    "card": {
+      "name": "青帝侍",
+      "attr": "青龙",
+      "type": "unit",
+      "atk": 4,
+      "hp": 6,
+      "kw": [
+        "隐匿",
+        "进化"
+      ],
+      "evolveFrom": "青鸾",
+      "evoStage": 1,
+      "enter": [
+        {
+          "type": "search",
+          "filter": {
+            "kind": "unit",
+            "name": "青苗",
+            "n": 1,
+            "to": "hand"
+          }
+        }
+      ],
+      "text": "进化自青鸾。青帝近侍，执印传诏。隐匿。登场：从牌库检索 1 张「青苗」加入手牌。"
+    }
+  },
+  {
+    "id": "legacy:%E9%9B%A8%E9%9C%B2",
+    "name": "雨露",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 642
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1030
+      }
+    ],
+    "card": {
+      "name": "雨露",
+      "attr": "青龙",
+      "type": "spell",
+      "effect": {
+        "type": "search",
+        "filter": {
+          "kind": "unit",
+          "attr": "青龙",
+          "n": 1,
+          "to": "hand"
+        }
+      },
+      "once": "sameName",
+      "text": "从牌库检索 1 张青龙单位加入手牌。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E6%B4%9E%E5%AF%9F",
+    "name": "洞察",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 645
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1033
+      }
+    ],
+    "card": {
+      "name": "洞察",
+      "attr": "中立",
+      "type": "spell",
+      "effect": {
+        "type": "draw",
+        "n": 2
+      },
+      "once": "sameName",
+      "text": "抽 2 张牌。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E4%BC%A0%E8%AE%AF",
+    "name": "传讯",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 646
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1034
+      }
+    ],
+    "card": {
+      "name": "传讯",
+      "attr": "中立",
+      "type": "spell",
+      "effect": {
+        "type": "draw",
+        "n": 1
+      },
+      "text": "抽 1 张牌。"
+    }
+  },
+  {
+    "id": "legacy:%E5%BC%95%E8%B7%AF",
+    "name": "引路",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 647
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1035
+      }
+    ],
+    "card": {
+      "name": "引路",
+      "attr": "中立",
+      "type": "spell",
+      "effect": {
+        "type": "search",
+        "filter": {
+          "kind": "pulse",
+          "n": 1,
+          "to": "hand"
+        }
+      },
+      "once": "sameName",
+      "text": "拨云见路。从牌库检索 1 张脉冲加入手牌。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E6%98%9F%E7%81%AB",
+    "name": "星火",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 648
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1036
+      }
+    ],
+    "card": {
+      "name": "星火",
+      "attr": "中立",
+      "type": "spell",
+      "effect": [
+        {
+          "type": "look",
+          "top": 3,
+          "pick": 1,
+          "rest": "shuffle"
+        }
+      ],
+      "text": "看牌库顶 3 选 1 张加入手牌，其余洗回牌库。"
+    }
+  },
+  {
+    "id": "legacy:%E8%93%84%E5%8A%BF",
+    "name": "蓄势",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 649
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1037
+      }
+    ],
+    "card": {
+      "name": "蓄势",
+      "attr": "中立",
+      "type": "spell",
+      "effect": [
+        {
+          "type": "discard",
+          "n": 1
+        },
+        {
+          "type": "draw",
+          "n": 2
+        }
+      ],
+      "text": "弃 1 张：抽 2 张。"
+    }
+  },
+  {
+    "id": "legacy:%E6%95%B4%E5%A4%87",
+    "name": "整备",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 650
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1038
+      }
+    ],
+    "card": {
+      "name": "整备",
+      "attr": "中立",
+      "type": "spell",
+      "effect": [
+        {
+          "type": "look",
+          "top": 8,
+          "pick": 1,
+          "filter": {
+            "kind": "unit"
+          },
+          "rest": "shuffle"
+        }
+      ],
+      "once": "sameName",
+      "text": "看牌库顶 8 选 1 张单位加入手牌，其余洗回牌库。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E6%AD%A2%E6%88%88",
+    "name": "止戈",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 651
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1039
+      }
+    ],
+    "card": {
+      "name": "止戈",
+      "attr": "中立",
+      "type": "spell",
+      "effect": {
+        "type": "stunAttack"
+      },
+      "text": "目标单位本回合不能攻击。"
+    }
+  },
+  {
+    "id": "legacy:%E5%87%80%E5%8C%96",
+    "name": "净化",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 652
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1040
+      }
+    ],
+    "card": {
+      "name": "净化",
+      "attr": "中立",
+      "type": "spell",
+      "effect": {
+        "type": "dispel"
+      },
+      "once": "sameName",
+      "text": "移除目标单位的所有护盾与增益。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E5%BA%87%E6%8A%A4",
+    "name": "庇护",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 653
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1041
+      }
+    ],
+    "card": {
+      "name": "庇护",
+      "attr": "中立",
+      "type": "spell",
+      "effect": {
+        "type": "immune"
+      },
+      "once": "sameName",
+      "text": "目标单位本回合免疫伤害。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E5%A4%8D%E8%8B%8F",
+    "name": "复苏",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 654
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1042
+      }
+    ],
+    "card": {
+      "name": "复苏",
+      "attr": "中立",
+      "type": "spell",
+      "effect": {
+        "type": "heal",
+        "n": 8
+      },
+      "once": "sameName",
+      "text": "回复你的核心 8 点生命。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E5%9B%9E%E5%A4%A9",
+    "name": "回天",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 655
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1043
+      }
+    ],
+    "card": {
+      "name": "回天",
+      "attr": "中立",
+      "type": "spell",
+      "effect": {
+        "type": "heal",
+        "n": 12
+      },
+      "once": "sameName",
+      "text": "回复你的核心 12 点生命。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E6%B9%AE%E7%81%AD",
+    "name": "湮灭",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 656
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1044
+      }
+    ],
+    "card": {
+      "name": "湮灭",
+      "attr": "中立",
+      "type": "spell",
+      "effect": {
+        "type": "destroyUnit"
+      },
+      "selfAttackLock": true,
+      "text": "消灭目标单位。如果你使用此卡，本回合你的单位就不能攻击。"
+    }
+  },
+  {
+    "id": "legacy:%E6%BA%AF%E6%BA%90",
+    "name": "溯源",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 657
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1045
+      }
+    ],
+    "card": {
+      "name": "溯源",
+      "attr": "中立",
+      "type": "spell",
+      "effect": {
+        "type": "graveRecover",
+        "n": 1
+      },
+      "once": "sameName",
+      "text": "从弃牌堆选 1 张牌移回手牌。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E5%85%91%E6%8D%A2",
+    "name": "兑换",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 658
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1046
+      }
+    ],
+    "card": {
+      "name": "兑换",
+      "attr": "中立",
+      "type": "spell",
+      "effect": {
+        "type": "graveRecover",
+        "kind": "pulse"
+      },
+      "text": "从弃牌堆将 1 张脉冲移回手牌（由你选）。"
+    }
+  },
+  {
+    "id": "legacy:%E7%99%BD%E6%B3%BD",
+    "name": "白泽",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 659
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1047
+      }
+    ],
+    "card": {
+      "name": "白泽",
+      "attr": "中立",
+      "type": "unit",
+      "atk": 3,
+      "hp": 6,
+      "skill": {
+        "name": "通晓",
+        "oncePerTurn": true,
+        "effect": {
+          "type": "draw",
+          "n": 1
+        }
+      },
+      "once": "sameName",
+      "text": "通晓万物。技能「通晓」：抽 1 张牌（不耗 AP）。每回合，你只能使用 1 张同名卡。每回合，你只能发动此技能 1 次。"
+    }
+  },
+  {
+    "id": "legacy:%E9%BA%92%E9%BA%9F",
+    "name": "麒麟",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 660
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1048
+      }
+    ],
+    "card": {
+      "name": "麒麟",
+      "attr": "中立",
+      "type": "unit",
+      "atk": 8,
+      "hp": 8,
+      "kw": [
+        "守护"
+      ],
+      "enter": [
+        {
+          "type": "heal",
+          "n": 3
+        }
+      ],
+      "summonCondition": {
+        "type": "noOtherOwnUnits"
+      },
+      "text": "仁兽麒麟，踏云而行。守护。进场：回复你的核心 3 点生命。你的场上必须没有其他单位，才能召唤此单位。"
+    }
+  },
+  {
+    "id": "legacy:%E9%95%87%E5%B2%B3",
+    "name": "镇岳",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 661
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1049
+      }
+    ],
+    "card": {
+      "name": "镇岳",
+      "attr": "中立",
+      "type": "trap",
+      "trap": {
+        "trigger": "attackCore",
+        "effect": {
+          "type": "cancel"
+        }
+      },
+      "text": "打出后盖放。如果对方单位攻击你的核心，你可以翻开并取消该次攻击。"
+    }
+  },
+  {
+    "id": "legacy:%E5%8C%96%E9%99%A9",
+    "name": "化险",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 662
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1050
+      }
+    ],
+    "card": {
+      "name": "化险",
+      "attr": "中立",
+      "type": "trap",
+      "trap": {
+        "trigger": "coreDamaged",
+        "effect": {
+          "type": "prevent",
+          "n": 5
+        }
+      },
+      "text": "打出后盖放。如果你的核心受到伤害，你可以翻开并防止其中最多 5 点。"
+    }
+  },
+  {
+    "id": "legacy:%E8%97%8F%E9%94%8B",
+    "name": "藏锋",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 663
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1051
+      }
+    ],
+    "card": {
+      "name": "藏锋",
+      "attr": "中立",
+      "type": "trap",
+      "trap": {
+        "trigger": "attackUnit",
+        "effect": {
+          "type": "cancel"
+        }
+      },
+      "text": "打出后盖放。如果你的单位被攻击，你可以翻开并取消该次攻击。"
+    }
+  },
+  {
+    "id": "legacy:%E6%8B%9B%E6%91%87",
+    "name": "招摇",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 664
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1052
+      }
+    ],
+    "card": {
+      "name": "招摇",
+      "attr": "中立",
+      "type": "trap",
+      "trap": {
+        "trigger": "spellCast",
+        "effect": {
+          "type": "cancelSpell"
+        }
+      },
+      "text": "打出后盖放。如果对方使用脉冲，你可以翻开并使其无效。"
+    }
+  },
+  {
+    "id": "legacy:%E5%AF%BB%E8%8B%97",
+    "name": "寻苗",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 665
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1053
+      }
+    ],
+    "card": {
+      "name": "寻苗",
+      "attr": "中立",
+      "type": "spell",
+      "effect": {
+        "type": "search",
+        "filter": {
+          "evoStage": 1,
+          "n": 1,
+          "to": "hand"
+        }
+      },
+      "once": "sameName",
+      "text": "从牌库检索 1 张一段进化单位加入手牌。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E5%AF%BB%E6%9E%9C",
+    "name": "寻果",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 666
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1054
+      }
+    ],
+    "card": {
+      "name": "寻果",
+      "attr": "中立",
+      "type": "spell",
+      "effect": {
+        "type": "search",
+        "filter": {
+          "evoStageMin": 2,
+          "n": 1,
+          "to": "hand"
+        }
+      },
+      "once": "sameName",
+      "text": "从牌库检索 1 张二段以上进化单位加入手牌。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E5%86%9B%E4%BB%A4",
+    "name": "军令",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 667
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1055
+      }
+    ],
+    "card": {
+      "name": "军令",
+      "attr": "中立",
+      "type": "spell",
+      "effect": {
+        "type": "search",
+        "filter": {
+          "atkMin": 4,
+          "n": 1,
+          "to": "hand"
+        }
+      },
+      "once": "sameName",
+      "text": "从牌库检索 1 张攻击力 4 以上的单位加入手牌。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E9%93%81%E5%A3%81",
+    "name": "铁壁",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 668
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1056
+      }
+    ],
+    "card": {
+      "name": "铁壁",
+      "attr": "中立",
+      "type": "spell",
+      "effect": {
+        "type": "search",
+        "filter": {
+          "hpMin": 6,
+          "n": 1,
+          "to": "hand"
+        }
+      },
+      "once": "sameName",
+      "text": "从牌库检索 1 张生命 6 以上的单位加入手牌。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E7%A0%B4%E7%94%B2",
+    "name": "破甲",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 669
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1057
+      }
+    ],
+    "card": {
+      "name": "破甲",
+      "attr": "中立",
+      "type": "spell",
+      "effect": {
+        "type": "search",
+        "filter": {
+          "kw": "穿透",
+          "n": 1,
+          "to": "hand"
+        }
+      },
+      "once": "sameName",
+      "text": "从牌库检索 1 张带穿透的单位加入手牌。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E9%81%97%E7%83%AC",
+    "name": "遗烬",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 670
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1058
+      }
+    ],
+    "card": {
+      "name": "遗烬",
+      "attr": "中立",
+      "type": "spell",
+      "effect": {
+        "type": "search",
+        "filter": {
+          "kw": "遗蜕",
+          "n": 1,
+          "to": "hand"
+        }
+      },
+      "once": "sameName",
+      "text": "从牌库检索 1 张带遗蜕的单位加入手牌。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E5%A3%81%E5%9E%92",
+    "name": "壁垒",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 671
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1059
+      }
+    ],
+    "card": {
+      "name": "壁垒",
+      "attr": "中立",
+      "type": "spell",
+      "effect": {
+        "type": "search",
+        "filter": {
+          "kw": "守护",
+          "n": 1,
+          "to": "hand"
+        }
+      },
+      "once": "sameName",
+      "text": "从牌库检索 1 张带守护的单位加入手牌。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E6%B5%81%E8%BD%AC",
+    "name": "流转",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 672
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1060
+      }
+    ],
+    "card": {
+      "name": "流转",
+      "attr": "中立",
+      "type": "spell",
+      "effect": [
+        {
+          "type": "discard",
+          "n": 1
+        },
+        {
+          "type": "draw",
+          "n": 1
+        }
+      ],
+      "text": "弃 1 张手牌：抽 1 张牌。"
+    }
+  },
+  {
+    "id": "legacy:%E6%B8%85%E4%BB%93",
+    "name": "清仓",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 673
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1061
+      }
+    ],
+    "card": {
+      "name": "清仓",
+      "attr": "中立",
+      "type": "spell",
+      "effect": [
+        {
+          "type": "discard",
+          "n": 3
+        },
+        {
+          "type": "draw",
+          "n": 2
+        }
+      ],
+      "text": "弃 3 张手牌：抽 2 张牌。"
+    }
+  },
+  {
+    "id": "legacy:%E6%9A%97%E5%93%A8",
+    "name": "暗哨",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 674
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1062
+      }
+    ],
+    "card": {
+      "name": "暗哨",
+      "attr": "中立",
+      "type": "trap",
+      "trap": {
+        "trigger": "enter",
+        "effect": {
+          "type": "draw",
+          "n": 1
+        }
+      },
+      "text": "打出后盖放。如果对方单位入场，你可以翻开并抽 1 张牌。"
+    }
+  },
+  {
+    "id": "legacy:%E4%BC%8F%E5%85%B5",
+    "name": "伏兵",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 675
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1063
+      }
+    ],
+    "card": {
+      "name": "伏兵",
+      "attr": "中立",
+      "type": "trap",
+      "trap": {
+        "trigger": "attackCore",
+        "effect": {
+          "type": "draw",
+          "n": 2
+        }
+      },
+      "text": "打出后盖放。如果对方单位攻击你的核心，你可以翻开并抽 2 张牌。"
+    }
+  },
+  {
+    "id": "legacy:%E4%BA%86%E6%96%AD",
+    "name": "了断",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 676
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1064
+      }
+    ],
+    "card": {
+      "name": "了断",
+      "attr": "中立",
+      "type": "spell",
+      "effect": [
+        {
+          "type": "discard",
+          "n": 1
+        },
+        {
+          "type": "draw",
+          "n": 2
+        },
+        {
+          "type": "condDraw",
+          "n": 1,
+          "cond": {
+            "discardHas": "unit"
+          }
+        }
+      ],
+      "text": "弃 1 张手牌：抽 2 张牌。如果弃掉的是单位，就再抽 1 张。"
+    }
+  },
+  {
+    "id": "legacy:%E9%87%8D%E7%AD%AE",
+    "name": "重筮",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 677
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1065
+      }
+    ],
+    "card": {
+      "name": "重筮",
+      "attr": "中立",
+      "type": "spell",
+      "once": "sameName",
+      "effect": [
+        {
+          "type": "discardHand"
+        },
+        {
+          "type": "draw",
+          "n": 4
+        }
+      ],
+      "text": "弃掉你的全部手牌，抽 4 张牌。每回合，你只能使用 1 张同名卡。"
+    }
+  },
+  {
+    "id": "legacy:%E6%90%8F%E5%91%BD",
+    "name": "搏命",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 678
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1066
+      }
+    ],
+    "card": {
+      "name": "搏命",
+      "attr": "中立",
+      "type": "spell",
+      "effect": [
+        {
+          "type": "payLifeHalf"
+        },
+        {
+          "type": "draw",
+          "n": 5
+        }
+      ],
+      "text": "支付你一半的核心生命：抽 5 张牌。"
+    }
+  },
+  {
+    "id": "legacy:%E9%99%8D%E4%B8%B4",
+    "name": "降临",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 681
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1069
+      }
+    ],
+    "card": {
+      "name": "降临",
+      "attr": "青龙",
+      "type": "ace",
+      "effect": {
+        "type": "summonFromDeck",
+        "n": 1,
+        "ignoreCondition": true,
+        "canAttack": true
+      },
+      "text": "从你的卡组选 1 个单位，置于你的场上。无视其召唤条件。该单位本回合可以攻击。"
+    }
+  },
+  {
+    "id": "legacy:%E5%A4%BA%E9%AD%82",
+    "name": "夺魂",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 684
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1072
+      }
+    ],
+    "card": {
+      "name": "夺魂",
+      "attr": "玄武",
+      "type": "ace",
+      "effect": {
+        "type": "stealControl",
+        "n": 1,
+        "dur": "turnEnd"
+      },
+      "text": "夺取对手 1 个单位的控制权，直到回合结束。"
+    }
+  },
+  {
+    "id": "legacy:%E5%9B%9E%E9%AD%82",
+    "name": "回魂",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 685
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1073
+      }
+    ],
+    "card": {
+      "name": "回魂",
+      "attr": "玄武",
+      "type": "ace",
+      "effect": {
+        "type": "revive",
+        "n": 2,
+        "ignoreCondition": true,
+        "canAttack": true
+      },
+      "text": "从你的弃牌区选至多 2 个单位，无视召唤条件，置于你的场上。这些单位本回合可以攻击。"
+    }
+  },
+  {
+    "id": "legacy:%E6%B3%89%E6%B6%8C",
+    "name": "泉涌",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 688
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1076
+      }
+    ],
+    "card": {
+      "name": "泉涌",
+      "attr": "中立",
+      "type": "ace",
+      "effect": {
+        "type": "chainDraw"
+      },
+      "text": "本回合，你每使用 1 张牌，就抽 1 张牌。"
+    }
+  },
+  {
+    "id": "legacy:%E8%BE%93%E5%B7%9D",
+    "name": "输川",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 693
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1081
+      }
+    ],
+    "card": {
+      "name": "输川",
+      "attr": "百川",
+      "type": "unit",
+      "atk": 2,
+      "hp": 3,
+      "skill": {
+        "name": "输川",
+        "effect": {
+          "type": "bcShuChuan",
+          "n": 3,
+          "draw": 2
+        }
+      },
+      "text": "这个区域在场上占一格，正面朝上放置卡牌，双方公开。技能「输川」：从你的卡组弃 3 张牌，抽 2 张牌。抽到的这两张牌必须立即打出；如果能立即打出，就结算其效果并将它置于冰泉；如果不能立即打出，就直接置于墓地，不触发其效果。"
+    }
+  },
+  {
+    "id": "legacy:%E5%BC%95%E6%B5%81",
+    "name": "引流",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 694
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1082
+      }
+    ],
+    "card": {
+      "name": "引流",
+      "attr": "百川",
+      "type": "unit",
+      "atk": 2,
+      "hp": 4,
+      "skill": {
+        "name": "引流",
+        "effect": [
+          {
+            "type": "bcGraveToIce",
+            "n": 1
+          },
+          {
+            "type": "bcDeckToGrave",
+            "n": 2
+          }
+        ]
+      },
+      "text": "这个区域在场上占一格，正面朝上放置卡牌，双方公开。技能「引流」：从你的弃牌区选 1 张牌置于冰泉；从你的卡组弃 2 张牌。"
+    }
+  },
+  {
+    "id": "legacy:%E6%89%BF%E6%B3%A2",
+    "name": "承波",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 695
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1083
+      }
+    ],
+    "card": {
+      "name": "承波",
+      "attr": "百川",
+      "type": "unit",
+      "atk": 2,
+      "hp": 3,
+      "skill": {
+        "name": "承波",
+        "effect": [
+          {
+            "type": "draw",
+            "n": 1
+          },
+          {
+            "type": "bcHandToIce",
+            "n": 1,
+            "filter": {
+              "kind": "unitOrPulse"
+            }
+          }
+        ]
+      },
+      "text": "这个区域在场上占一格，正面朝上放置卡牌，双方公开。技能「承波」：抽 1 张牌；将 1 张手牌（脉冲或锚点，不含王牌）置于冰泉。"
+    }
+  },
+  {
+    "id": "legacy:%E8%93%84%E5%A1%98",
+    "name": "蓄塘",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 696
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1084
+      }
+    ],
+    "card": {
+      "name": "蓄塘",
+      "attr": "百川",
+      "type": "unit",
+      "atk": 1,
+      "hp": 4,
+      "skill": {
+        "name": "蓄塘",
+        "effect": [
+          {
+            "type": "bcDeckToIce",
+            "n": 1
+          },
+          {
+            "type": "draw",
+            "n": 1
+          }
+        ]
+      },
+      "onEvent": {
+        "trigger": "unitDeath",
+        "side": "own",
+        "effect": {
+          "type": "bcDeadToIce",
+          "draw": 1
+        }
+      },
+      "text": "这个区域在场上占一格，正面朝上放置卡牌，双方公开。技能「蓄塘」：从你的卡组将 1 张牌置于冰泉，抽 1 张牌。每当你的其他单位被消灭，将那张牌置于冰泉，并抽 1 张牌（不在你自己的回合也能触发）。"
+    }
+  },
+  {
+    "id": "legacy:%E6%8E%A2%E7%8F%A0",
+    "name": "探珠",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 697
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1085
+      }
+    ],
+    "card": {
+      "name": "探珠",
+      "attr": "百川",
+      "type": "unit",
+      "atk": 5,
+      "hp": 6,
+      "kw": [
+        "进化"
+      ],
+      "evolveFrom": [
+        "输川",
+        "蓄塘"
+      ],
+      "evoStage": 1,
+      "skill": {
+        "name": "探珠",
+        "effect": {
+          "type": "bcIceDrawPick",
+          "n": 3
+        }
+      },
+      "text": "这个区域在场上占一格，正面朝上放置卡牌，双方公开。这个锚点必须由 输川 或 蓄塘 进化才能召唤。技能「探珠」：从冰泉内抽 3 张牌，选择其中的 1 张打出，剩余 2 张置于墓地；如果选中的这张牌无法打出，就将它返回冰泉。"
+    }
+  },
+  {
+    "id": "legacy:%E5%9B%9E%E6%BD%AE",
+    "name": "回潮",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 698
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1086
+      }
+    ],
+    "card": {
+      "name": "回潮",
+      "attr": "百川",
+      "type": "unit",
+      "atk": 4,
+      "hp": 8,
+      "kw": [
+        "守护",
+        "进化"
+      ],
+      "evolveFrom": [
+        "输川",
+        "引流"
+      ],
+      "evoStage": 1,
+      "skill": {
+        "name": "回潮",
+        "effect": {
+          "type": "bcIceToDeck",
+          "draw": 2
+        }
+      },
+      "text": "这个区域在场上占一格，正面朝上放置卡牌，双方公开。守护。这个锚点必须由 输川 或 引流 进化才能召唤。技能「回潮」：将冰泉内的所有牌洗回你的卡组，抽 2 张牌。"
+    }
+  },
+  {
+    "id": "legacy:%E6%8B%A9%E5%8D%B7",
+    "name": "择卷",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 699
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1087
+      }
+    ],
+    "card": {
+      "name": "择卷",
+      "attr": "百川",
+      "type": "unit",
+      "atk": 6,
+      "hp": 6,
+      "kw": [
+        "进化"
+      ],
+      "evolveFrom": [
+        "引流",
+        "承波"
+      ],
+      "evoStage": 1,
+      "skill": {
+        "name": "择卷",
+        "effect": {
+          "type": "bcIcePulse"
+        }
+      },
+      "text": "这个区域在场上占一格，正面朝上放置卡牌，双方公开。这个锚点必须由 引流 或 承波 进化才能召唤。技能「择卷」：从冰泉选 1 张脉冲打出，之后将其置于墓地。"
+    }
+  },
+  {
+    "id": "legacy:%E7%AD%91%E5%A0%A4",
+    "name": "筑堤",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 700
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1088
+      }
+    ],
+    "card": {
+      "name": "筑堤",
+      "attr": "百川",
+      "type": "unit",
+      "atk": 3,
+      "hp": 9,
+      "kw": [
+        "守护",
+        "进化"
+      ],
+      "evolveFrom": [
+        "承波",
+        "蓄塘"
+      ],
+      "evoStage": 1,
+      "skill": {
+        "name": "筑堤",
+        "effect": {
+          "type": "bcIceBuff",
+          "per": 3,
+          "atk": 2,
+          "hp": 2
+        }
+      },
+      "text": "这个区域在场上占一格，正面朝上放置卡牌，双方公开。守护。这个锚点必须由 承波 或 蓄塘 进化才能召唤。技能「筑堤」：直到回合结束，只要冰泉每有 3 张牌，此单位就获得 +2/+2。"
+    }
+  },
+  {
+    "id": "legacy:%E7%99%BE%E5%B7%9D%C2%B7%E4%B8%9C%E5%88%B0%E6%B5%B7",
+    "name": "百川·东到海",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 701
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1089
+      }
+    ],
+    "card": {
+      "name": "百川·东到海",
+      "attr": "百川",
+      "type": "unit",
+      "atk": 6,
+      "hp": 10,
+      "kw": [
+        "进化"
+      ],
+      "evolveFrom": [
+        "探珠",
+        "回潮",
+        "择卷",
+        "筑堤"
+      ],
+      "evoStage": 2,
+      "enter": [
+        {
+          "type": "search",
+          "filter": {
+            "kind": "pulse",
+            "attr": "百川",
+            "n": 1,
+            "to": "hand"
+          }
+        },
+        {
+          "type": "bcIceCash",
+          "per": 3,
+          "cap": 3
+        }
+      ],
+      "divine": {
+        "name": "返照",
+        "need": 0,
+        "dur": 99,
+        "mech": {
+          "type": "bcSwap"
+        },
+        "effect": "将你的卡组与弃牌区洗匀后互换",
+        "divineType": "baichuan"
+      },
+      "text": "这个区域在场上占一格，正面朝上放置卡牌，双方公开。这个锚点必须由 探珠 或 回潮 或 择卷 或 筑堤 进化才能召唤。登场：检索 1 张百川脉冲加入手牌；并将冰泉中的牌按每 3 张抽 1 张加入手牌（最多 3 张）。神威「返照」：不耗 AP，每局限一次，只能在自己的回合发动：将你的卡组与弃牌区洗匀后互换。（旗舰）"
+    }
+  },
+  {
+    "id": "legacy:%E5%BD%92%E6%A0%B9",
+    "name": "归根",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 702
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1090
+      }
+    ],
+    "card": {
+      "name": "归根",
+      "attr": "百川",
+      "type": "ace",
+      "effect": {
+        "type": "bcBounceAll"
+      },
+      "text": "对面的所有锚点回手牌。"
+    }
+  },
+  {
+    "id": "legacy:%E6%B1%87%E6%B5%81",
+    "name": "汇流",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 702
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1090
+      }
+    ],
+    "card": {
+      "name": "汇流",
+      "attr": "百川",
+      "type": "spell",
+      "effect": [
+        {
+          "type": "bcHandToDeck",
+          "n": 1
+        },
+        {
+          "type": "search",
+          "noTier": true,
+          "filter": {
+            "names": [
+              "输川",
+              "引流",
+              "承波",
+              "蓄塘"
+            ],
+            "n": 1,
+            "to": "hand"
+          }
+        }
+      ],
+      "text": "将 1 张手牌洗回卡组：从你的卡组将 1 张底座加入手牌。"
+    }
+  },
+  {
+    "id": "legacy:%E5%BD%92%E6%BA%90",
+    "name": "归源",
+    "sources": [
+      {
+        "path": "quote/临界·模块化·2D版.html",
+        "line": 703
+      },
+      {
+        "path": "quote/临界·模块化·3D版.html",
+        "line": 1091
+      }
+    ],
+    "card": {
+      "name": "归源",
+      "attr": "百川",
+      "type": "spell",
+      "once": "sameName",
+      "effect": {
+        "type": "search",
+        "noTier": true,
+        "filter": {
+          "names": [
+            "输川",
+            "引流",
+            "承波",
+            "蓄塘"
+          ],
+          "n": 1,
+          "to": "hand"
+        }
+      },
+      "text": "从你的卡组检索 1 张底座加入手牌。每回合，你只能使用 1 张同名卡。"
+    }
+  }
+]

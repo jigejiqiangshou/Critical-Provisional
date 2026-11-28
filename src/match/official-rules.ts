@@ -31,7 +31,7 @@ type OfficialResolution = RuleResolution<OfficialMatchState, EffectContinuation,
 const capabilities = Object.freeze({
   triggers: Object.freeze(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit'] as const satisfies readonly OfficialTrigger[]),
   effects: Object.freeze([
-    'damage-unit', 'draw', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
+    'damage-unit', 'draw', 'heal-core', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
   ] as const satisfies readonly OfficialEffect['type'][]),
 })
 
@@ -250,6 +250,12 @@ function executeEffect(
     case 'draw':
       draw(state, seat, effect.amount, events)
       break
+    case 'heal-core': {
+      const amount = Math.max(0, Math.min(effect.amount, 50 - player.hp))
+      player.hp += amount
+      if (amount) events.push(visible('core-healed', { seat, amount, hp: player.hp }))
+      break
+    }
     case 'register-death-attack-bonus': {
       const unit = player.board.find(item => item.id === sourceId)
       if (unit) unit.deathAttackBonus = effect.amount
