@@ -286,3 +286,49 @@ describe('partial T045 definitions: core settlement samples', () => {
     expect(definition('离火')).toMatchObject({ trigger: 'play', steps: [{ type: 'damage-unit', amount: 5, target: 'enemy' }] })
   })
 })
+
+it.each(['select', 'pass'] as const)('藏锋 %s resolves a unit attack and spends its action', answer => {
+  const trap = definition('藏锋')
+  const cards: Card[] = [
+    { id: 'unit', name: 'unit', kind: 'unit', flagship: false, data: { attack: 3, health: 8 } },
+    { id: trap.cardId, name: '藏锋', kind: 'trap', flagship: false, data: { effects: [{ trigger: trap.trigger, steps: trap.steps }] } },
+  ]
+  const snapshot = createOfficialSnapshot({ id: 'cangfeng', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] })
+  const a = createOfficialSeatState(), b = createOfficialSeatState()
+  a.ap = 1; a.board = [{ ...unit('attacker', 'unit'), hp: 8, canAttack: true }]
+  b.board = [{ ...unit('target', 'unit'), hp: 8 }]; b.facedown = [{ id: 'trap', cardId: trap.cardId }]
+  const state: OfficialMatchState = { seatOrder: ['A', 'B'], seats: { A: a, B: b }, turn: 2, finale: null, battleMode: false, effect: null }
+  const waiting = officialRules.resolveAction({ state, snapshot, seat: 'A', random: () => 0,
+    action: { type: 'attack', attackerId: 'attacker', targetId: 'target' } })
+  if (waiting.kind !== 'waiting') throw new Error('expected response window')
+  const result = officialRules.resumeDecision({ state: waiting.state, snapshot, seat: 'B', random: () => 0,
+    decision: { id: 'decision', ...waiting.decision }, answer: answer === 'select' ? { kind: 'select', candidateIds: ['trap'] } : { kind: 'pass' } })
+  if (result.kind !== 'active') throw new Error('expected settled attack')
+  expect(result.state.seats.B.board[0].hp).toBe(answer === 'select' ? 8 : 5)
+  expect(result.state.seats.A.ap).toBe(0)
+  expect(result.state.seats.A.board[0].attacked).toBe(true)
+  expect(result.state.seats.B.facedown).toHaveLength(answer === 'select' ? 0 : 1)
+})
+
+it.each(['select', 'pass'] as const)('伏兵 %s resolves before core damage', answer => {
+  const trap = definition('伏兵')
+  const cards: Card[] = [
+    { id: 'unit', name: 'unit', kind: 'unit', flagship: false, data: { attack: 3, health: 8 } },
+    { id: trap.cardId, name: '伏兵', kind: 'trap', flagship: false, data: { effects: [{ trigger: trap.trigger, steps: trap.steps }] } },
+  ]
+  const snapshot = createOfficialSnapshot({ id: 'fubing', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] })
+  const a = createOfficialSeatState(), b = createOfficialSeatState([{ id: 'd1', cardId: 'unit' }, { id: 'd2', cardId: 'unit' }])
+  a.ap = 1; a.board = [{ ...unit('attacker', 'unit'), hp: 8, canAttack: true }]
+  b.facedown = [{ id: 'trap', cardId: trap.cardId }]
+  const state: OfficialMatchState = { seatOrder: ['A', 'B'], seats: { A: a, B: b }, turn: 2, finale: null, battleMode: false, effect: null }
+  const waiting = officialRules.resolveAction({ state, snapshot, seat: 'A', random: () => 0,
+    action: { type: 'attack', attackerId: 'attacker', targetId: coreTargetId('B') } })
+  if (waiting.kind !== 'waiting') throw new Error('expected response window')
+  const result = officialRules.resumeDecision({ state: waiting.state, snapshot, seat: 'B', random: () => 0,
+    decision: { id: 'decision', ...waiting.decision }, answer: answer === 'select' ? { kind: 'select', candidateIds: ['trap'] } : { kind: 'pass' } })
+  if (result.kind !== 'active') throw new Error('expected settled attack')
+  expect(result.state.seats.B.hp).toBe(47)
+  expect(result.state.seats.B.hand.map(card => card.id)).toEqual(answer === 'select' ? ['d1', 'd2'] : [])
+  expect(result.state.seats.A.ap).toBe(0)
+  expect(result.state.seats.B.facedown).toHaveLength(answer === 'select' ? 0 : 1)
+})
