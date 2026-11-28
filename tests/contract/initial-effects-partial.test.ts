@@ -537,3 +537,32 @@ it('multiple deployment responses resolve newest first even if a previous respon
   expect(core.read().state.seats.B.facedown.map(card => card.id)).toEqual(['vine'])
   expect(core.read().state.seats.B.hand.map(card => card.id)).toEqual(['draw'])
 })
+
+it.each([[0, 0], [3, 0], [5, 1]])('北冥之渊 locks next AP with ownTurn %i to %i', (priorTurns, expectedAp) => {
+  const effect = definition('北冥之渊')
+  const cards: Card[] = [
+    { id: effect.cardId, name: effect.legacyName, kind: 'spell', flagship: false, data: { attr: '玄武', effects: [{ trigger: effect.trigger, steps: effect.steps }] } },
+    { id: 'xuanwu', name: 'xuanwu', kind: 'spell', flagship: false, data: { attr: '玄武', effects: [{ trigger: 'play', steps: [{ type: 'draw', amount: 1 }] }] } },
+  ]
+  const snapshot = createOfficialSnapshot({ id: 'ap-lock', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] })
+  const a = createOfficialSeatState(), b = createOfficialSeatState()
+  a.hand = [{ id: 'source', cardId: effect.cardId }, { id: 'again', cardId: effect.cardId }, { id: 'other', cardId: 'xuanwu' }]; b.ownTurn = priorTurns
+  const state: OfficialMatchState = { seatOrder: ['A', 'B'], seats: { A: a, B: b }, turn: 2, finale: null, battleMode: false, effect: null }
+  const result = officialRules.resolveAction({ state, snapshot, seat: 'A', random: () => 0, action: { type: 'play-card', cardId: 'source' } })
+  if (result.kind !== 'active') throw new Error('expected effect')
+  expect(result.state.seats.A.fieldLock).toBe('玄武')
+  expect(result.state.seats.B.locked).toBe(true)
+  expect(officialRules.resolveAction({ state: result.state, snapshot, seat: 'A', random: () => 0, action: { type: 'play-card', cardId: 'other' } }).kind).toBe('rejected')
+  const next = officialRules.resolveAction({ state: result.state, snapshot, seat: 'A', random: () => 0, action: { type: 'end-turn' } })
+  if (next.kind !== 'active') throw new Error('expected B turn')
+  expect(next.state.seats.B).toMatchObject({ ap: expectedAp, locked: false, lockImmune: true })
+  const back = officialRules.resolveAction({ state: next.state, snapshot, seat: 'B', random: () => 0, action: { type: 'end-turn' } })
+  if (back.kind !== 'active') throw new Error('expected A turn')
+  expect(back.state.seats.B.lockImmune).toBe(true)
+  const immune = officialRules.resolveAction({ state: back.state, snapshot, seat: 'A', random: () => 0, action: { type: 'play-card', cardId: 'again' } })
+  if (immune.kind !== 'active') throw new Error('expected immune lock attempt')
+  expect(immune.state.seats.B.locked).toBe(false)
+  const again = officialRules.resolveAction({ state: immune.state, snapshot, seat: 'A', random: () => 0, action: { type: 'end-turn' } })
+  if (again.kind !== 'active') throw new Error('expected B turn again')
+  expect(again.state.seats.B.lockImmune).toBe(false)
+})
