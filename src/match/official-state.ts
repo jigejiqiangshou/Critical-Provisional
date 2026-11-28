@@ -41,7 +41,7 @@ export interface OfficialCardData {
   readonly summonCondition?: SummonCondition
   readonly skill?: { readonly id: string; readonly oncePerTurn?: boolean; readonly lock?: boolean }
   readonly oncePerTurn?: boolean
-  readonly effects?: readonly { readonly trigger: OfficialTrigger; readonly steps: readonly OfficialEffect[] }[]
+  readonly effects?: readonly { readonly trigger: OfficialTrigger; readonly steps: readonly OfficialEffect[]; readonly timing?: 'immediate' | 'after-action' }[]
 }
 
 export interface OfficialCardInstance {
@@ -84,7 +84,7 @@ export interface OfficialSeatState {
 
 type RuleTask =
   | { readonly type: 'effect'; readonly seat: SeatId; readonly sourceId: string;
-      readonly targetId: string | null; readonly effect: OfficialEffect }
+      readonly targetId: string | null; readonly effect: OfficialEffect; readonly timing?: 'immediate' | 'after-action' }
   | { readonly type: 'death-bonuses'; readonly seat: SeatId }
   | { readonly type: 'discard-played-ice'; readonly seat: SeatId; readonly card: OfficialCardInstance }
   | { readonly type: 'response'; readonly seat: SeatId; readonly trigger: 'attack-core' | 'attack-unit' }

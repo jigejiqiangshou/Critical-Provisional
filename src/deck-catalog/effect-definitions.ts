@@ -10,6 +10,7 @@ export interface InitialEffectDefinition {
   readonly legacyName: string
   readonly source: string
   readonly trigger: OfficialTrigger
+  readonly timing?: 'immediate' | 'after-action'
   readonly steps: readonly OfficialEffect[]
 }
 
@@ -317,7 +318,7 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
   {
     cardId: 'initial:zhuqueyu', legacyName: '朱雀羽',
     source: 'quote/临界·模块化·2D版.html:579 deathrattle',
-    trigger: 'death', steps: [{ type: 'hand-cost', amount: 1, canPass: true, onSelect: [{ type: 'draw', amount: 2 }] }],
+    timing: 'after-action', trigger: 'death', steps: [{ type: 'hand-cost', amount: 1, canPass: true, onSelect: [{ type: 'draw', amount: 2 }] }],
   },
   {
     cardId: 'initial:xuelian', legacyName: '血涟',
