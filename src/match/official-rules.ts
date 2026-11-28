@@ -32,7 +32,7 @@ const capabilities = Object.freeze({
   triggers: Object.freeze(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit'] as const satisfies readonly OfficialTrigger[]),
   effects: Object.freeze([
     'damage-unit', 'draw', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
-    'heal-core', 'shield-core', 'destroy-unit', 'bonus-core-attack', 'damage-all-enemies', 'pre-strike', 'shield-unit', 'shield-all-own', 'buff-unit', 'lock-field', 'lock-own-attacks', 'discard-hand', 'look-pick', 'search-deck', 'hand-cost', 'pay-life', 'recover-discard',
+    'heal-core', 'shield-core', 'destroy-unit', 'stun-unit', 'bonus-core-attack', 'damage-all-enemies', 'pre-strike', 'shield-unit', 'shield-all-own', 'buff-unit', 'lock-field', 'lock-own-attacks', 'discard-hand', 'look-pick', 'search-deck', 'hand-cost', 'pay-life', 'recover-discard',
   ] as const satisfies readonly OfficialEffect['type'][]),
 })
 
@@ -272,6 +272,14 @@ function executeEffect(
   const { seat, sourceId, targetId, effect } = task
   const player = state.seats[seat]
   switch (effect.type) {
+    case 'stun-unit': {
+      const target = targetId === null ? undefined : unitLocation(state, targetId)
+      if (target) {
+        target.unit.stunned = true
+        events.push(visible('unit-stunned', { seat: target.seat, targetId }))
+      }
+      break
+    }
     case 'damage-unit':
       if (targetId !== null) damageUnit(state, snapshot, targetId, effect.amount, effect.pierce === true, events)
       break
@@ -629,7 +637,7 @@ function validEffectTarget(
     return effects.flatMap(effect => effect.type === 'hand-cost' ? [effect, ...flatten(effect.onSelect)] : [effect])
   }
   const steps = flatten(effectsFor(snapshot, card, trigger)).filter(effect =>
-    effect.type === 'damage-unit' || effect.type === 'destroy-unit' || effect.type === 'shield-unit' || effect.type === 'buff-unit')
+    effect.type === 'damage-unit' || effect.type === 'destroy-unit' || effect.type === 'stun-unit' || effect.type === 'shield-unit' || effect.type === 'buff-unit')
   if (!steps.length) return targets.length === 0
   if (targets.length !== 1) return false
   const target = unitLocation(state, targets[0])
