@@ -153,6 +153,40 @@ describe('partial T045 definitions: core settlement samples', () => {
       expect(target.state.seats.B.board[0].hp).toBe(20 - attack)
     },
   )
+  it.each([['燎原', 3, false], ['白虹', 4, true], ['祝融', 2, false], ['蓐收', 2, false]] as const)(
+    '%s damages every enemy with correct shielding and sequential death', (name, damage, pierce) => {
+      const entry = definition(name), victim = definition('毕方')
+      const kind = entry.trigger === 'skill' ? 'unit' : 'spell'
+      const cards: Card[] = [
+        { id: entry.cardId, name, kind, flagship: false,
+          data: { attack: 1, health: 1, skill: { id: 'skill' }, effects: [{ trigger: entry.trigger, steps: entry.steps }] } },
+        { id: victim.cardId, name: victim.legacyName, kind: 'unit', flagship: false,
+          data: { health: 1, effects: [{ trigger: victim.trigger, steps: victim.steps }] } },
+      ]
+      const release: Release = { id: 'partial', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] }
+      const a = createOfficialSeatState(), b = createOfficialSeatState([
+        { id: 'draw-1', cardId: victim.cardId }, { id: 'draw-2', cardId: victim.cardId }])
+      if (entry.trigger === 'skill') a.board = [unit('source', entry.cardId)]
+      else a.hand = [{ id: 'source', cardId: entry.cardId }]
+      b.board = [{ ...unit('first', victim.cardId), hp: 1 },
+        { ...unit('shielded', victim.cardId), hp: 1, shield: damage },
+        { ...unit('last', victim.cardId), hp: 1 }]
+      const state: OfficialMatchState = { seatOrder: ['A', 'B'], seats: { A: a, B: b }, turn: 2,
+        finale: null, battleMode: false, effect: null }
+      const action = entry.trigger === 'skill'
+        ? { type: 'activate-skill' as const, sourceId: 'source', skillId: 'skill' }
+        : { type: 'play-card' as const, cardId: 'source' }
+      const result = officialRules.resolveAction({ state, snapshot: createOfficialSnapshot(release), seat: 'A',
+        random: () => 0, action })
+      expect(result.kind).toBe('active')
+      if (result.kind !== 'active') throw new Error('expected settled action')
+      expect(result.state.seats.B.board.map(card => card.id)).toEqual(pierce ? [] : ['shielded'])
+      if (!pierce) expect(result.state.seats.B.board[0].shield).toBe(0)
+      const events = result.events.flatMap(event => event.type === 'rule-event' ? [event.name] : [])
+      expect(events.indexOf('unit-destroyed')).toBeLessThan(events.indexOf('draw'))
+      expect(events.indexOf('draw')).toBeLessThan(events.lastIndexOf('unit-destroyed'))
+    },
+  )
   it('maps 离火 to five damage against an enemy unit', () => {
     expect(definition('离火')).toMatchObject({ trigger: 'play', steps: [{ type: 'damage-unit', amount: 5, target: 'enemy' }] })
   })
