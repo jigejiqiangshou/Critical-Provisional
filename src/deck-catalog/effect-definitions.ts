@@ -166,6 +166,11 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'attack-unit', steps: [{ type: 'pre-strike', amount: 1 }],
   },
   {
+    cardId: 'initial:beimingzhiyuan', legacyName: '北冥之渊',
+    source: 'quote/临界·模块化·2D版.html:591 effect',
+    trigger: 'play', steps: [{ type: 'lock-field', attr: '玄武' }, { type: 'lock-next-ap' }],
+  },
+  {
     cardId: 'initial:bihu', legacyName: '庇护',
     source: 'quote/临界·模块化·2D版.html:653 effect',
     trigger: 'play', steps: [{ type: 'immunize-unit', target: 'own' }],
