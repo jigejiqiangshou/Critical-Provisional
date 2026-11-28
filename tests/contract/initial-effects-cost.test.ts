@@ -11,7 +11,7 @@ it.each([0, 1, 2])('朱雀羽 optional death cost with %i hand candidates', asyn
   const victim = initialEffectDefinitions.find(item => item.legacyName === '朱雀羽')!
   const cards: Card[] = [
     { id: victim.cardId, name: victim.legacyName, kind: 'unit', flagship: false,
-      data: { health: 1, effects: [{ trigger: victim.trigger, steps: victim.steps }] } },
+      data: { health: 1, effects: [{ trigger: victim.trigger, ...(victim.timing ? { timing: victim.timing } : {}), steps: victim.steps }] } },
     { id: 'spell', name: 'spell', kind: 'spell', flagship: false,
       data: { effects: [{ trigger: 'play', steps: [{ type: 'destroy-unit', target: 'enemy' }] }] } },
     { id: 'filler', name: 'filler', kind: 'unit', flagship: false, data: { health: 1 } },
@@ -72,7 +72,7 @@ it('朱雀羽 response waits until all targets of a group effect have settled', 
     { id: aoe.cardId, name: aoe.legacyName, kind: 'spell', flagship: false,
       data: { effects: [{ trigger: aoe.trigger, steps: aoe.steps }] } },
     { id: victim.cardId, name: victim.legacyName, kind: 'unit', flagship: false,
-      data: { health: 1, effects: [{ trigger: victim.trigger, steps: victim.steps }] } },
+      data: { health: 1, effects: [{ trigger: victim.trigger, ...(victim.timing ? { timing: victim.timing } : {}), steps: victim.steps }] } },
     { id: 'other', name: 'other', kind: 'unit', flagship: false, data: { health: 1 } },
   ]
   const snapshot = createOfficialSnapshot({ id: 'deferred-death', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] })
@@ -98,7 +98,7 @@ it('multiple 朱雀羽 deaths resolve deferred choices in order after restoratio
   const aoe = initialEffectDefinitions.find(item => item.legacyName === '燎原')!
   const cards: Card[] = [
     { id: aoe.cardId, name: aoe.legacyName, kind: 'spell', flagship: false, data: { effects: [{ trigger: aoe.trigger, steps: aoe.steps }] } },
-    { id: victim.cardId, name: victim.legacyName, kind: 'unit', flagship: false, data: { health: 1, effects: [{ trigger: victim.trigger, steps: victim.steps }] } },
+    { id: victim.cardId, name: victim.legacyName, kind: 'unit', flagship: false, data: { health: 1, effects: [{ trigger: victim.trigger, ...(victim.timing ? { timing: victim.timing } : {}), steps: victim.steps }] } },
   ]
   const snapshot = createOfficialSnapshot({ id: 'two-deaths', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] })
   const a = createOfficialSeatState(), b = createOfficialSeatState([{ id: 'draw-1', cardId: victim.cardId }, { id: 'draw-2', cardId: victim.cardId }])
