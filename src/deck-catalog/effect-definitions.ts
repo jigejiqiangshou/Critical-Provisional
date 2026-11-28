@@ -97,6 +97,26 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'attack-core', steps: [{ type: 'bonus-core-attack', amount: 1 }],
   },
   {
+    cardId: 'initial:liaoyuan', legacyName: '燎原',
+    source: 'quote/临界·模块化·2D版.html:566 effect',
+    trigger: 'play', steps: [{ type: 'damage-all-enemies', amount: 3, pierce: false }],
+  },
+  {
+    cardId: 'initial:zhurong', legacyName: '祝融',
+    source: 'quote/临界·模块化·2D版.html:570 skill.effect',
+    trigger: 'skill', steps: [{ type: 'damage-all-enemies', amount: 2, pierce: false }],
+  },
+  {
+    cardId: 'initial:rushou', legacyName: '蓐收',
+    source: 'quote/临界·模块化·2D版.html:615 skill.effect',
+    trigger: 'skill', steps: [{ type: 'damage-all-enemies', amount: 2, pierce: false }],
+  },
+  {
+    cardId: 'initial:baihong', legacyName: '白虹',
+    source: 'quote/临界·模块化·2D版.html:620 effect',
+    trigger: 'play', steps: [{ type: 'damage-all-enemies', amount: 4, pierce: true }],
+  },
+  {
     cardId: 'initial:yanwen', legacyName: '炎纹',
     source: 'quote/临界·模块化·2D版.html:562 effect',
     trigger: 'play', steps: [{ type: 'damage-unit', amount: 3, target: 'enemy' }, { type: 'draw', amount: 1 }],
