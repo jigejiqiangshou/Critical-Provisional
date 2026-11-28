@@ -1,4 +1,7 @@
 import type { OfficialEffect, OfficialTrigger } from '../match/official-state'
+import { OFFICIAL_RULES_VERSION } from '../match/official-state'
+import { getRuleCapabilities } from '../match/official-rules'
+import legacySources from './legacy-card-sources.json'
 
 /** Source-traceable definitions under migration. This list is deliberately
  * incomplete and must not be treated as an initial release or a coverage gate. */
@@ -137,7 +140,7 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'attack-unit', steps: [{ type: 'pre-strike', amount: 1 }],
   },
   {
-    cardId: 'initial:ningxiang', legacyName: '凝霜',
+    cardId: 'initial:ningshuang', legacyName: '凝霜',
     source: 'quote/临界·模块化·2D版.html:592 effect',
     trigger: 'play', steps: [{ type: 'shield-unit', amount: 5, target: 'own' }],
   },
@@ -162,3 +165,34 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'play', steps: [{ type: 'damage-unit', amount: 3, target: 'enemy' }, { type: 'draw', amount: 1 }],
   },
 ]
+
+/** Names enter this list only after every rules-bearing field and applicable
+ * choice has been reviewed, not merely after one effect has been translated. */
+const fullyAuditedLegacyNames: readonly string[] = []
+
+/** Fail closed before a first release can consume this in-progress catalog.
+ * The future release builder must call this before writing or packaging it. */
+export function assertInitialEffectsReady(): void {
+  const expected = new Set(legacySources.map(source => source.name))
+  const audited = new Set(fullyAuditedLegacyNames)
+  if (audited.size !== fullyAuditedLegacyNames.length || [...audited].some(name => !expected.has(name))) {
+    throw new TypeError('Invalid initial effect audit coverage')
+  }
+  const capabilities = getRuleCapabilities(OFFICIAL_RULES_VERSION)
+  if (!capabilities) throw new TypeError('Initial rules version is unavailable')
+  const triggers = new Set<string>(capabilities.triggers)
+  const effects = new Set<string>(capabilities.effects)
+  const namesById = new Map<string, string>()
+  for (const definition of initialEffectDefinitions) {
+    if (!expected.has(definition.legacyName)) throw new TypeError(`Unknown legacy card: ${definition.legacyName}`)
+    const prior = namesById.get(definition.cardId)
+    if (prior && prior !== definition.legacyName) throw new TypeError(`Duplicate card ID: ${definition.cardId}`)
+    namesById.set(definition.cardId, definition.legacyName)
+    if (!triggers.has(definition.trigger)) throw new TypeError(`Unknown trigger: ${definition.trigger}`)
+    for (const step of definition.steps) {
+      if (!effects.has(step.type)) throw new TypeError(`Unimplemented effect: ${step.type}`)
+    }
+  }
+  const incomplete = [...expected].filter(name => !audited.has(name))
+  if (incomplete.length) throw new TypeError(`Initial effect migration incomplete: ${incomplete.length} cards`)
+}

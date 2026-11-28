@@ -1,0 +1,1158 @@
+[
+  {
+    "name": "毕方",
+    "line2d": 558,
+    "line3d": 946,
+    "ruleFields": [
+      "kw",
+      "deathrattle"
+    ]
+  },
+  {
+    "name": "火鸦",
+    "line2d": 559,
+    "line3d": 947,
+    "ruleFields": [
+      "skill"
+    ]
+  },
+  {
+    "name": "金乌",
+    "line2d": 560,
+    "line3d": 948,
+    "ruleFields": [
+      "passive"
+    ]
+  },
+  {
+    "name": "焰羽",
+    "line2d": 561,
+    "line3d": 949,
+    "ruleFields": [
+      "enter"
+    ]
+  },
+  {
+    "name": "炎纹",
+    "line2d": 562,
+    "line3d": 950,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "烽火令",
+    "line2d": 563,
+    "line3d": 951,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "离火",
+    "line2d": 564,
+    "line3d": 952,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "烈焰奔袭",
+    "line2d": 565,
+    "line3d": 953,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "燎原",
+    "line2d": 566,
+    "line3d": 954,
+    "ruleFields": [
+      "effect",
+      "fieldLock"
+    ]
+  },
+  {
+    "name": "三足金乌",
+    "line2d": 567,
+    "line3d": 955,
+    "ruleFields": [
+      "kw",
+      "evolveFrom",
+      "evoStage",
+      "passive"
+    ]
+  },
+  {
+    "name": "朱厌",
+    "line2d": 568,
+    "line3d": 956,
+    "ruleFields": [
+      "passive"
+    ]
+  },
+  {
+    "name": "朱雀·陵光",
+    "line2d": 569,
+    "line3d": 957,
+    "ruleFields": [
+      "kw",
+      "evolveFrom",
+      "skill",
+      "enter",
+      "divine"
+    ]
+  },
+  {
+    "name": "祝融",
+    "line2d": 570,
+    "line3d": 958,
+    "ruleFields": [
+      "skill",
+      "summonCondition"
+    ]
+  },
+  {
+    "name": "三昧真火",
+    "line2d": 571,
+    "line3d": 959,
+    "ruleFields": [
+      "effect",
+      "fieldLock"
+    ]
+  },
+  {
+    "name": "烬鸢",
+    "line2d": 572,
+    "line3d": 960,
+    "ruleFields": [
+      "kw",
+      "evolveFrom",
+      "evoStage",
+      "onEvent"
+    ]
+  },
+  {
+    "name": "炽羽",
+    "line2d": 573,
+    "line3d": 961,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "征召",
+    "line2d": 574,
+    "line3d": 962,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "天火",
+    "line2d": 575,
+    "line3d": 963,
+    "ruleFields": [
+      "trap"
+    ]
+  },
+  {
+    "name": "涅槃余烬",
+    "line2d": 576,
+    "line3d": 964,
+    "ruleFields": [
+      "trap"
+    ]
+  },
+  {
+    "name": "焚粮",
+    "line2d": 577,
+    "line3d": 965,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "焰迹",
+    "line2d": 578,
+    "line3d": 966,
+    "ruleFields": [
+      "trap"
+    ]
+  },
+  {
+    "name": "朱雀羽",
+    "line2d": 579,
+    "line3d": 967,
+    "ruleFields": [
+      "deathrattle"
+    ]
+  },
+  {
+    "name": "冰夷",
+    "line2d": 582,
+    "line3d": 970,
+    "ruleFields": [
+      "kw",
+      "deathrattle"
+    ]
+  },
+  {
+    "name": "玄龟",
+    "line2d": 583,
+    "line3d": 971,
+    "ruleFields": [
+      "kw",
+      "shield"
+    ]
+  },
+  {
+    "name": "螣蛇",
+    "line2d": 584,
+    "line3d": 972,
+    "ruleFields": [
+      "kw",
+      "shield",
+      "overheat"
+    ]
+  },
+  {
+    "name": "玄武·执明",
+    "line2d": 585,
+    "line3d": 973,
+    "ruleFields": [
+      "kw",
+      "evolveFrom",
+      "evoStage",
+      "skill",
+      "enter",
+      "divine"
+    ]
+  },
+  {
+    "name": "冰尉",
+    "line2d": 586,
+    "line3d": 974,
+    "ruleFields": [
+      "kw",
+      "evolveFrom",
+      "evoStage",
+      "enter"
+    ]
+  },
+  {
+    "name": "北冥鲲",
+    "line2d": 587,
+    "line3d": 975,
+    "ruleFields": [
+      "kw",
+      "passive",
+      "summonCondition"
+    ]
+  },
+  {
+    "name": "共工",
+    "line2d": 588,
+    "line3d": 976,
+    "ruleFields": [
+      "kw",
+      "shield",
+      "enter"
+    ]
+  },
+  {
+    "name": "寒渊",
+    "line2d": 589,
+    "line3d": 977,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "弱水",
+    "line2d": 590,
+    "line3d": 978,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "北冥之渊",
+    "line2d": 591,
+    "line3d": 979,
+    "ruleFields": [
+      "effect",
+      "fieldLock"
+    ]
+  },
+  {
+    "name": "凝霜",
+    "line2d": 592,
+    "line3d": 980,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "龟息",
+    "line2d": 593,
+    "line3d": 981,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "渊瞳",
+    "line2d": 594,
+    "line3d": 982,
+    "ruleFields": [
+      "enter"
+    ]
+  },
+  {
+    "name": "血涟",
+    "line2d": 595,
+    "line3d": 983,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "渊引",
+    "line2d": 596,
+    "line3d": 984,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "玄召",
+    "line2d": 597,
+    "line3d": 985,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "冰封",
+    "line2d": 598,
+    "line3d": 986,
+    "ruleFields": [
+      "trap"
+    ]
+  },
+  {
+    "name": "寒鉴",
+    "line2d": 599,
+    "line3d": 987,
+    "ruleFields": [
+      "trap"
+    ]
+  },
+  {
+    "name": "观水",
+    "line2d": 600,
+    "line3d": 988,
+    "ruleFields": [
+      "kw",
+      "once",
+      "summonCondition",
+      "passive"
+    ]
+  },
+  {
+    "name": "借势",
+    "line2d": 601,
+    "line3d": 989,
+    "ruleFields": [
+      "once",
+      "effect"
+    ]
+  },
+  {
+    "name": "蓄澜",
+    "line2d": 602,
+    "line3d": 990,
+    "ruleFields": [
+      "once",
+      "effect"
+    ]
+  },
+  {
+    "name": "竭泽",
+    "line2d": 603,
+    "line3d": 991,
+    "ruleFields": [
+      "once",
+      "effect"
+    ]
+  },
+  {
+    "name": "回流",
+    "line2d": 604,
+    "line3d": 992,
+    "ruleFields": [
+      "once",
+      "selfAttackLock",
+      "effect"
+    ]
+  },
+  {
+    "name": "天狼",
+    "line2d": 607,
+    "line3d": 995,
+    "ruleFields": [
+      "passive"
+    ]
+  },
+  {
+    "name": "残牙",
+    "line2d": 608,
+    "line3d": 996,
+    "ruleFields": [
+      "kw"
+    ]
+  },
+  {
+    "name": "白额虎",
+    "line2d": 609,
+    "line3d": 997,
+    "ruleFields": [
+      "kw",
+      "sacrifice"
+    ]
+  },
+  {
+    "name": "断金",
+    "line2d": 610,
+    "line3d": 998,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "虎啸",
+    "line2d": 611,
+    "line3d": 999,
+    "ruleFields": [
+      "trap"
+    ]
+  },
+  {
+    "name": "裂金",
+    "line2d": 612,
+    "line3d": 1000,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "庚金",
+    "line2d": 613,
+    "line3d": 1001,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "破军",
+    "line2d": 614,
+    "line3d": 1002,
+    "ruleFields": [
+      "kw",
+      "evolveFrom",
+      "evoStage",
+      "atkGrowth"
+    ]
+  },
+  {
+    "name": "蓐收",
+    "line2d": 615,
+    "line3d": 1003,
+    "ruleFields": [
+      "kw",
+      "skill",
+      "summonCondition"
+    ]
+  },
+  {
+    "name": "歃血",
+    "line2d": 616,
+    "line3d": 1004,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "虎符",
+    "line2d": 617,
+    "line3d": 1005,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "白虎·监兵",
+    "line2d": 618,
+    "line3d": 1006,
+    "ruleFields": [
+      "kw",
+      "evolveFrom",
+      "evoStage",
+      "passive",
+      "enter",
+      "divine"
+    ]
+  },
+  {
+    "name": "贪狼",
+    "line2d": 619,
+    "line3d": 1007,
+    "ruleFields": [
+      "kw",
+      "summonCondition"
+    ]
+  },
+  {
+    "name": "白虹",
+    "line2d": 620,
+    "line3d": 1008,
+    "ruleFields": [
+      "effect",
+      "fieldLock"
+    ]
+  },
+  {
+    "name": "锐虎",
+    "line2d": 621,
+    "line3d": 1009,
+    "ruleFields": [
+      "kw"
+    ]
+  },
+  {
+    "name": "虎贲",
+    "line2d": 622,
+    "line3d": 1010,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "青鸾",
+    "line2d": 625,
+    "line3d": 1013,
+    "ruleFields": [
+      "kw",
+      "enter"
+    ]
+  },
+  {
+    "name": "螭龙",
+    "line2d": 626,
+    "line3d": 1014,
+    "ruleFields": [
+      "kw",
+      "passive"
+    ]
+  },
+  {
+    "name": "青苗",
+    "line2d": 627,
+    "line3d": 1015,
+    "ruleFields": [
+      "kw",
+      "deathrattle"
+    ]
+  },
+  {
+    "name": "牺木",
+    "line2d": 628,
+    "line3d": 1016,
+    "ruleFields": [
+      "kw",
+      "sacrifice"
+    ]
+  },
+  {
+    "name": "应龙",
+    "line2d": 629,
+    "line3d": 1017,
+    "ruleFields": [
+      "kw",
+      "evolveFrom",
+      "evoStage",
+      "passive"
+    ]
+  },
+  {
+    "name": "木灵",
+    "line2d": 630,
+    "line3d": 1018,
+    "ruleFields": [
+      "kw",
+      "evolveFrom",
+      "evoStage",
+      "passive"
+    ]
+  },
+  {
+    "name": "建木",
+    "line2d": 631,
+    "line3d": 1019,
+    "ruleFields": [
+      "kw",
+      "evolveFrom",
+      "evoStage",
+      "passive"
+    ]
+  },
+  {
+    "name": "青龙·孟章",
+    "line2d": 632,
+    "line3d": 1020,
+    "ruleFields": [
+      "kw",
+      "evolveFrom",
+      "evoStage",
+      "skill",
+      "enter",
+      "divine"
+    ]
+  },
+  {
+    "name": "句芒",
+    "line2d": 633,
+    "line3d": 1021,
+    "ruleFields": [
+      "skill",
+      "fieldLock"
+    ]
+  },
+  {
+    "name": "春风",
+    "line2d": 634,
+    "line3d": 1022,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "木甲",
+    "line2d": 635,
+    "line3d": 1023,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "缚龙索",
+    "line2d": 636,
+    "line3d": 1024,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "春雨",
+    "line2d": 637,
+    "line3d": 1025,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "青翠",
+    "line2d": 638,
+    "line3d": 1026,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "移栽",
+    "line2d": 639,
+    "line3d": 1027,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "藤缚",
+    "line2d": 640,
+    "line3d": 1028,
+    "ruleFields": [
+      "trap"
+    ]
+  },
+  {
+    "name": "青帝侍",
+    "line2d": 641,
+    "line3d": 1029,
+    "ruleFields": [
+      "kw",
+      "evolveFrom",
+      "evoStage",
+      "enter"
+    ]
+  },
+  {
+    "name": "雨露",
+    "line2d": 642,
+    "line3d": 1030,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "洞察",
+    "line2d": 645,
+    "line3d": 1033,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "传讯",
+    "line2d": 646,
+    "line3d": 1034,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "引路",
+    "line2d": 647,
+    "line3d": 1035,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "星火",
+    "line2d": 648,
+    "line3d": 1036,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "蓄势",
+    "line2d": 649,
+    "line3d": 1037,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "整备",
+    "line2d": 650,
+    "line3d": 1038,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "止戈",
+    "line2d": 651,
+    "line3d": 1039,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "净化",
+    "line2d": 652,
+    "line3d": 1040,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "庇护",
+    "line2d": 653,
+    "line3d": 1041,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "复苏",
+    "line2d": 654,
+    "line3d": 1042,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "回天",
+    "line2d": 655,
+    "line3d": 1043,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "湮灭",
+    "line2d": 656,
+    "line3d": 1044,
+    "ruleFields": [
+      "effect",
+      "selfAttackLock"
+    ]
+  },
+  {
+    "name": "溯源",
+    "line2d": 657,
+    "line3d": 1045,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "兑换",
+    "line2d": 658,
+    "line3d": 1046,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "白泽",
+    "line2d": 659,
+    "line3d": 1047,
+    "ruleFields": [
+      "skill",
+      "once"
+    ]
+  },
+  {
+    "name": "麒麟",
+    "line2d": 660,
+    "line3d": 1048,
+    "ruleFields": [
+      "kw",
+      "enter",
+      "summonCondition"
+    ]
+  },
+  {
+    "name": "镇岳",
+    "line2d": 661,
+    "line3d": 1049,
+    "ruleFields": [
+      "trap"
+    ]
+  },
+  {
+    "name": "化险",
+    "line2d": 662,
+    "line3d": 1050,
+    "ruleFields": [
+      "trap"
+    ]
+  },
+  {
+    "name": "藏锋",
+    "line2d": 663,
+    "line3d": 1051,
+    "ruleFields": [
+      "trap"
+    ]
+  },
+  {
+    "name": "招摇",
+    "line2d": 664,
+    "line3d": 1052,
+    "ruleFields": [
+      "trap"
+    ]
+  },
+  {
+    "name": "寻苗",
+    "line2d": 665,
+    "line3d": 1053,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "寻果",
+    "line2d": 666,
+    "line3d": 1054,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "军令",
+    "line2d": 667,
+    "line3d": 1055,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "铁壁",
+    "line2d": 668,
+    "line3d": 1056,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "破甲",
+    "line2d": 669,
+    "line3d": 1057,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "遗烬",
+    "line2d": 670,
+    "line3d": 1058,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "壁垒",
+    "line2d": 671,
+    "line3d": 1059,
+    "ruleFields": [
+      "effect",
+      "once"
+    ]
+  },
+  {
+    "name": "流转",
+    "line2d": 672,
+    "line3d": 1060,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "清仓",
+    "line2d": 673,
+    "line3d": 1061,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "暗哨",
+    "line2d": 674,
+    "line3d": 1062,
+    "ruleFields": [
+      "trap"
+    ]
+  },
+  {
+    "name": "伏兵",
+    "line2d": 675,
+    "line3d": 1063,
+    "ruleFields": [
+      "trap"
+    ]
+  },
+  {
+    "name": "了断",
+    "line2d": 676,
+    "line3d": 1064,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "重筮",
+    "line2d": 677,
+    "line3d": 1065,
+    "ruleFields": [
+      "once",
+      "effect"
+    ]
+  },
+  {
+    "name": "搏命",
+    "line2d": 678,
+    "line3d": 1066,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "降临",
+    "line2d": 681,
+    "line3d": 1069,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "夺魂",
+    "line2d": 684,
+    "line3d": 1072,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "回魂",
+    "line2d": 685,
+    "line3d": 1073,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "泉涌",
+    "line2d": 688,
+    "line3d": 1076,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "输川",
+    "line2d": 693,
+    "line3d": 1081,
+    "ruleFields": [
+      "skill"
+    ]
+  },
+  {
+    "name": "引流",
+    "line2d": 694,
+    "line3d": 1082,
+    "ruleFields": [
+      "skill"
+    ]
+  },
+  {
+    "name": "承波",
+    "line2d": 695,
+    "line3d": 1083,
+    "ruleFields": [
+      "skill"
+    ]
+  },
+  {
+    "name": "蓄塘",
+    "line2d": 696,
+    "line3d": 1084,
+    "ruleFields": [
+      "skill",
+      "onEvent"
+    ]
+  },
+  {
+    "name": "探珠",
+    "line2d": 697,
+    "line3d": 1085,
+    "ruleFields": [
+      "kw",
+      "evolveFrom",
+      "evoStage",
+      "skill"
+    ]
+  },
+  {
+    "name": "回潮",
+    "line2d": 698,
+    "line3d": 1086,
+    "ruleFields": [
+      "kw",
+      "evolveFrom",
+      "evoStage",
+      "skill"
+    ]
+  },
+  {
+    "name": "择卷",
+    "line2d": 699,
+    "line3d": 1087,
+    "ruleFields": [
+      "kw",
+      "evolveFrom",
+      "evoStage",
+      "skill"
+    ]
+  },
+  {
+    "name": "筑堤",
+    "line2d": 700,
+    "line3d": 1088,
+    "ruleFields": [
+      "kw",
+      "evolveFrom",
+      "evoStage",
+      "skill"
+    ]
+  },
+  {
+    "name": "百川·东到海",
+    "line2d": 701,
+    "line3d": 1089,
+    "ruleFields": [
+      "kw",
+      "evolveFrom",
+      "evoStage",
+      "enter",
+      "divine"
+    ]
+  },
+  {
+    "name": "归根",
+    "line2d": 702,
+    "line3d": 1090,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "汇流",
+    "line2d": 702,
+    "line3d": 1090,
+    "ruleFields": [
+      "effect"
+    ]
+  },
+  {
+    "name": "归源",
+    "line2d": 703,
+    "line3d": 1091,
+    "ruleFields": [
+      "once",
+      "effect"
+    ]
+  }
+]
