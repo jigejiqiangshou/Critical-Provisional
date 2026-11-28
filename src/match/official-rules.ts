@@ -29,7 +29,7 @@ export type OfficialCore = MatchCore<OfficialMatchState, PlayerAction, EffectCon
 type OfficialResolution = RuleResolution<OfficialMatchState, EffectContinuation, OfficialRuleEvent>
 
 const capabilities = Object.freeze({
-  triggers: Object.freeze(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit'] as const satisfies readonly OfficialTrigger[]),
+  triggers: Object.freeze(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit', 'enemy-enter'] as const satisfies readonly OfficialTrigger[]),
   effects: Object.freeze([
     'damage-unit', 'draw', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
     'heal-core', 'shield-core', 'destroy-unit', 'stun-unit', 'immunize-unit', 'bonus-core-attack', 'damage-all-enemies', 'pre-strike', 'shield-unit', 'shield-all-own', 'buff-unit', 'lock-field', 'lock-own-attacks', 'discard-hand', 'discard-all-hand', 'look-pick', 'search-deck', 'hand-cost', 'pay-life', 'recover-discard',
@@ -444,7 +444,7 @@ function performTask(context: RuleContext<OfficialMatchState>) {
       break
     case 'response': {
       const cards = player.facedown.filter(card => effectsFor(snapshot, card, task.trigger).length > 0)
-      if (cards.length) frame(state).choice = { kind: 'response', seat: task.seat, trigger: task.trigger, cards }
+      if (cards.length) frame(state).choice = { kind: 'response', seat: task.seat, trigger: task.trigger, targetId: task.targetId, cards }
       break
     }
     case 'attack':
@@ -543,7 +543,7 @@ function applyChoice(context: RuleContext<OfficialMatchState>, chosenIds: readon
     player.facedown.splice(index, 1)
     player.discard.push(picked)
     events.push(visible('response-revealed', { seat, card: { id: picked.id, cardId: picked.cardId } }))
-    frame(state).queue.unshift(...effectTasks(snapshot, seat, picked, choice.trigger, null))
+    frame(state).queue.unshift(...effectTasks(snapshot, seat, picked, choice.trigger, choice.targetId ?? null))
     return { state, events }
   }
 
@@ -723,7 +723,10 @@ function play(
   }
   player.hand.splice(index, 1)
   if (data.oncePerTurn) player.usedCardIds.push(card.id)
-  return resolveEffects(context, state, effectTasks(snapshot, seat, instance, trigger, targetId), events)
+  const tasks = effectTasks(snapshot, seat, instance, trigger, targetId)
+  if (card.kind === 'unit' && action.type !== 'evolve' && !data.evolveFrom?.length)
+    tasks.push({ type: 'response', seat: opposingSeat(state, seat), trigger: 'enemy-enter', targetId: instance.id })
+  return resolveEffects(context, state, tasks, events)
 }
 
 function attack(

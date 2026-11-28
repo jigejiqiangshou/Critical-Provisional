@@ -131,6 +131,21 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'attack-core', steps: [{ type: 'cancel-attack' }],
   },
   {
+    cardId: 'initial:huxiao', legacyName: '虎啸',
+    source: 'quote/临界·模块化·2D版.html:611 trap.effect',
+    trigger: 'enemy-enter', steps: [{ type: 'damage-unit', target: 'enemy', amount: 3 }],
+  },
+  {
+    cardId: 'initial:tengfu', legacyName: '藤缚',
+    source: 'quote/临界·模块化·2D版.html:640 trap.effect',
+    trigger: 'enemy-enter', steps: [{ type: 'damage-unit', target: 'enemy', amount: 5 }],
+  },
+  {
+    cardId: 'initial:anshao', legacyName: '暗哨',
+    source: 'quote/临界·模块化·2D版.html:674 trap.effect',
+    trigger: 'enemy-enter', steps: [{ type: 'draw', amount: 1 }],
+  },
+  {
     cardId: 'initial:fubing', legacyName: '伏兵',
     source: 'quote/临界·模块化·2D版.html:675 trap.effect',
     trigger: 'attack-core', steps: [{ type: 'draw', amount: 2 }],
