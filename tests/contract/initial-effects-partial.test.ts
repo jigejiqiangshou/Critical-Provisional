@@ -505,7 +505,7 @@ it.each(['虎啸', '藤缚', '暗哨'])('%s does not respond to evolution', name
   expect(result.state.seats.B.facedown).toHaveLength(1)
 })
 
-it('multiple deployment responses resolve newest first even if a previous response destroys the entrant', async () => {
+it('multiple deployment responses allow only one selected card', async () => {
   const tiger = definition('虎啸'), vine = definition('藤缚'), scout = definition('暗哨')
   const cards: Card[] = [
     { id: 'unit', name: 'unit', kind: 'unit', flagship: false, data: { health: 3 } },
@@ -521,21 +521,17 @@ it('multiple deployment responses resolve newest first even if a previous respon
   const first = core.propose({ kind: 'action', seat: 'A', expectedRevision: 0, action: { type: 'play-card', cardId: 'played' } })
   if (first.kind !== 'accepted') throw new Error('expected offer')
   core.confirm(first)
-  const choice = (expected: string, answer: { kind: 'pass' } | { kind: 'select'; candidateIds: string[] }) => {
-    const pending = core.read()
-    if (pending.progress.kind !== 'waiting') throw new Error('expected choice')
-    expect(pending.progress.decision.choices.candidates.map(item => item.id)).toEqual([expected])
-    const result = core.propose({ kind: 'decision', seat: 'B', expectedRevision: pending.revision, decisionId: pending.progress.decision.id, answer })
-    if (result.kind !== 'accepted') throw new Error('expected answer')
-    core.confirm(result)
-  }
-  choice('tiger', { kind: 'select', candidateIds: ['tiger'] })
-  expect(core.read().state.seats.A.board).toHaveLength(0)
-  choice('vine', { kind: 'pass' })
-  choice('scout', { kind: 'select', candidateIds: ['scout'] })
+  const pending = core.read()
+  if (pending.progress.kind !== 'waiting') throw new Error('expected choice')
+  expect(pending.progress.decision.choices.candidates.map(item => item.id).sort()).toEqual(['scout', 'tiger', 'vine'])
+  const result = core.propose({ kind: 'decision', seat: 'B', expectedRevision: pending.revision, decisionId: pending.progress.decision.id,
+    answer: { kind: 'select', candidateIds: ['tiger'] } })
+  if (result.kind !== 'accepted') throw new Error('expected answer')
+  core.confirm(result)
   expect(core.read().progress.kind).toBe('active')
-  expect(core.read().state.seats.B.facedown.map(card => card.id)).toEqual(['vine'])
-  expect(core.read().state.seats.B.hand.map(card => card.id)).toEqual(['draw'])
+  expect(core.read().state.seats.A.board).toHaveLength(0)
+  expect(core.read().state.seats.B.facedown.map(card => card.id)).toEqual(['scout', 'vine'])
+  expect(core.read().state.seats.B.hand).toHaveLength(0)
 })
 
 it.each([[0, 0], [3, 0], [5, 1]])('北冥之渊 locks next AP with ownTurn %i to %i', (priorTurns, expectedAp) => {

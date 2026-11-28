@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import fixture from '../baseline/fixtures.json'
 import sources from '../../src/deck-catalog/legacy-card-sources.json'
-import { assertInitialEffectsReady, validateInitialEffectAudits } from '../../src/deck-catalog/effect-definitions'
+import { assertInitialEffectsReady, validateInitialEffectAudits, initialEffectDefinitions } from '../../src/deck-catalog/effect-definitions'
 
 describe('independent first release effect acceptance', () => {
   it('accounts for each card in both legacy game sources and its printed face', () => {
@@ -38,7 +38,17 @@ it('accepts the four audited entries while still rejecting missing fields and st
     { legacyName: '星火', cardId: 'initial:xinghuo', fields: { effect: { kind: 'effect' as const, reference: 'play:look-pick' } }, steps: { 'effect.0': 'play:0:look-pick' } },
     { legacyName: '蓄势', cardId: 'initial:xushi', fields: { effect: { kind: 'effect' as const, reference: 'play:hand-cost' } }, steps: { 'effect.0': 'play:0:hand-cost', 'effect.1': 'play:0.0:draw' } },
   ]
-  expect(() => validateInitialEffectAudits(audits)).toThrow('Initial effect migration incomplete: 125 cards')
-  expect(() => validateInitialEffectAudits([{ ...audits[0], fields: {} }])).toThrow('Unreviewed rules field')
-  expect(() => validateInitialEffectAudits([{ ...audits[3], steps: { 'effect.0': 'play:0:hand-cost' } }])).toThrow('Unreviewed legacy step')
+  const approved = audits.map(audit => ({ ...audit, approvedDefinitions: initialEffectDefinitions.filter(item => item.cardId === audit.cardId).map(({ trigger, timing, steps }) => ({ trigger, ...(timing === undefined ? {} : { timing }), steps: structuredClone(steps) })) }))
+  expect(() => validateInitialEffectAudits(approved)).toThrow('Initial effect migration incomplete: 125 cards')
+  expect(() => validateInitialEffectAudits([{ ...approved[0], fields: {} }])).toThrow('Unreviewed rules field')
+  expect(() => validateInitialEffectAudits([{ ...approved[3], steps: { 'effect.0': 'play:0:hand-cost' } }])).toThrow('Unreviewed legacy step')
+  const definitions = initialEffectDefinitions as import('../../src/deck-catalog/effect-definitions').InitialEffectDefinition[]
+  const index = definitions.findIndex(item => item.cardId === 'initial:lihuo')
+  const original = definitions[index]
+  try {
+    definitions[index] = { ...original, steps: [{ type: 'damage-unit', amount: 6, target: 'enemy' }] }
+    expect(() => validateInitialEffectAudits(approved)).toThrow('Changed audited definition: 离火')
+    definitions[index] = { ...original, steps: [{ type: 'damage-unit', amount: 5, target: 'any' }] }
+    expect(() => validateInitialEffectAudits(approved)).toThrow('Changed audited definition: 离火')
+  } finally { definitions[index] = original }
 })
