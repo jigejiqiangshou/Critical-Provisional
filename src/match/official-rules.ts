@@ -31,7 +31,7 @@ type OfficialResolution = RuleResolution<OfficialMatchState, EffectContinuation,
 const capabilities = Object.freeze({
   triggers: Object.freeze(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit'] as const satisfies readonly OfficialTrigger[]),
   effects: Object.freeze([
-    'damage-unit', 'draw', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
+    'damage-unit', 'shield-unit', 'shield-all', 'stun-unit', 'damage-all-enemies', 'draw', 'heal-core', 'shield-core', 'pay-life', 'pay-half-life', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
   ] as const satisfies readonly OfficialEffect['type'][]),
 })
 
@@ -247,9 +247,55 @@ function executeEffect(
     case 'damage-unit':
       if (targetId !== null) damageUnit(state, snapshot, targetId, effect.amount, false, events)
       break
+    case 'shield-unit': {
+      const found = targetId === null ? undefined : unitLocation(state, targetId)
+      if (found) {
+        found.unit.shield += effect.amount
+        events.push(visible('unit-shielded', { seat: found.seat, targetId, amount: effect.amount, shield: found.unit.shield }))
+      }
+      break
+    }
+    case 'shield-all':
+      for (const unit of player.board) {
+        if (effect.excludeSource && unit.id === sourceId) continue
+        unit.shield += effect.amount
+        events.push(visible('unit-shielded', { seat, targetId: unit.id, amount: effect.amount, shield: unit.shield }))
+      }
+      break
+    case 'stun-unit': {
+      const found = targetId === null ? undefined : unitLocation(state, targetId)
+      if (found) {
+        found.unit.stunned = true
+        events.push(visible('unit-stunned', { seat: found.seat, targetId }))
+      }
+      break
+    }
+    case 'damage-all-enemies':
+      frame(state).queue.unshift(...state.seats[opposingSeat(state, seat)].board.map(unit => ({
+        type: 'area-damage' as const, seat, targetId: unit.id, amount: effect.amount,
+      })))
+      break
     case 'draw':
       draw(state, seat, effect.amount, events)
       break
+    case 'heal-core': {
+      const amount = Math.max(0, Math.min(effect.amount, 50 - player.hp))
+      player.hp += amount
+      if (amount) events.push(visible('core-healed', { seat, amount, hp: player.hp }))
+      break
+    }
+    case 'shield-core':
+      player.coreShield += effect.amount
+      events.push(visible('core-shielded', { seat, amount: effect.amount, shield: player.coreShield }))
+      break
+    case 'pay-life':
+    case 'pay-half-life': {
+      const requested = effect.type === 'pay-life' ? effect.amount : Math.max(1, Math.floor(player.hp / 2))
+      const amount = Math.max(0, player.hp - Math.max(1, player.hp - requested))
+      player.hp -= amount
+      if (amount) events.push(visible('life-paid', { seat, amount, hp: player.hp }))
+      break
+    }
     case 'register-death-attack-bonus': {
       const unit = player.board.find(item => item.id === sourceId)
       if (unit) unit.deathAttackBonus = effect.amount
@@ -283,6 +329,10 @@ function performTask(context: RuleContext<OfficialMatchState>) {
     case 'discard-played-ice':
       player.discard.push(task.card)
       events.push(visible('ice-discarded', { seat: task.seat, card: { id: task.card.id, cardId: task.card.cardId } }))
+      break
+    case 'area-damage':
+      if (unitLocation(state, task.targetId)?.seat === opposingSeat(state, task.seat))
+        damageUnit(state, snapshot, task.targetId, task.amount, false, events)
       break
     case 'death-bonuses':
       for (const unit of player.board) {
@@ -437,7 +487,7 @@ function validEffectTarget(
   state: OfficialMatchState, snapshot: CardPoolSnapshot, seat: SeatId, card: OfficialCardInstance,
   trigger: OfficialTrigger, targets: readonly string[],
 ): boolean {
-  const steps = effectsFor(snapshot, card, trigger).filter(effect => effect.type === 'damage-unit')
+  const steps = effectsFor(snapshot, card, trigger).filter(effect => 'target' in effect)
   if (!steps.length) return targets.length === 0
   if (targets.length !== 1) return false
   const target = unitLocation(state, targets[0])
