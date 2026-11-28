@@ -82,6 +82,21 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'play', steps: [{ type: 'destroy-unit', target: 'enemy' }],
   },
   {
+    cardId: 'initial:jinwu', legacyName: '金乌',
+    source: 'quote/临界·模块化·2D版.html:560 passive',
+    trigger: 'attack-core', steps: [{ type: 'bonus-core-attack', amount: 2 }],
+  },
+  {
+    cardId: 'initial:sanzujinwu', legacyName: '三足金乌',
+    source: 'quote/临界·模块化·2D版.html:567 passive',
+    trigger: 'attack-core', steps: [{ type: 'bonus-core-attack', amount: 2 }],
+  },
+  {
+    cardId: 'initial:tianlang', legacyName: '天狼',
+    source: 'quote/临界·模块化·2D版.html:607 passive',
+    trigger: 'attack-core', steps: [{ type: 'bonus-core-attack', amount: 1 }],
+  },
+  {
     cardId: 'initial:yanwen', legacyName: '炎纹',
     source: 'quote/临界·模块化·2D版.html:562 effect',
     trigger: 'play', steps: [{ type: 'damage-unit', amount: 3, target: 'enemy' }, { type: 'draw', amount: 1 }],
