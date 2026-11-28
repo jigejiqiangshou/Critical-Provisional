@@ -31,7 +31,7 @@ type OfficialResolution = RuleResolution<OfficialMatchState, EffectContinuation,
 const capabilities = Object.freeze({
   triggers: Object.freeze(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit'] as const satisfies readonly OfficialTrigger[]),
   effects: Object.freeze([
-    'damage-unit', 'draw', 'heal-core', 'shield-core', 'pay-life', 'pay-half-life', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
+    'damage-unit', 'damage-all-enemies', 'draw', 'heal-core', 'shield-core', 'pay-life', 'pay-half-life', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
   ] as const satisfies readonly OfficialEffect['type'][]),
 })
 
@@ -247,6 +247,11 @@ function executeEffect(
     case 'damage-unit':
       if (targetId !== null) damageUnit(state, snapshot, targetId, effect.amount, false, events)
       break
+    case 'damage-all-enemies':
+      frame(state).queue.unshift(...state.seats[opposingSeat(state, seat)].board.map(unit => ({
+        type: 'area-damage' as const, seat, targetId: unit.id, amount: effect.amount,
+      })))
+      break
     case 'draw':
       draw(state, seat, effect.amount, events)
       break
@@ -300,6 +305,10 @@ function performTask(context: RuleContext<OfficialMatchState>) {
       break
     case 'discard-played':
       player.discard.push(task.card)
+      break
+    case 'area-damage':
+      if (unitLocation(state, task.targetId)?.seat === opposingSeat(state, task.seat))
+        damageUnit(state, snapshot, task.targetId, task.amount, false, events)
       break
     case 'death-bonuses':
       for (const unit of player.board) {

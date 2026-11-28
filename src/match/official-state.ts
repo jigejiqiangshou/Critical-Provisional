@@ -6,7 +6,7 @@ export const OFFICIAL_RULES_VERSION = '1'
 export type OfficialTrigger = 'play' | 'enter' | 'death' | 'skill' | 'attack-core' | 'attack-unit'
 export type OfficialEffect =
   | { readonly type: 'damage-unit'; readonly amount: number; readonly target: 'any' | 'own' | 'enemy' }
-  | { readonly type: 'draw' | 'heal-core' | 'shield-core' | 'pay-life' | 'register-death-attack-bonus' | 'ice-draw-pick'; readonly amount: number }
+  | { readonly type: 'draw' | 'heal-core' | 'shield-core' | 'pay-life' | 'damage-all-enemies' | 'register-death-attack-bonus' | 'ice-draw-pick'; readonly amount: number }
   | { readonly type: 'pay-half-life' }
   | { readonly type: 'cancel-attack' }
 
@@ -70,6 +70,7 @@ type RuleTask =
       readonly targetId: string | null; readonly effect: OfficialEffect }
   | { readonly type: 'death-bonuses'; readonly seat: SeatId }
   | { readonly type: 'discard-played'; readonly seat: SeatId; readonly card: OfficialCardInstance }
+  | { readonly type: 'area-damage'; readonly seat: SeatId; readonly targetId: string; readonly amount: number }
   | { readonly type: 'response'; readonly seat: SeatId; readonly trigger: 'attack-core' | 'attack-unit' }
   | { readonly type: 'attack'; readonly seat: SeatId; readonly attackerId: string; readonly targetId: string }
 
