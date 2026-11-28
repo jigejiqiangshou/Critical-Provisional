@@ -8,6 +8,10 @@ export type OfficialEffect =
   | { readonly type: 'damage-unit'; readonly amount: number; readonly target: 'any' | 'own' | 'enemy'; readonly pierce?: boolean }
   | { readonly type: 'damage-all-enemies'; readonly amount: number; readonly pierce: boolean }
   | { readonly type: 'destroy-unit'; readonly target: 'any' | 'own' | 'enemy' }
+  | { readonly type: 'shield-unit'; readonly target: 'any' | 'own' | 'enemy'; readonly amount: number }
+  | { readonly type: 'shield-all-own'; readonly amount: number; readonly excludeSource: boolean }
+  | { readonly type: 'lock-field'; readonly attr: string }
+  | { readonly type: 'lock-own-attacks' }
   | { readonly type: 'draw' | 'register-death-attack-bonus' | 'ice-draw-pick'; readonly amount: number }
   | { readonly type: 'heal-core' | 'shield-core' | 'bonus-core-attack' | 'pre-strike'; readonly amount: number }
   | { readonly type: 'cancel-attack' }
@@ -58,6 +62,8 @@ export interface OfficialSeatState {
   temporaryHealth: number
   mulliganUsed: boolean
   iceEnabled: boolean
+  fieldLock: string | null
+  selfAttackLock: boolean
   usedCardIds: string[]
   deck: OfficialCardInstance[]
   hand: OfficialCardInstance[]
@@ -117,6 +123,8 @@ export function createOfficialSeatState(
     temporaryHealth: 0,
     mulliganUsed: false,
     iceEnabled,
+    fieldLock: null,
+    selfAttackLock: false,
     usedCardIds: [],
     deck: [...deck],
     hand: [],
