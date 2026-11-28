@@ -30,3 +30,30 @@ it('rejects tampering with a source page or generated inventory in an isolated c
     rmSync(directory, { recursive: true, force: true })
   }
 })
+
+it('detects changed, missing, duplicated or unparseable card faces', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'effect-face-gate-'))
+  try {
+    for (const path of ['quote', 'scripts', 'src/deck-catalog', 'specs/001-offline-game-refactor']) {
+      cpSync(path, join(directory, path), { recursive: true })
+    }
+    const page = join(directory, 'quote/临界卡池与构筑.html')
+    const original = readFileSync(page, 'utf8')
+    const line = original.split('\n').find(value => value.includes('<div class="card ace">'))!
+    const variants = [
+      original.replace('从你的卡组选 1 个单位', '从你的卡组选 2 个单位'),
+      original.replace(line, ''),
+      original.replace(line, line + '\n' + line),
+      original.replace('<div class="name">降临</div>', '<div class="name"><b>降临</b></div>'),
+    ]
+    for (const text of variants) {
+      expect(text).not.toBe(original)
+      writeFileSync(page, text)
+      const result = spawnSync('node', ['scripts/inventory-legacy-effects.mjs', '--check'], { cwd: directory, encoding: 'utf8' })
+      expect(result.status).not.toBe(0)
+      expect(result.stderr).toMatch(/Legacy card faces differ|Unparsed or duplicate card face/)
+    }
+  } finally {
+    rmSync(directory, { recursive: true, force: true })
+  }
+})
