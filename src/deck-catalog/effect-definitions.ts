@@ -463,18 +463,19 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
 export interface EffectAudit {
   readonly legacyName: string
   readonly cardId: string
+  readonly approvedDefinitions?: readonly { readonly trigger: OfficialTrigger; readonly timing?: 'immediate' | 'after-action'; readonly steps: readonly OfficialEffect[] }[]
   readonly fields: Readonly<Record<string, { readonly kind: 'effect' | 'core'; readonly reference: string }>>
   /** Each legacy typed step maps to its own trigger:index[.childIndex...]:type in the new definition. */
   readonly steps: Readonly<Record<string, string>>
 }
 const effectAudits: readonly EffectAudit[] = [
-  { legacyName: '传讯', cardId: 'initial:chuanxun', fields: { effect: { kind: 'effect', reference: 'play:draw' } },
+  { legacyName: '传讯', cardId: 'initial:chuanxun', approvedDefinitions: [{ trigger: 'play', steps: [{ type: 'draw', amount: 1 }] }], fields: { effect: { kind: 'effect', reference: 'play:draw' } },
     steps: { effect: 'play:0:draw' } },
-  { legacyName: '离火', cardId: 'initial:lihuo', fields: { effect: { kind: 'effect', reference: 'play:damage-unit' } },
+  { legacyName: '离火', cardId: 'initial:lihuo', approvedDefinitions: [{ trigger: 'play', steps: [{ type: 'damage-unit', amount: 5, target: 'enemy' }] }], fields: { effect: { kind: 'effect', reference: 'play:damage-unit' } },
     steps: { effect: 'play:0:damage-unit' } },
-  { legacyName: '星火', cardId: 'initial:xinghuo', fields: { effect: { kind: 'effect', reference: 'play:look-pick' } },
+  { legacyName: '星火', cardId: 'initial:xinghuo', approvedDefinitions: [{ trigger: 'play', steps: [{ type: 'look-pick', top: 3 }] }], fields: { effect: { kind: 'effect', reference: 'play:look-pick' } },
     steps: { 'effect.0': 'play:0:look-pick' } },
-  { legacyName: '蓄势', cardId: 'initial:xushi', fields: { effect: { kind: 'effect', reference: 'play:hand-cost' } },
+  { legacyName: '蓄势', cardId: 'initial:xushi', approvedDefinitions: [{ trigger: 'play', steps: [{ type: 'hand-cost', amount: 1, canPass: false, onSelect: [{ type: 'draw', amount: 2 }] }] }], fields: { effect: { kind: 'effect', reference: 'play:hand-cost' } },
     steps: { 'effect.0': 'play:0:hand-cost', 'effect.1': 'play:0.0:draw' } },
 ]
 
@@ -519,6 +520,10 @@ export function validateInitialEffectAudits(audits: readonly EffectAudit[]): voi
     }
     namesById.set(audit.cardId, audit.legacyName)
     idsByName.set(audit.legacyName, audit.cardId)
+    const definitions = initialEffectDefinitions.filter(definition => definition.cardId === audit.cardId)
+      .map(({ trigger, timing, steps }) => ({ trigger, ...(timing === undefined ? {} : { timing }), steps }))
+    if (!audit.approvedDefinitions || JSON.stringify(definitions) !== JSON.stringify(audit.approvedDefinitions))
+      throw new TypeError(`Changed audited definition: ${audit.legacyName}`)
     const fields = Object.keys(audit.fields)
     if (fields.length !== source.ruleFields.length || source.ruleFields.some(field => !fields.includes(field))) {
       throw new TypeError(`Unreviewed rules field: ${audit.legacyName}`)

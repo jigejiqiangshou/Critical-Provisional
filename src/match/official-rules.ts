@@ -459,13 +459,8 @@ function performTask(context: RuleContext<OfficialMatchState>) {
       break
     case 'response': {
       const cards = player.facedown.filter(card => effectsFor(snapshot, card, task.trigger).length > 0)
-      if (task.responseCardId === undefined) {
-        frame(state).queue.unshift(...cards.reverse().map(card => ({ ...task, responseCardId: card.id })))
-      } else {
-        const card = cards.find(candidate => candidate.id === task.responseCardId)
-        if (card) frame(state).choice = { kind: 'response', seat: task.seat, trigger: task.trigger,
-          ...(task.targetId === undefined ? {} : { targetId: task.targetId }), cards: [card] }
-      }
+      if (cards.length) frame(state).choice = { kind: 'response', seat: task.seat, trigger: task.trigger,
+        ...(task.targetId === undefined ? {} : { targetId: task.targetId }), cards }
       break
     }
     case 'attack':
