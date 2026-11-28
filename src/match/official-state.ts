@@ -88,7 +88,7 @@ type ChoiceFrame =
       readonly cards: readonly OfficialCardInstance[] }
   | { readonly kind: 'ice'; readonly seat: SeatId; readonly cards: readonly OfficialCardInstance[] }
   | { readonly kind: 'discard-hand'; readonly seat: SeatId; readonly cards: readonly OfficialCardInstance[]; readonly amount: number }
-  | { readonly kind: 'look-pick'; readonly seat: SeatId; readonly cards: readonly OfficialCardInstance[] }
+  | { readonly kind: 'look-pick'; readonly seat: SeatId; readonly cards: readonly OfficialCardInstance[]; readonly viewedCount: number }
 
 interface EffectFrame {
   queue: RuleTask[]

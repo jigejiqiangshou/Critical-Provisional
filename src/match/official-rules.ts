@@ -285,7 +285,7 @@ function executeEffect(
         return (!effect.kind || data.kind === effect.kind) && (!effect.attr || officialCardData(data).attr === effect.attr)
       })
       events.push(visible('cards-looked', { seat, cards: viewed.map(card => ({ id: card.id, cardId: card.cardId })) }, seat))
-      frame(state).choice = { kind: 'look-pick', seat, cards: candidates }
+      frame(state).choice = { kind: 'look-pick', seat, cards: candidates, viewedCount: viewed.length }
       break
     }
     case 'discard-hand':
@@ -422,7 +422,7 @@ function applyChoice(context: RuleContext<OfficialMatchState>, chosenIds: readon
     const index = player.deck.findIndex(card => card.id === picked.id)
     if (index < 0) throw new TypeError('Confirmed looked card is missing from deck')
     player.hand.push(...player.deck.splice(index, 1))
-    shuffle(player.deck, context.random)
+    if (choice.viewedCount > 1) shuffle(player.deck, context.random)
     events.push(visible('look-picked', { seat, card: { id: picked.id, cardId: picked.cardId } }, seat))
     return { state, events }
   }
