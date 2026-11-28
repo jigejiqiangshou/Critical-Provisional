@@ -32,6 +32,21 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'play', steps: [{ type: 'damage-unit', amount: 5, target: 'any' }],
   },
   {
+    cardId: 'initial:qingluan', legacyName: '青鸾',
+    source: 'quote/临界·模块化·2D版.html:625 enter',
+    trigger: 'enter', steps: [{ type: 'draw', amount: 1 }],
+  },
+  {
+    cardId: 'initial:chuanxun', legacyName: '传讯',
+    source: 'quote/临界·模块化·2D版.html:646 effect',
+    trigger: 'play', steps: [{ type: 'draw', amount: 1 }],
+  },
+  {
+    cardId: 'initial:dongcha', legacyName: '洞察',
+    source: 'quote/临界·模块化·2D版.html:645 effect',
+    trigger: 'play', steps: [{ type: 'draw', amount: 2 }],
+  },
+  {
     cardId: 'initial:yanwen', legacyName: '炎纹',
     source: 'quote/临界·模块化·2D版.html:562 effect',
     trigger: 'play', steps: [{ type: 'damage-unit', amount: 3, target: 'any' }, { type: 'draw', amount: 1 }],
