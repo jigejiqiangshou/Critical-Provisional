@@ -32,7 +32,7 @@ const capabilities = Object.freeze({
   triggers: Object.freeze(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit'] as const satisfies readonly OfficialTrigger[]),
   effects: Object.freeze([
     'damage-unit', 'draw', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
-    'heal-core', 'shield-core', 'destroy-unit', 'bonus-core-attack', 'damage-all-enemies', 'pre-strike',
+    'heal-core', 'shield-core', 'destroy-unit', 'bonus-core-attack', 'damage-all-enemies', 'pre-strike', 'shield-unit', 'shield-all-own', 'lock-field', 'lock-own-attacks',
   ] as const satisfies readonly OfficialEffect['type'][]),
 })
 
@@ -274,6 +274,29 @@ function executeEffect(
       })))
       break
     }
+    case 'lock-field':
+      player.fieldLock = effect.attr
+      events.push(visible('field-locked', { seat, attr: effect.attr }))
+      break
+    case 'lock-own-attacks':
+      player.selfAttackLock = true
+      events.push(visible('own-attacks-locked', { seat }))
+      break
+    case 'shield-unit': {
+      const target = targetId === null ? undefined : unitLocation(state, targetId)
+      if (target) {
+        target.unit.shield += effect.amount
+        events.push(visible('unit-shielded', { seat: target.seat, targetId, amount: effect.amount, shield: target.unit.shield }))
+      }
+      break
+    }
+    case 'shield-all-own':
+      for (const unit of player.board) {
+        if (effect.excludeSource && unit.id === sourceId) continue
+        unit.shield += effect.amount
+        events.push(visible('unit-shielded', { seat, targetId: unit.id, amount: effect.amount, shield: unit.shield }))
+      }
+      break
     case 'destroy-unit':
       if (targetId !== null) destroyUnit(state, snapshot, targetId, events)
       break
@@ -477,7 +500,7 @@ function validEffectTarget(
   state: OfficialMatchState, snapshot: CardPoolSnapshot, seat: SeatId, card: OfficialCardInstance,
   trigger: OfficialTrigger, targets: readonly string[],
 ): boolean {
-  const steps = effectsFor(snapshot, card, trigger).filter(effect => effect.type === 'damage-unit' || effect.type === 'destroy-unit')
+  const steps = effectsFor(snapshot, card, trigger).filter(effect => effect.type === 'damage-unit' || effect.type === 'destroy-unit' || effect.type === 'shield-unit')
   if (!steps.length) return targets.length === 0
   if (targets.length !== 1) return false
   const target = unitLocation(state, targets[0])
@@ -496,6 +519,7 @@ function play(
   if (!instance) return reject('card-not-in-hand')
   const card = officialCard(snapshot, instance.cardId)
   const data = officialCardData(card)
+  if (card.kind !== 'unit' && player.fieldLock && data.attr === player.fieldLock) return reject('field-locked')
   const targets = action.targets ?? []
   const trigger = card.kind === 'unit' ? 'enter' : 'play'
   const events: VisibleRuleEvent[] = []
@@ -549,6 +573,7 @@ function attack(
   const { attackerId, targetId } = action
   const player = state.seats[seat]
   const attacker = player.board.find(unit => unit.id === attackerId)
+  if (player.selfAttackLock) return reject('own-attacks-locked')
   if (!attacker || !attacker.canAttack || attacker.attacked || attacker.stunned || attacker.skillLock) {
     return reject('attacker-unavailable')
   }
@@ -576,6 +601,8 @@ function endTurn(context: RuleContext<OfficialMatchState>, state: OfficialMatchS
   const events: VisibleRuleEvent[] = []
   state.battleMode = false
   player.usedCardIds = []
+  player.fieldLock = null
+  player.selfAttackLock = false
   player.board.forEach(unit => {
     unit.attacked = false
     unit.skillUsed = false
@@ -645,7 +672,9 @@ export const officialRules: Ruleset<OfficialMatchState, PlayerAction, EffectCont
       case 'activate-skill': {
         const source = player.board.find(unit => unit.id === action.sourceId)
         if (!source) return reject('invalid-skill-source')
-        const skill = officialCardData(officialCard(snapshot, source.cardId)).skill
+        const sourceData = officialCardData(officialCard(snapshot, source.cardId))
+        if (player.fieldLock && sourceData.attr === player.fieldLock) return reject('field-locked')
+        const skill = sourceData.skill
         if (!skill || skill.id !== action.skillId) return reject('invalid-skill')
         if (skill.oncePerTurn && source.skillUsed) return reject('skill-already-used')
         if (!validEffectTarget(state, snapshot, seat, source, 'skill', action.targets ?? [])) return reject('invalid-target')

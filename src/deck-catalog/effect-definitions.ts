@@ -74,12 +74,12 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
   {
     cardId: 'initial:sanmeizhenhuo', legacyName: '三昧真火',
     source: 'quote/临界·模块化·2D版.html:571 effect',
-    trigger: 'play', steps: [{ type: 'destroy-unit', target: 'enemy' }],
+    trigger: 'play', steps: [{ type: 'lock-field', attr: '朱雀' }, { type: 'destroy-unit', target: 'enemy' }],
   },
   {
     cardId: 'initial:yanmie', legacyName: '湮灭',
     source: 'quote/临界·模块化·2D版.html:656 effect',
-    trigger: 'play', steps: [{ type: 'destroy-unit', target: 'enemy' }],
+    trigger: 'play', steps: [{ type: 'lock-own-attacks' }, { type: 'destroy-unit', target: 'enemy' }],
   },
   {
     cardId: 'initial:jinwu', legacyName: '金乌',
@@ -99,12 +99,12 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
   {
     cardId: 'initial:liaoyuan', legacyName: '燎原',
     source: 'quote/临界·模块化·2D版.html:566 effect',
-    trigger: 'play', steps: [{ type: 'damage-all-enemies', amount: 3, pierce: false }],
+    trigger: 'play', steps: [{ type: 'lock-field', attr: '朱雀' }, { type: 'damage-all-enemies', amount: 3, pierce: false }],
   },
   {
     cardId: 'initial:zhurong', legacyName: '祝融',
     source: 'quote/临界·模块化·2D版.html:570 skill.effect',
-    trigger: 'skill', steps: [{ type: 'damage-all-enemies', amount: 2, pierce: false }],
+    trigger: 'skill', steps: [{ type: 'lock-own-attacks' }, { type: 'damage-all-enemies', amount: 2, pierce: false }],
   },
   {
     cardId: 'initial:rushou', legacyName: '蓐收',
@@ -114,7 +114,7 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
   {
     cardId: 'initial:baihong', legacyName: '白虹',
     source: 'quote/临界·模块化·2D版.html:620 effect',
-    trigger: 'play', steps: [{ type: 'damage-all-enemies', amount: 4, pierce: true }],
+    trigger: 'play', steps: [{ type: 'lock-field', attr: '白虎' }, { type: 'damage-all-enemies', amount: 4, pierce: true }],
   },
   {
     cardId: 'initial:huoya', legacyName: '火鸦',
@@ -135,6 +135,21 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     cardId: 'initial:zhuyan', legacyName: '朱厌',
     source: 'quote/临界·模块化·2D版.html:568 passive',
     trigger: 'attack-unit', steps: [{ type: 'pre-strike', amount: 1 }],
+  },
+  {
+    cardId: 'initial:ningxiang', legacyName: '凝霜',
+    source: 'quote/临界·模块化·2D版.html:592 effect',
+    trigger: 'play', steps: [{ type: 'shield-unit', amount: 5, target: 'own' }],
+  },
+  {
+    cardId: 'initial:bingwei', legacyName: '冰尉',
+    source: 'quote/临界·模块化·2D版.html:586 enter',
+    trigger: 'enter', steps: [{ type: 'shield-all-own', amount: 1, excludeSource: true }],
+  },
+  {
+    cardId: 'initial:xuanwuzhiming', legacyName: '玄武·执明',
+    source: 'quote/临界·模块化·2D版.html:585 skill.effect',
+    trigger: 'skill', steps: [{ type: 'shield-all-own', amount: 2, excludeSource: false }],
   },
   {
     cardId: 'initial:yanwen', legacyName: '炎纹',
