@@ -32,7 +32,7 @@ const capabilities = Object.freeze({
   triggers: Object.freeze(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit', 'enemy-enter'] as const satisfies readonly OfficialTrigger[]),
   effects: Object.freeze([
     'damage-unit', 'draw', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
-    'heal-core', 'shield-core', 'destroy-unit', 'stun-unit', 'immunize-unit', 'bonus-core-attack', 'damage-all-enemies', 'pre-strike', 'shield-unit', 'shield-all-own', 'buff-unit', 'lock-field', 'lock-own-attacks', 'discard-hand', 'discard-all-hand', 'look-pick', 'search-deck', 'hand-cost', 'pay-life', 'recover-discard',
+    'heal-core', 'shield-core', 'destroy-unit', 'stun-unit', 'immunize-unit', 'bonus-core-attack', 'damage-all-enemies', 'pre-strike', 'shield-unit', 'shield-all-own', 'buff-unit', 'lock-field', 'lock-own-attacks', 'lock-next-ap', 'discard-hand', 'discard-all-hand', 'look-pick', 'search-deck', 'hand-cost', 'pay-life', 'recover-discard',
   ] as const satisfies readonly OfficialEffect['type'][]),
 })
 
@@ -108,6 +108,13 @@ function startTurn(
   state.turn++
   player.ownTurn++
   player.ap = player.ownTurn <= 3 ? 0 : player.ownTurn <= 5 ? 1 : 2
+  player.lockImmune = false
+  if (player.locked) {
+    player.ap = Math.max(0, player.ap - 1)
+    player.locked = false
+    player.lockImmune = true
+    events.push(visible('ap-locked', { seat, ap: player.ap }))
+  }
   player.board.forEach(unit => {
     unit.canAttack = true
     unit.immune = false
@@ -356,6 +363,14 @@ function executeEffect(
       player.fieldLock = effect.attr
       events.push(visible('field-locked', { seat, attr: effect.attr }))
       break
+    case 'lock-next-ap': {
+      const opponent = opposingSeat(state, seat)
+      if (!state.seats[opponent].lockImmune) {
+        state.seats[opponent].locked = true
+        events.push(visible('next-ap-locked', { seat: opponent }))
+      }
+      break
+    }
     case 'lock-own-attacks':
       player.selfAttackLock = true
       events.push(visible('own-attacks-locked', { seat }))

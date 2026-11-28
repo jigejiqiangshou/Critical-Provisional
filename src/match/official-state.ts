@@ -15,6 +15,7 @@ export type OfficialEffect =
   | { readonly type: 'shield-all-own'; readonly amount: number; readonly excludeSource: boolean }
   | { readonly type: 'lock-field'; readonly attr: string }
   | { readonly type: 'lock-own-attacks' }
+  | { readonly type: 'lock-next-ap' }
   | { readonly type: 'discard-hand'; readonly amount: number }
   | { readonly type: 'discard-all-hand' }
   | { readonly type: 'recover-discard'; readonly amount: number; readonly kind?: 'spell' }
@@ -71,6 +72,8 @@ export interface OfficialSeatState {
   hp: number
   ap: number
   ownTurn: number
+  locked?: boolean
+  lockImmune?: boolean
   fatigue: number
   coreShield: number
   temporaryHealth: number
