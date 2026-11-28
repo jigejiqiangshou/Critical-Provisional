@@ -29,7 +29,7 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
   {
     cardId: 'initial:lihuo', legacyName: '离火',
     source: 'quote/临界·模块化·2D版.html:564 effect',
-    trigger: 'play', steps: [{ type: 'damage-unit', amount: 5, target: 'any' }],
+    trigger: 'play', steps: [{ type: 'damage-unit', amount: 5, target: 'enemy' }],
   },
   {
     cardId: 'initial:qingluan', legacyName: '青鸾',
@@ -84,6 +84,6 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
   {
     cardId: 'initial:yanwen', legacyName: '炎纹',
     source: 'quote/临界·模块化·2D版.html:562 effect',
-    trigger: 'play', steps: [{ type: 'damage-unit', amount: 3, target: 'any' }, { type: 'draw', amount: 1 }],
+    trigger: 'play', steps: [{ type: 'damage-unit', amount: 3, target: 'enemy' }, { type: 'draw', amount: 1 }],
   },
 ]
