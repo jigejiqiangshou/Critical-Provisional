@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { runInNewContext } from 'node:vm'
 import { expect, it } from 'vitest'
-import { assertInitialEffectsReady, initialEffectDefinitions } from '../../src/deck-catalog/effect-definitions'
+import { assertInitialEffectsReady, initialEffectDefinitions, validateInitialEffectAudits } from '../../src/deck-catalog/effect-definitions'
 import type { InitialEffectDefinition } from '../../src/deck-catalog/effect-definitions'
 import sources from '../../src/deck-catalog/legacy-card-sources.json'
 
@@ -36,4 +36,17 @@ it.each([
   const list = initialEffectDefinitions as InitialEffectDefinition[]
   list.push({ ...list[0], ...patch } as InitialEffectDefinition)
   try { expect(() => assertInitialEffectsReady()).toThrow(message) } finally { list.pop() }
+})
+
+it('rejects incomplete fields, missing mappings and unverified core references in individual audits', () => {
+  const audit = { legacyName: '炎纹', cardId: 'initial:yanwen', fields: {} } as const
+  expect(() => validateInitialEffectAudits([audit])).toThrow('Unreviewed rules field')
+  expect(() => validateInitialEffectAudits([{ ...audit, fields: { effect: { kind: 'effect', reference: 'play:unimplemented' } } }]))
+    .toThrow('Unimplemented effect mapping')
+  expect(() => validateInitialEffectAudits([{ ...audit, fields: { effect: { kind: 'core', reference: 'fake' } } }]))
+    .toThrow('Unverified core rule')
+  expect(() => validateInitialEffectAudits([{ ...audit, fields: { effect: { kind: 'effect', reference: '' } } }]))
+    .toThrow('Missing rule reference')
+  expect(() => validateInitialEffectAudits([{ ...audit, fields: { effect: { kind: 'effect', reference: 'play:damage-unit' } } }]))
+    .toThrow('Initial effect migration incomplete: 128 cards')
 })
