@@ -166,33 +166,64 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
   },
 ]
 
-/** Names enter this list only after every rules-bearing field and applicable
- * choice has been reviewed, not merely after one effect has been translated. */
-const fullyAuditedLegacyNames: readonly string[] = []
+/** Each legacy rules-bearing field needs an explicit reviewed mapping. A field
+ * mapped to an effect names the corresponding trigger; core mappings name the
+ * existing versioned rule. Audits remain empty until reviewed end to end. */
+interface EffectAudit {
+  readonly legacyName: string
+  readonly cardId: string
+  readonly fields: Readonly<Record<string, { readonly kind: 'effect' | 'core'; readonly reference: string }>>
+}
+const effectAudits: readonly EffectAudit[] = []
 
 /** Fail closed before a first release can consume this in-progress catalog.
  * The future release builder must call this before writing or packaging it. */
 export function assertInitialEffectsReady(): void {
-  const expected = new Set(legacySources.map(source => source.name))
-  const audited = new Set(fullyAuditedLegacyNames)
-  if (audited.size !== fullyAuditedLegacyNames.length || [...audited].some(name => !expected.has(name))) {
-    throw new TypeError('Invalid initial effect audit coverage')
-  }
+  const expected = new Map(legacySources.map(source => [source.name, source]))
   const capabilities = getRuleCapabilities(OFFICIAL_RULES_VERSION)
   if (!capabilities) throw new TypeError('Initial rules version is unavailable')
   const triggers = new Set<string>(capabilities.triggers)
   const effects = new Set<string>(capabilities.effects)
   const namesById = new Map<string, string>()
+  const idsByName = new Map<string, string>()
   for (const definition of initialEffectDefinitions) {
     if (!expected.has(definition.legacyName)) throw new TypeError(`Unknown legacy card: ${definition.legacyName}`)
-    const prior = namesById.get(definition.cardId)
-    if (prior && prior !== definition.legacyName) throw new TypeError(`Duplicate card ID: ${definition.cardId}`)
+    const priorName = namesById.get(definition.cardId)
+    const priorId = idsByName.get(definition.legacyName)
+    if ((priorName && priorName !== definition.legacyName) || (priorId && priorId !== definition.cardId)) {
+      throw new TypeError(`Conflicting stable ID: ${definition.cardId}`)
+    }
     namesById.set(definition.cardId, definition.legacyName)
+    idsByName.set(definition.legacyName, definition.cardId)
     if (!triggers.has(definition.trigger)) throw new TypeError(`Unknown trigger: ${definition.trigger}`)
     for (const step of definition.steps) {
       if (!effects.has(step.type)) throw new TypeError(`Unimplemented effect: ${step.type}`)
     }
   }
-  const incomplete = [...expected].filter(name => !audited.has(name))
+  const audited = new Set<string>()
+  for (const audit of effectAudits) {
+    const source = expected.get(audit.legacyName)
+    if (!source || audited.has(audit.legacyName) || !audit.cardId) throw new TypeError('Invalid initial effect audit coverage')
+    const previousName = namesById.get(audit.cardId)
+    const previousId = idsByName.get(audit.legacyName)
+    if ((previousName && previousName !== audit.legacyName) || (previousId && previousId !== audit.cardId)) {
+      throw new TypeError(`Conflicting stable ID: ${audit.cardId}`)
+    }
+    namesById.set(audit.cardId, audit.legacyName)
+    idsByName.set(audit.legacyName, audit.cardId)
+    const fields = Object.keys(audit.fields)
+    if (fields.length !== source.ruleFields.length || source.ruleFields.some(field => !fields.includes(field))) {
+      throw new TypeError(`Unreviewed rules field: ${audit.legacyName}`)
+    }
+    for (const mapping of Object.values(audit.fields)) {
+      if (!mapping.reference) throw new TypeError(`Missing rule reference: ${audit.legacyName}`)
+      if (mapping.kind === 'effect' && !initialEffectDefinitions.some(definition =>
+        definition.cardId === audit.cardId && definition.trigger === mapping.reference && definition.steps.length > 0)) {
+        throw new TypeError(`Unimplemented effect mapping: ${audit.legacyName}`)
+      }
+    }
+    audited.add(audit.legacyName)
+  }
+  const incomplete = [...expected.keys()].filter(name => !audited.has(name))
   if (incomplete.length) throw new TypeError(`Initial effect migration incomplete: ${incomplete.length} cards`)
 }
