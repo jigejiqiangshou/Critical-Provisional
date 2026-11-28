@@ -66,6 +66,34 @@ describe('partial T045 definitions: core settlement samples', () => {
       expect(result.state.seats.A.hand.map(card => card.id)).toEqual(['draw-1', 'draw-2'].slice(0, amount))
     },
   )
+  it.each([['春风', 5], ['复苏', 8], ['回天', 12], ['麒麟', 3], ['龟息', 6]] as const)(
+    '%s heals its owner and clamps at 50', (name, amount) => {
+      const entry = definition(name)
+      const kind = entry.trigger === 'enter' ? 'unit' : 'spell'
+      const card: Card = { id: entry.cardId, name, kind, flagship: false,
+        data: { attack: 1, health: 1, effects: [{ trigger: entry.trigger, steps: entry.steps }] } }
+      const release: Release = { id: 'partial', rulesVersion: OFFICIAL_RULES_VERSION, cards: [card], presets: [] }
+      for (const startingHp of [20, 49, 50]) {
+        const a = createOfficialSeatState()
+        a.hp = startingHp
+        a.coreShield = 2
+        a.hand = [{ id: 'played', cardId: entry.cardId }]
+        const state: OfficialMatchState = { seatOrder: ['A', 'B'], seats: { A: a, B: createOfficialSeatState() },
+          turn: 2, finale: null, battleMode: false, effect: null }
+        const result = officialRules.resolveAction({ state, snapshot: createOfficialSnapshot(release), seat: 'A',
+          random: () => 0, action: { type: 'play-card', cardId: 'played' } })
+        expect(result.kind).toBe('active')
+        if (result.kind !== 'active') throw new Error('expected settled action')
+        expect(result.state.seats.A.hp).toBe(Math.min(50, startingHp + amount))
+        expect(result.state.seats.A.coreShield).toBe(name === '龟息' ? 5 : 2)
+        if (name === '龟息' && startingHp < 50) {
+          const events = result.events.flatMap(event => event.type === 'rule-event' ? [event.name] : [])
+          expect(events.indexOf('core-healed')).toBeGreaterThanOrEqual(0)
+          expect(events.indexOf('core-shielded')).toBeGreaterThan(events.indexOf('core-healed'))
+        }
+      }
+    },
+  )
   it('maps 离火 to five damage against any unit', () => {
     expect(definition('离火')).toMatchObject({ trigger: 'play', steps: [{ type: 'damage-unit', amount: 5, target: 'any' }] })
   })
