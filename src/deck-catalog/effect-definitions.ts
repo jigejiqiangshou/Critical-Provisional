@@ -47,6 +47,31 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'play', steps: [{ type: 'draw', amount: 2 }],
   },
   {
+    cardId: 'initial:chunfeng', legacyName: '春风',
+    source: 'quote/临界·模块化·2D版.html:634 effect',
+    trigger: 'play', steps: [{ type: 'heal-core', amount: 5 }],
+  },
+  {
+    cardId: 'initial:fusu', legacyName: '复苏',
+    source: 'quote/临界·模块化·2D版.html:654 effect',
+    trigger: 'play', steps: [{ type: 'heal-core', amount: 8 }],
+  },
+  {
+    cardId: 'initial:huitian', legacyName: '回天',
+    source: 'quote/临界·模块化·2D版.html:655 effect',
+    trigger: 'play', steps: [{ type: 'heal-core', amount: 12 }],
+  },
+  {
+    cardId: 'initial:qilin', legacyName: '麒麟',
+    source: 'quote/临界·模块化·2D版.html:660 enter',
+    trigger: 'enter', steps: [{ type: 'heal-core', amount: 3 }],
+  },
+  {
+    cardId: 'initial:guixi', legacyName: '龟息',
+    source: 'quote/临界·模块化·2D版.html:593 effect',
+    trigger: 'play', steps: [{ type: 'heal-core', amount: 6 }, { type: 'shield-core', amount: 3 }],
+  },
+  {
     cardId: 'initial:yanwen', legacyName: '炎纹',
     source: 'quote/临界·模块化·2D版.html:562 effect',
     trigger: 'play', steps: [{ type: 'damage-unit', amount: 3, target: 'any' }, { type: 'draw', amount: 1 }],
