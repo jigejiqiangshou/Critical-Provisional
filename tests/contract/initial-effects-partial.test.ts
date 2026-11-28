@@ -187,6 +187,31 @@ describe('partial T045 definitions: core settlement samples', () => {
       expect(events.indexOf('draw')).toBeLessThan(events.lastIndexOf('unit-destroyed'))
     },
   )
+  it('朱厌 pre-strikes through a shield, and does not hit again after a pre-strike kill', () => {
+    const entry = definition('朱厌')
+    const cards: Card[] = [
+      { id: entry.cardId, name: entry.legacyName, kind: 'unit', flagship: false,
+        data: { attack: 5, health: 4, effects: [{ trigger: entry.trigger, steps: entry.steps }] } },
+      { id: 'target', name: 'target', kind: 'unit', flagship: false, data: { attack: 1, health: 10 } },
+    ]
+    const release: Release = { id: 'partial', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] }
+    for (const hp of [1, 10]) {
+      const a = createOfficialSeatState(), b = createOfficialSeatState()
+      a.ap = 1
+      a.board = [{ ...unit('attacker', entry.cardId), canAttack: true }]
+      b.board = [{ ...unit('defender', 'target'), hp, shield: 10 }]
+      const state: OfficialMatchState = { seatOrder: ['A', 'B'], seats: { A: a, B: b }, turn: 2,
+        finale: null, battleMode: false, effect: null }
+      const result = officialRules.resolveAction({ state, snapshot: createOfficialSnapshot(release), seat: 'A',
+        random: () => 0, action: { type: 'attack', attackerId: 'attacker', targetId: 'defender' } })
+      expect(result.kind).toBe('active')
+      if (result.kind !== 'active') throw new Error('expected settled action')
+      const hitEvents = result.events.filter(event => event.type === 'rule-event' && event.name === 'unit-damaged')
+      expect(hitEvents).toHaveLength(hp === 1 ? 1 : 2)
+      if (hp === 1) expect(result.state.seats.B.board).toHaveLength(0)
+      else expect(result.state.seats.B.board[0]).toMatchObject({ hp: 9, shield: 5 })
+    }
+  })
   it('maps 离火 to five damage against an enemy unit', () => {
     expect(definition('离火')).toMatchObject({ trigger: 'play', steps: [{ type: 'damage-unit', amount: 5, target: 'enemy' }] })
   })
