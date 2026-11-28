@@ -404,3 +404,52 @@ it.each([0, 2])('重筮 discards %i remaining cards before drawing four', count 
   if (count) expect(events.lastIndexOf('hand-discarded')).toBeLessThan(events.indexOf('draw'))
   expect(result.state.seats.A.usedCardIds).toContain(effect.cardId)
 })
+
+it.each(['normal', 'pierce', 'group'] as const)('庇护 prevents %s damage until next own turn', attack => {
+  const effect = definition('庇护')
+  const cards: Card[] = [
+    { id: 'unit', name: 'unit', kind: 'unit', flagship: false, data: { health: 12 } },
+    { id: effect.cardId, name: '庇护', kind: 'spell', flagship: false, data: { oncePerTurn: true, effects: [{ trigger: effect.trigger, steps: effect.steps }] } },
+    { id: 'attack', name: 'attack', kind: 'spell', flagship: false, data: { effects: [{ trigger: 'play', steps: attack !== 'group'
+      ? [{ type: 'damage-unit', target: 'enemy', amount: 8, pierce: attack === 'pierce' }] : [{ type: 'damage-all-enemies', amount: 8 }] }] } },
+  ]
+  const snapshot = createOfficialSnapshot({ id: 'bihu', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] })
+  const a = createOfficialSeatState(), b = createOfficialSeatState()
+  a.ap = 3; a.hand = [{ id: 'source', cardId: effect.cardId }, { id: 'second', cardId: effect.cardId }]
+  a.board = [{ ...unit('protected', 'unit'), hp: 12, shield: 5 }]
+  b.board = [{ ...unit('enemy', 'unit'), hp: 12 }]; b.hand = [{ id: 'attack-card', cardId: 'attack' }]
+  const state: OfficialMatchState = { seatOrder: ['A', 'B'], seats: { A: a, B: b }, turn: 2, finale: null, battleMode: false, effect: null }
+  const cast = (position: OfficialMatchState, target: string, source = 'source') => officialRules.resolveAction({ state: position, snapshot, seat: 'A', random: () => 0,
+    action: { type: 'play-card', cardId: source, targets: [target] } })
+  expect(cast(state, 'enemy').kind).toBe('rejected')
+  const protectedResult = cast(state, 'protected')
+  if (protectedResult.kind !== 'active') throw new Error('expected immunity')
+  expect(cast(protectedResult.state, 'protected', 'second').kind).toBe('rejected')
+  const next = officialRules.resolveAction({ state: protectedResult.state, snapshot, seat: 'A', random: () => 0, action: { type: 'end-turn' } })
+  if (next.kind !== 'active') throw new Error('expected B turn')
+  const damage = officialRules.resolveAction({ state: next.state, snapshot, seat: 'B', random: () => 0,
+    action: { type: 'play-card', cardId: 'attack-card', ...(attack !== 'group' ? { targets: ['protected'] } : {}) } })
+  if (damage.kind !== 'active') throw new Error('expected damage settlement')
+  expect(damage.state.seats.A.board[0]).toMatchObject({ hp: 12, shield: 5, immune: true })
+  const back = officialRules.resolveAction({ state: damage.state, snapshot, seat: 'B', random: () => 0, action: { type: 'end-turn' } })
+  if (back.kind !== 'active') throw new Error('expected A turn')
+  expect(back.state.seats.A.board[0].immune).toBe(false)
+  expect(cast(back.state, 'protected', 'second').kind).toBe('active')
+})
+
+it('evolution does not inherit 庇护 immunity', () => {
+  const cards: Card[] = [
+    { id: 'base', name: 'base', kind: 'unit', flagship: false, data: { health: 5 } },
+    { id: 'evolved', name: 'evolved', kind: 'unit', flagship: false, data: { health: 8, evolveFrom: ['base'] } },
+  ]
+  const snapshot = createOfficialSnapshot({ id: 'immune-evolution', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] })
+  const a = createOfficialSeatState()
+  a.hand = [{ id: 'evo-card', cardId: 'evolved' }]
+  a.board = [{ ...unit('base-unit', 'base'), immune: true, hp: 5 }]
+  const state: OfficialMatchState = { seatOrder: ['A', 'B'], seats: { A: a, B: createOfficialSeatState() }, turn: 2, finale: null, battleMode: false, effect: null }
+  const result = officialRules.resolveAction({ state, snapshot, seat: 'A', random: () => 0,
+    action: { type: 'evolve', cardId: 'evo-card', targets: ['base-unit'] } })
+  if (result.kind !== 'active') throw new Error('expected evolution')
+  expect(result.state.seats.A.board[0].cardId).toBe('evolved')
+  expect(result.state.seats.A.board[0].immune).not.toBe(true)
+})
