@@ -1,40 +1,32 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import fixture from '../baseline/fixtures.json'
-import { getRuleCapabilities, OFFICIAL_RULES_VERSION } from '../../src/match/rules'
-import { initialEffectMappings, legacyEffectInventory, validateInitialEffects } from '../../src/deck-catalog/effect-definitions'
+import sources from '../../src/deck-catalog/legacy-card-sources.json'
+import { assertInitialEffectsReady, validateInitialEffectAudits } from '../../src/deck-catalog/effect-definitions'
 
-describe('first release legacy effect inventory', () => {
-  it('contains each independently pinned 2D and 3D legacy card, with locatable source lines', () => {
-    expect(legacyEffectInventory).toHaveLength(129)
-    expect(new Set(legacyEffectInventory.map(item => item.id)).size).toBe(129)
+describe('independent first release effect acceptance', () => {
+  it('accounts for each card in both legacy game sources and its printed face', () => {
+    expect(sources).toHaveLength(129)
+    expect(new Set(sources.map(item => item.name)).size).toBe(129)
     for (const edition of ['2d', '3d'] as const) {
-      const reference = fixture.cardDefinitions[edition] as Record<string, unknown>
-      expect(legacyEffectInventory.map(item => item.name).sort()).toEqual(Object.keys(reference).sort())
-      for (const item of legacyEffectInventory) {
-        expect(item.card).toEqual(reference[item.name])
-        const location = item.sources.find(source => source.path.includes(edition === '2d' ? '2D版' : '3D版'))
-        expect(location).toBeDefined()
-        const line = readFileSync(location!.path, 'utf8').split('\n')[location!.line - 1]
-        expect(line).toContain(`name:'${item.name}'`)
+      const reference = fixture.cardDefinitions[edition] as Record<string, { text: string }>
+      expect(sources.map(item => item.name).sort()).toEqual(Object.keys(reference).sort())
+      const path = `quote/临界·模块化·${edition.toUpperCase()}版.html`
+      const lines = readFileSync(path, 'utf8').split('\n')
+      for (const item of sources) {
+        expect(item.faceText).toBe(reference[item.name].text)
+        expect(lines[(edition === '2d' ? item.line2d : item.line3d) - 1]).toContain(`name:'${item.name}'`)
       }
     }
   })
 
-  it('covers the complete inventory with the actual rules capabilities', () => {
-    const capabilities = getRuleCapabilities(OFFICIAL_RULES_VERSION)
-    expect(capabilities).toBeDefined()
-    expect(() => validateInitialEffects(legacyEffectInventory, initialEffectMappings, capabilities!)).not.toThrow()
+  it('allows the first release only after every source entry is implemented and reviewed', () => {
+    expect(() => assertInitialEffectsReady()).not.toThrow()
   })
 
-  it('rejects unknown triggers and effects even when all IDs are present', () => {
-    const source = [{ id: 'test-card', card: { effect: { type: 'draw', n: 1 } } }]
-    const capabilities = { triggers: ['play'], effects: ['draw'] }
-    const valid = [{ cardId: 'test-card', effects: [{ sourcePath: 'effect', trigger: 'play' as const, steps: [{ type: 'draw' as const, amount: 1 }] }] }]
-    expect(() => validateInitialEffects(source, valid, capabilities)).not.toThrow()
-    expect(() => validateInitialEffects(source, [], capabilities)).toThrow()
-    expect(() => validateInitialEffects(source, [...valid, ...valid], capabilities)).toThrow()
-    expect(() => validateInitialEffects(source, valid, { triggers: [], effects: ['draw'] })).toThrow()
-    expect(() => validateInitialEffects(source, valid, { triggers: ['play'], effects: [] })).toThrow()
+  it('rejects missing, unknown and incomplete source audits', () => {
+    expect(() => validateInitialEffectAudits([])).toThrow()
+    expect(() => validateInitialEffectAudits([{ legacyName: '不存在', cardId: 'missing', fields: {}, steps: {} }])).toThrow()
+    expect(() => validateInitialEffectAudits([{ legacyName: '毕方', cardId: 'initial:bifang', fields: {}, steps: {} }])).toThrow()
   })
 })
