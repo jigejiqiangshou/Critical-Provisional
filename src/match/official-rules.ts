@@ -32,6 +32,7 @@ const capabilities = Object.freeze({
   triggers: Object.freeze(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit'] as const satisfies readonly OfficialTrigger[]),
   effects: Object.freeze([
     'damage-unit', 'draw', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
+    'heal-core', 'shield-core', 'destroy-unit', 'bonus-core-attack', 'damage-all-enemies', 'pre-strike', 'shield-unit', 'shield-all-own', 'buff-unit', 'lock-field', 'lock-own-attacks', 'discard-hand', 'look-pick', 'search-deck', 'hand-cost', 'pay-life', 'recover-discard',
   ] as const satisfies readonly OfficialEffect['type'][]),
 })
 
@@ -170,9 +171,10 @@ function effectsFor(snapshot: CardPoolSnapshot, card: OfficialCardInstance, trig
 function effectTasks(
   snapshot: CardPoolSnapshot, seat: SeatId, card: OfficialCardInstance, trigger: OfficialTrigger, targetId: string | null,
 ): RuleTask[] {
-  return effectsFor(snapshot, card, trigger).map(effect => ({
-    type: 'effect', seat, sourceId: card.id, targetId, effect,
-  }))
+  const registrations = officialCardData(officialCard(snapshot, card.cardId)).effects ?? []
+  return registrations.filter(item => item.trigger === trigger).flatMap(item => item.steps.map(effect => ({
+    type: 'effect' as const, seat, sourceId: card.id, targetId, effect, timing: item.timing ?? 'immediate',
+  })))
 }
 
 function frame(state: OfficialMatchState) {
@@ -186,30 +188,42 @@ function selection(state: OfficialMatchState): ChoiceFrame {
   return choice
 }
 
+function destroyUnit(
+  state: OfficialMatchState, snapshot: CardPoolSnapshot, targetId: string, events: VisibleRuleEvent[],
+): void {
+  const found = unitLocation(state, targetId)
+  if (!found) return
+  const { seat, index, unit } = found
+  const player = state.seats[seat]
+  player.board.splice(index, 1)
+  const card = { id: unit.id, cardId: unit.cardId }
+  player.discard.push(card)
+  events.push(visible('unit-destroyed', { seat, card }))
+  const deathTasks = effectTasks(snapshot, seat, card, 'death', null)
+  const immediate = deathTasks.filter(task => task.type !== 'effect' || task.timing !== 'after-action')
+  const deferred = deathTasks.filter(task => task.type === 'effect' && task.timing === 'after-action')
+  frame(state).queue.unshift(...immediate, { type: 'death-bonuses', seat })
+  frame(state).deferredDeath.push(...deferred)
+}
+
 function damageUnit(
   state: OfficialMatchState, snapshot: CardPoolSnapshot, targetId: string,
   amount: number, pierce: boolean, events: VisibleRuleEvent[],
 ): void {
   const found = unitLocation(state, targetId)
   if (!found) return
-  const { seat, index, unit } = found
+  const { seat, unit } = found
   const absorbed = pierce ? 0 : Math.min(unit.shield, amount)
   unit.shield -= absorbed
   unit.hp -= amount - absorbed
   events.push(visible('unit-damaged', { seat, targetId, amount: amount - absorbed, hp: unit.hp }))
-  if (unit.hp > 0) return
-  const player = state.seats[seat]
-  player.board.splice(index, 1)
-  const card = { id: unit.id, cardId: unit.cardId }
-  player.discard.push(card)
-  events.push(visible('unit-destroyed', { seat, card }))
-  frame(state).queue.unshift(...effectTasks(snapshot, seat, card, 'death', null), { type: 'death-bonuses', seat })
+  if (unit.hp <= 0) destroyUnit(state, snapshot, targetId, events)
 }
 
-function damageCore(state: OfficialMatchState, seat: SeatId, amount: number, events: VisibleRuleEvent[]): void {
+function damageCore(state: OfficialMatchState, seat: SeatId, amount: number, events: VisibleRuleEvent[], pierce = false): void {
   const player = state.seats[seat]
   const buffered = Math.min(player.temporaryHealth, amount)
-  const shielded = Math.min(player.coreShield, amount - buffered)
+  const shielded = pierce ? 0 : Math.min(player.coreShield, amount - buffered)
   player.temporaryHealth -= buffered
   player.coreShield -= shielded
   player.hp -= amount - buffered - shielded
@@ -231,10 +245,24 @@ function finishAttack(
   events.push(visible('attack', { seat, attackerId, targetId, cancelled }))
   if (cancelled) return
   const power = officialCardData(officialCard(snapshot, attacker.cardId)).attack ?? 0
-  const amount = Math.max(0, power + attacker.attackBonus)
+  const bonus = targetId === coreTargetId(opposingSeat(state, seat))
+    ? effectsFor(snapshot, attacker, 'attack-core').reduce((total, effect) =>
+      total + (effect.type === 'bonus-core-attack' ? effect.amount : 0), 0)
+    : 0
+  const amount = Math.max(0, power + attacker.attackBonus + bonus)
   const opponent = opposingSeat(state, seat)
-  if (targetId === coreTargetId(opponent)) damageCore(state, opponent, amount, events)
-  else damageUnit(state, snapshot, targetId, amount, hasKeyword(snapshot, attacker, 'pierce', '穿透'), events)
+  if (targetId === coreTargetId(opponent)) {
+    for (const effect of effectsFor(snapshot, attacker, 'attack-core')) {
+      if (effect.type === 'pre-strike') damageCore(state, opponent, effect.amount, events, true)
+    }
+    if (state.seats[opponent].hp > 0) damageCore(state, opponent, amount, events)
+  } else {
+    for (const effect of effectsFor(snapshot, attacker, 'attack-unit')) {
+      if (effect.type === 'pre-strike') damageUnit(state, snapshot, targetId, effect.amount, true, events)
+    }
+    damageUnit(state, snapshot, targetId, amount, hasKeyword(snapshot, attacker, 'pierce', '穿透'), events)
+  }
+  /* Unit removal by pre-strike makes the regular hit a no-op. */
 }
 
 function executeEffect(
@@ -245,10 +273,108 @@ function executeEffect(
   const player = state.seats[seat]
   switch (effect.type) {
     case 'damage-unit':
-      if (targetId !== null) damageUnit(state, snapshot, targetId, effect.amount, false, events)
+      if (targetId !== null) damageUnit(state, snapshot, targetId, effect.amount, effect.pierce === true, events)
+      break
+    case 'damage-all-enemies': {
+      const targets = state.seats[opposingSeat(state, seat)].board.map(unit => unit.id)
+      frame(state).queue.unshift(...targets.map(target => ({
+        type: 'effect' as const, seat, sourceId, targetId: target,
+        effect: { type: 'damage-unit' as const, amount: effect.amount, target: 'enemy' as const, pierce: effect.pierce },
+      })))
+      break
+    }
+    case 'recover-discard': {
+      const cards = player.discard.filter(card => !effect.kind || officialCard(snapshot, card.cardId).kind === effect.kind)
+      frame(state).choice = { kind: 'recover-discard', seat, cards, amount: effect.amount }
+      break
+    }
+    case 'search-deck': {
+      const cards = player.deck.filter(card => {
+        const candidate = officialCard(snapshot, card.cardId)
+        const data = officialCardData(candidate)
+        return candidate.kind !== 'ace' && (!effect.kind || candidate.kind === effect.kind) &&
+          (!effect.attr || data.attr === effect.attr) && (!effect.names || effect.names.includes(candidate.name)) &&
+          (effect.evoStage === undefined || data.evoStage === effect.evoStage) &&
+          (effect.evoStageMin === undefined || (data.evoStage ?? -1) >= effect.evoStageMin) &&
+          (effect.attackMin === undefined || (candidate.kind === 'unit' && (data.attack ?? -1) >= effect.attackMin)) &&
+          (effect.healthMin === undefined || (candidate.kind === 'unit' && (data.health ?? -1) >= effect.healthMin)) &&
+          (!effect.keyword || data.keywords?.includes(effect.keyword))
+      })
+      frame(state).choice = { kind: 'search-deck', seat, cards, amount: effect.amount }
+      break
+    }
+    case 'look-pick': {
+      const viewed = player.deck.slice(0, effect.top)
+      const candidates = viewed.filter(card => {
+        const data = officialCard(snapshot, card.cardId)
+        return data.kind !== 'ace' && (!effect.kind || data.kind === effect.kind) && (!effect.attr || officialCardData(data).attr === effect.attr)
+      })
+      events.push(visible('cards-looked', { seat, cards: viewed.map(card => ({ id: card.id, cardId: card.cardId })) }, seat))
+      frame(state).choice = { kind: 'look-pick', seat, cards: candidates, viewedCount: viewed.length }
+      break
+    }
+    case 'pay-life': {
+      const amount = effect.amount === 'half' ? Math.min(player.hp - 1, Math.max(1, Math.floor(player.hp / 2))) : effect.amount
+      if (amount < 0 || player.hp <= amount) throw new TypeError('Life cost is not payable')
+      player.hp -= amount
+      events.push(visible('life-paid', { seat, amount, hp: player.hp }))
+      break
+    }
+    case 'hand-cost':
+      frame(state).choice = { kind: 'hand-cost', seat, sourceId, targetId, cards: [...player.hand], amount: effect.amount,
+        canPass: effect.canPass, onSelect: effect.onSelect }
+      break
+    case 'discard-hand':
+      frame(state).choice = { kind: 'discard-hand', seat, cards: [...player.hand], amount: effect.amount }
+      break
+    case 'lock-field':
+      player.fieldLock = effect.attr
+      events.push(visible('field-locked', { seat, attr: effect.attr }))
+      break
+    case 'lock-own-attacks':
+      player.selfAttackLock = true
+      events.push(visible('own-attacks-locked', { seat }))
+      break
+    case 'buff-unit': {
+      const target = targetId === null ? undefined : unitLocation(state, targetId)
+      if (target) {
+        target.unit.attackBonus += effect.attack
+        target.unit.hp += effect.health
+        if (effect.rush) target.unit.canAttack = true
+        events.push(visible('unit-buffed', { seat: target.seat, targetId, attack: effect.attack, health: effect.health, rush: effect.rush === true }))
+      }
+      break
+    }
+    case 'shield-unit': {
+      const target = targetId === null ? undefined : unitLocation(state, targetId)
+      if (target) {
+        target.unit.shield += effect.amount
+        events.push(visible('unit-shielded', { seat: target.seat, targetId, amount: effect.amount, shield: target.unit.shield }))
+      }
+      break
+    }
+    case 'shield-all-own':
+      for (const unit of player.board) {
+        if (effect.excludeSource && unit.id === sourceId) continue
+        unit.shield += effect.amount
+        events.push(visible('unit-shielded', { seat, targetId: unit.id, amount: effect.amount, shield: unit.shield }))
+      }
+      break
+    case 'destroy-unit':
+      if (targetId !== null) destroyUnit(state, snapshot, targetId, events)
       break
     case 'draw':
       draw(state, seat, effect.amount, events)
+      break
+    case 'heal-core': {
+      const healed = Math.max(0, Math.min(50, player.hp + effect.amount) - player.hp)
+      player.hp += healed
+      if (healed) events.push(visible('core-healed', { seat, amount: healed, hp: player.hp }))
+      break
+    }
+    case 'shield-core':
+      player.coreShield += effect.amount
+      events.push(visible('core-shielded', { seat, amount: effect.amount, shield: player.coreShield }))
       break
     case 'register-death-attack-bonus': {
       const unit = player.board.find(item => item.id === sourceId)
@@ -327,16 +453,65 @@ function boardFull(player: OfficialSeatState) {
   return player.board.length >= (player.iceEnabled ? 4 : 5)
 }
 
-function applyChoice(context: RuleContext<OfficialMatchState>, chosenId: string) {
+function applyChoice(context: RuleContext<OfficialMatchState>, chosenIds: readonly string[]) {
   const state = structuredClone(context.state)
   const { snapshot } = context
   const choice = selection(state)
-  const picked = choice.cards.find(card => card.id === chosenId)
+  const picked = choice.cards.find(card => card.id === chosenIds[0])
   if (!picked) throw new TypeError('Confirmed effect choice is missing a candidate')
   const { seat } = choice
   const player = state.seats[seat]
   const events: VisibleRuleEvent[] = []
   frame(state).choice = null
+
+  if (choice.kind === 'recover-discard') {
+    const cards: { id: string; cardId: string }[] = []
+    for (const chosenId of chosenIds) {
+      const index = player.discard.findIndex(card => card.id === chosenId)
+      if (index < 0) throw new TypeError('Confirmed recovered card is missing from discard')
+      const [card] = player.discard.splice(index, 1)
+      player.hand.push(card)
+      cards.push({ id: card.id, cardId: card.cardId })
+    }
+    events.push(visible('cards-recovered', { seat, cards }))
+    return { state, events }
+  }
+
+  if (choice.kind === 'search-deck') {
+    const cards: { id: string; cardId: string }[] = []
+    for (const chosenId of chosenIds) {
+      const index = player.deck.findIndex(card => card.id === chosenId)
+      if (index < 0) throw new TypeError('Confirmed searched card is missing from deck')
+      const [card] = player.deck.splice(index, 1)
+      player.hand.push(card)
+      cards.push({ id: card.id, cardId: card.cardId })
+    }
+    events.push(visible('cards-searched', { seat, cards }, seat))
+    return { state, events }
+  }
+
+  if (choice.kind === 'look-pick') {
+    const index = player.deck.findIndex(card => card.id === picked.id)
+    if (index < 0) throw new TypeError('Confirmed looked card is missing from deck')
+    player.hand.push(...player.deck.splice(index, 1))
+    if (choice.viewedCount > 1) shuffle(player.deck, context.random)
+    events.push(visible('look-picked', { seat, card: { id: picked.id, cardId: picked.cardId } }, seat))
+    return { state, events }
+  }
+
+  if (choice.kind === 'discard-hand' || choice.kind === 'hand-cost') {
+    for (const chosenId of chosenIds) {
+      const index = player.hand.findIndex(card => card.id === chosenId)
+      if (index < 0) throw new TypeError('Confirmed discard is no longer in hand')
+      const [card] = player.hand.splice(index, 1)
+      player.discard.push(card)
+      events.push(visible('hand-discarded', { seat, card: { id: card.id, cardId: card.cardId } }))
+    }
+    if (choice.kind === 'hand-cost') frame(state).queue.unshift(...choice.onSelect.map(effect => ({
+      type: 'effect' as const, seat, sourceId: choice.sourceId, targetId: choice.targetId, effect,
+    })))
+    return { state, events }
+  }
 
   if (choice.kind === 'response') {
     const index = player.facedown.findIndex(card => card.id === picked.id)
@@ -376,10 +551,22 @@ const settlement: EffectProgram<OfficialMatchState, VisibleRuleEvent> = {
       kind: 'branch',
       next: ({ state }) => {
         if (state.effect?.choice) return 'choice'
-        return state.effect?.queue.length ? 'task' : 'clear'
+        if (state.effect?.queue.length) return 'task'
+        return state.effect?.deferredDeath.length ? 'flush-deferred' : 'clear'
       },
     },
     task: { kind: 'apply', apply: performTask, next: 'dispatch' },
+    'flush-deferred': {
+      kind: 'apply',
+      apply: ({ state }) => {
+        const next = structuredClone(state)
+        const current = frame(next)
+        current.queue.push(...current.deferredDeath)
+        current.deferredDeath = []
+        return { state: next }
+      },
+      next: 'dispatch',
+    },
     choice: {
       kind: 'choose',
       choices: ({ state, snapshot }) => {
@@ -390,16 +577,17 @@ const settlement: EffectProgram<OfficialMatchState, VisibleRuleEvent> = {
           candidates: current.cards.map(({ id, cardId }) => ({
             id, payload: { cardId, name: officialCard(snapshot, cardId).name },
           })),
-          count: 1,
-          mode: 'result',
+          count: current.kind === 'discard-hand' || current.kind === 'hand-cost' || current.kind === 'search-deck' || current.kind === 'recover-discard' ? current.amount : 1,
+          mode: current.kind === 'hand-cost' ? 'condition' : 'result',
           ordered: false,
-          canPass: current.kind === 'response',
-          visibility: current.kind === 'response' ? 'owner' : 'public',
+          canPass: current.kind === 'response' || (current.kind === 'hand-cost' && current.canPass),
+          visibility: current.kind === 'response' || current.kind === 'discard-hand' || current.kind === 'hand-cost' || current.kind === 'look-pick' || current.kind === 'search-deck' ? 'owner' : 'public',
         }
       },
-      apply: (context, answer) => applyChoice(context, answer.candidateIds[0]),
+      apply: (context, answer) => applyChoice(context, answer.candidateIds),
       next: 'dispatch',
       pass: 'clear-choice',
+      unavailable: 'clear-choice',
       empty: 'clear-choice',
     },
     'clear-choice': {
@@ -421,7 +609,7 @@ function resolveEffects(
   context: RuleContext<OfficialMatchState>, state: OfficialMatchState, queue: RuleTask[],
   events: readonly VisibleRuleEvent[], activeSeat = context.seat,
 ): OfficialResolution {
-  state.effect = { queue, cancelAttack: false, choice: null }
+  state.effect = { queue, deferredDeath: [], cancelAttack: false, choice: null }
   const result = effects.start({ ...context, state }, 'settlement', activeSeat)
   if (result.kind === 'rejected') return result
   const allEvents = [...events, ...result.events]
@@ -437,11 +625,17 @@ function validEffectTarget(
   state: OfficialMatchState, snapshot: CardPoolSnapshot, seat: SeatId, card: OfficialCardInstance,
   trigger: OfficialTrigger, targets: readonly string[],
 ): boolean {
-  const steps = effectsFor(snapshot, card, trigger).filter(effect => effect.type === 'damage-unit')
+  function flatten(effects: readonly OfficialEffect[]): OfficialEffect[] {
+    return effects.flatMap(effect => effect.type === 'hand-cost' ? [effect, ...flatten(effect.onSelect)] : [effect])
+  }
+  const steps = flatten(effectsFor(snapshot, card, trigger)).filter(effect =>
+    effect.type === 'damage-unit' || effect.type === 'destroy-unit' || effect.type === 'shield-unit' || effect.type === 'buff-unit')
   if (!steps.length) return targets.length === 0
   if (targets.length !== 1) return false
   const target = unitLocation(state, targets[0])
-  return !!target && steps.every(effect => effect.target === 'any' || (effect.target === 'own' ? target.seat === seat : target.seat !== seat))
+  return !!target && steps.every(effect =>
+    (effect.target === 'any' || (effect.target === 'own' ? target.seat === seat : target.seat !== seat)) &&
+    (effect.type !== 'buff-unit' || !effect.attr || officialCardData(officialCard(snapshot, target.unit.cardId)).attr === effect.attr))
 }
 
 function play(
@@ -456,8 +650,14 @@ function play(
   if (!instance) return reject('card-not-in-hand')
   const card = officialCard(snapshot, instance.cardId)
   const data = officialCardData(card)
+  if (card.kind !== 'unit' && player.fieldLock && data.attr === player.fieldLock) return reject('field-locked')
   const targets = action.targets ?? []
   const trigger = card.kind === 'unit' ? 'enter' : 'play'
+  const steps = effectsFor(snapshot, instance, trigger)
+  const first = steps[0]
+  if (first?.type === 'hand-cost' && !first.canPass && player.hand.length - 1 < first.amount) return reject('hand-cost-unavailable')
+  const costs = steps.filter(effect => effect.type === 'pay-life')
+  if (costs.some(cost => cost.amount !== 'half' && player.hp <= cost.amount)) return reject('life-cost-unavailable')
   const events: VisibleRuleEvent[] = []
   let targetId: string | null = targets[0] ?? null
   if (data.oncePerTurn && player.usedCardIds.includes(card.id)) return reject('card-already-used')
@@ -509,6 +709,7 @@ function attack(
   const { attackerId, targetId } = action
   const player = state.seats[seat]
   const attacker = player.board.find(unit => unit.id === attackerId)
+  if (player.selfAttackLock) return reject('own-attacks-locked')
   if (!attacker || !attacker.canAttack || attacker.attacked || attacker.stunned || attacker.skillLock) {
     return reject('attacker-unavailable')
   }
@@ -536,6 +737,8 @@ function endTurn(context: RuleContext<OfficialMatchState>, state: OfficialMatchS
   const events: VisibleRuleEvent[] = []
   state.battleMode = false
   player.usedCardIds = []
+  player.fieldLock = null
+  player.selfAttackLock = false
   player.board.forEach(unit => {
     unit.attacked = false
     unit.skillUsed = false
@@ -605,9 +808,16 @@ export const officialRules: Ruleset<OfficialMatchState, PlayerAction, EffectCont
       case 'activate-skill': {
         const source = player.board.find(unit => unit.id === action.sourceId)
         if (!source) return reject('invalid-skill-source')
-        const skill = officialCardData(officialCard(snapshot, source.cardId)).skill
+        const sourceData = officialCardData(officialCard(snapshot, source.cardId))
+        if (player.fieldLock && sourceData.attr === player.fieldLock) return reject('field-locked')
+        const skill = sourceData.skill
         if (!skill || skill.id !== action.skillId) return reject('invalid-skill')
         if (skill.oncePerTurn && source.skillUsed) return reject('skill-already-used')
+        const steps = effectsFor(snapshot, source, 'skill')
+        const first = steps[0]
+        if (first?.type === 'hand-cost' && !first.canPass && player.hand.length < first.amount) return reject('hand-cost-unavailable')
+        const costs = steps.filter(effect => effect.type === 'pay-life')
+        if (costs.some(cost => cost.amount !== 'half' && player.hp <= cost.amount)) return reject('life-cost-unavailable')
         if (!validEffectTarget(state, snapshot, seat, source, 'skill', action.targets ?? [])) return reject('invalid-target')
         source.skillUsed = true
         if (skill.lock) source.skillLock = true
