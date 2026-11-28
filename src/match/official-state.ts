@@ -9,7 +9,7 @@ export type OfficialEffect =
   | { readonly type: 'damage-all-enemies'; readonly amount: number; readonly pierce: boolean }
   | { readonly type: 'destroy-unit'; readonly target: 'any' | 'own' | 'enemy' }
   | { readonly type: 'draw' | 'register-death-attack-bonus' | 'ice-draw-pick'; readonly amount: number }
-  | { readonly type: 'heal-core' | 'shield-core' | 'bonus-core-attack'; readonly amount: number }
+  | { readonly type: 'heal-core' | 'shield-core' | 'bonus-core-attack' | 'pre-strike'; readonly amount: number }
   | { readonly type: 'cancel-attack' }
 
 type SummonCondition =

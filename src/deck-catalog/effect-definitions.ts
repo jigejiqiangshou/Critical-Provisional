@@ -117,6 +117,26 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'play', steps: [{ type: 'damage-all-enemies', amount: 4, pierce: true }],
   },
   {
+    cardId: 'initial:huoya', legacyName: '火鸦',
+    source: 'quote/临界·模块化·2D版.html:559 skill.effect',
+    trigger: 'skill', steps: [{ type: 'register-death-attack-bonus', amount: 1 }],
+  },
+  {
+    cardId: 'initial:zhenyue', legacyName: '镇岳',
+    source: 'quote/临界·模块化·2D版.html:661 trap.effect',
+    trigger: 'attack-core', steps: [{ type: 'cancel-attack' }],
+  },
+  {
+    cardId: 'initial:tanzhu', legacyName: '探珠',
+    source: 'quote/临界·模块化·2D版.html:697 skill.effect',
+    trigger: 'skill', steps: [{ type: 'ice-draw-pick', amount: 3 }],
+  },
+  {
+    cardId: 'initial:zhuyan', legacyName: '朱厌',
+    source: 'quote/临界·模块化·2D版.html:568 passive',
+    trigger: 'attack-unit', steps: [{ type: 'pre-strike', amount: 1 }],
+  },
+  {
     cardId: 'initial:yanwen', legacyName: '炎纹',
     source: 'quote/临界·模块化·2D版.html:562 effect',
     trigger: 'play', steps: [{ type: 'damage-unit', amount: 3, target: 'enemy' }, { type: 'draw', amount: 1 }],
