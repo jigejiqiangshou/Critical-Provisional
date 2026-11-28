@@ -363,7 +363,7 @@ export interface EffectAudit {
   readonly legacyName: string
   readonly cardId: string
   readonly fields: Readonly<Record<string, { readonly kind: 'effect' | 'core'; readonly reference: string }>>
-  /** Each legacy typed step maps to its own trigger:index:type in the new definition. */
+  /** Each legacy typed step maps to its own trigger:index[.childIndex...]:type in the new definition. */
   readonly steps: Readonly<Record<string, string>>
 }
 const effectAudits: readonly EffectAudit[] = []
@@ -435,10 +435,13 @@ export function validateInitialEffectAudits(audits: readonly EffectAudit[]): voi
     const usedSteps = new Set<string>()
     for (const [path, reference] of Object.entries(audit.steps)) {
       const [trigger, indexText, effectType, extra] = reference.split(':')
-      const index = Number(indexText)
-      if (!trigger || !indexText || !effectType || extra !== undefined || !Number.isSafeInteger(index) || index < 0 ||
-          usedSteps.has(reference) || !initialEffectDefinitions.some(definition =>
-            definition.cardId === audit.cardId && definition.trigger === trigger && definition.steps[index]?.type === effectType)) {
+      const validPath = /^(0|[1-9]\d*)(\.(0|[1-9]\d*))*$/.test(indexText ?? '')
+      const indexes = validPath ? indexText.split('.').map(Number) : []
+      const registration = initialEffectDefinitions.find(definition =>
+        definition.cardId === audit.cardId && definition.trigger === trigger)
+      let step = registration?.steps[indexes[0]]
+      for (const index of indexes.slice(1)) step = step?.type === 'hand-cost' ? step.onSelect[index] : undefined
+      if (!trigger || !effectType || extra !== undefined || !validPath || usedSteps.has(reference) || step?.type !== effectType) {
         throw new TypeError(`Unimplemented legacy step: ${audit.legacyName}.${path}`)
       }
       usedSteps.add(reference)
