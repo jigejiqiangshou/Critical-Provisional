@@ -320,6 +320,17 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'death', steps: [{ type: 'hand-cost', amount: 1, canPass: true, onSelect: [{ type: 'draw', amount: 2 }] }],
   },
   {
+    cardId: 'initial:xuelian', legacyName: '血涟',
+    source: 'quote/临界·模块化·2D版.html:595 effect',
+    trigger: 'play', steps: [{ type: 'pay-life', amount: 3 }, { type: 'shield-unit', target: 'own', amount: 3 },
+      { type: 'look-pick', top: 8, kind: 'unit', attr: '玄武' }],
+  },
+  {
+    cardId: 'initial:boming', legacyName: '搏命',
+    source: 'quote/临界·模块化·2D版.html:678 effect',
+    trigger: 'play', steps: [{ type: 'pay-life', amount: 'half' }, { type: 'draw', amount: 5 }],
+  },
+  {
     cardId: 'initial:yanwen', legacyName: '炎纹',
     source: 'quote/临界·模块化·2D版.html:562 effect',
     trigger: 'play', steps: [{ type: 'damage-unit', amount: 3, target: 'enemy' }, { type: 'draw', amount: 1 }],
