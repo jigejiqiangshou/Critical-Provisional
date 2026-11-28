@@ -68,6 +68,7 @@ type RuleTask =
   | { readonly type: 'effect'; readonly seat: SeatId; readonly sourceId: string;
       readonly targetId: string | null; readonly effect: OfficialEffect }
   | { readonly type: 'death-bonuses'; readonly seat: SeatId }
+  | { readonly type: 'discard-played-ice'; readonly seat: SeatId; readonly card: OfficialCardInstance }
   | { readonly type: 'response'; readonly seat: SeatId; readonly trigger: 'attack-core' | 'attack-unit' }
   | { readonly type: 'attack'; readonly seat: SeatId; readonly attackerId: string; readonly targetId: string }
 
