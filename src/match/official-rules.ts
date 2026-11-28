@@ -280,8 +280,9 @@ function performTask(context: RuleContext<OfficialMatchState>) {
     case 'effect':
       executeEffect(state, snapshot, random, task, events)
       break
-    case 'discard-played':
+    case 'discard-played-ice':
       player.discard.push(task.card)
+      events.push(visible('ice-discarded', { seat: task.seat, card: { id: task.card.id, cardId: task.card.cardId } }))
       break
     case 'death-bonuses':
       for (const unit of player.board) {
@@ -362,10 +363,8 @@ function applyChoice(context: RuleContext<OfficialMatchState>, chosenId: string)
     const trigger = card.kind === 'unit' ? 'enter' : 'play'
     if (card.kind === 'unit') player.board.push(newUnit(snapshot, picked))
     events.push(visible('ice-played', { seat, card: { id: picked.id, cardId: picked.cardId } }))
-    frame(state).queue.unshift(
-      ...effectTasks(snapshot, seat, picked, trigger, null),
-      ...(card.kind === 'unit' ? [] : [{ type: 'discard-played' as const, seat, card: picked }]),
-    )
+    frame(state).queue.unshift(...effectTasks(snapshot, seat, picked, trigger, null),
+      ...(card.kind === 'unit' ? [] : [{ type: 'discard-played-ice' as const, seat, card: picked }]))
   }
   return { state, events }
 }

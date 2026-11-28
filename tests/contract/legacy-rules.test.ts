@@ -681,3 +681,37 @@ it('LG-08 keeps the selected pulse out of discard until its nested effect finish
   expect(finished).toContain('nested-2')
   expect(finished.at(-1)).toBe(pulse.id)
 })
+
+it('LG-08 keeps a selected pulse out of discard until its nested choice resolves', async () => {
+  const record = sample('LG-08', 'playable')
+  const source = initial(record, '2d')
+  const state = fixtureState(source)
+  const customRelease = release('2d')
+  const cards = customRelease.cards.map(card => card.id === deathSpellCardId
+    ? { ...card, data: { effects: [{ trigger: 'play', steps: [{ type: 'ice-draw-pick', amount: 2 }] }] } }
+    : card)
+  state.seats.A.ice = [
+    { id: 'nested-1', cardId: cardId('火鸦') },
+    { id: 'nested-2', cardId: cardId('火鸦') },
+    { id: 'outer-1', cardId: cardId('火鸦') },
+    { id: 'outer-2', cardId: cardId('火鸦') },
+    { id: 'selected-pulse', cardId: deathSpellCardId },
+  ]
+  state.seats.A.discard = []
+  const core = await MatchCore.create({
+    rules: officialRules, snapshot: createOfficialSnapshot({ ...customRelease, cards }), state,
+    activeSeat: 'A', random: random([0.99, 0.99, 0.99, 0.99, 0.99]),
+  })
+  const clients = await peers(core)
+  expectAccepted(await clients.A.submit('outer-spring', {
+    type: 'activate-skill', sourceId: component(source.seats.A.board, '探珠'), skillId: 'pearl',
+  }))
+  const outer = waiting(core)
+  expect(outer.choices.candidates.map(candidate => candidate.id)).toContain('selected-pulse')
+  expectAccepted(await clients.A.submit('play-pulse', select(outer.id, 'selected-pulse')))
+  const nested = waiting(core)
+  expect(nested.choices.candidates.map(candidate => candidate.id).sort()).toEqual(['nested-1', 'nested-2'])
+  expect(core.read().state.seats.A.discard.map(card => card.id).sort()).toEqual(['outer-1', 'outer-2'])
+  expectAccepted(await clients.A.submit('nested-choice', select(nested.id, 'nested-1')))
+  expect(core.read().state.seats.A.discard.map(card => card.id)).toContain('selected-pulse')
+})
