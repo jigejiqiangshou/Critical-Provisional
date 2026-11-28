@@ -504,3 +504,36 @@ it.each(['虎啸', '藤缚', '暗哨'])('%s does not respond to evolution', name
   if (result.kind !== 'active') throw new Error('expected evolution without response')
   expect(result.state.seats.B.facedown).toHaveLength(1)
 })
+
+it('multiple deployment responses resolve newest first even if a previous response destroys the entrant', async () => {
+  const tiger = definition('虎啸'), vine = definition('藤缚'), scout = definition('暗哨')
+  const cards: Card[] = [
+    { id: 'unit', name: 'unit', kind: 'unit', flagship: false, data: { health: 3 } },
+    ...[tiger, vine, scout].map(effect => ({ id: effect.cardId, name: effect.legacyName, kind: 'trap' as const, flagship: false,
+      data: { effects: [{ trigger: effect.trigger, steps: effect.steps }] } })),
+  ]
+  const snapshot = createOfficialSnapshot({ id: 'many-responses', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] })
+  const a = createOfficialSeatState(), b = createOfficialSeatState([{ id: 'draw', cardId: 'unit' }])
+  a.hand = [{ id: 'played', cardId: 'unit' }]
+  b.facedown = [{ id: 'scout', cardId: scout.cardId }, { id: 'vine', cardId: vine.cardId }, { id: 'tiger', cardId: tiger.cardId }]
+  const state: OfficialMatchState = { seatOrder: ['A', 'B'], seats: { A: a, B: b }, turn: 2, finale: null, battleMode: false, effect: null }
+  const core = await MatchCore.create({ rules: officialRules, snapshot, state, activeSeat: 'A', random: { kind: 'recorded', inputs: [], consumed: 0 } })
+  const first = core.propose({ kind: 'action', seat: 'A', expectedRevision: 0, action: { type: 'play-card', cardId: 'played' } })
+  if (first.kind !== 'accepted') throw new Error('expected offer')
+  core.confirm(first)
+  const choice = (expected: string, answer: { kind: 'pass' } | { kind: 'select'; candidateIds: string[] }) => {
+    const pending = core.read()
+    if (pending.progress.kind !== 'waiting') throw new Error('expected choice')
+    expect(pending.progress.decision.choices.candidates.map(item => item.id)).toEqual([expected])
+    const result = core.propose({ kind: 'decision', seat: 'B', expectedRevision: pending.revision, decisionId: pending.progress.decision.id, answer })
+    if (result.kind !== 'accepted') throw new Error('expected answer')
+    core.confirm(result)
+  }
+  choice('tiger', { kind: 'select', candidateIds: ['tiger'] })
+  expect(core.read().state.seats.A.board).toHaveLength(0)
+  choice('vine', { kind: 'pass' })
+  choice('scout', { kind: 'select', candidateIds: ['scout'] })
+  expect(core.read().progress.kind).toBe('active')
+  expect(core.read().state.seats.B.facedown.map(card => card.id)).toEqual(['vine'])
+  expect(core.read().state.seats.B.hand.map(card => card.id)).toEqual(['draw'])
+})
