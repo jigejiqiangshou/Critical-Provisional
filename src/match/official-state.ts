@@ -95,7 +95,7 @@ type ChoiceFrame =
       readonly cards: readonly OfficialCardInstance[] }
   | { readonly kind: 'ice'; readonly seat: SeatId; readonly cards: readonly OfficialCardInstance[] }
   | { readonly kind: 'discard-hand'; readonly seat: SeatId; readonly cards: readonly OfficialCardInstance[]; readonly amount: number }
-  | { readonly kind: 'hand-cost'; readonly seat: SeatId; readonly cards: readonly OfficialCardInstance[]; readonly amount: number; readonly canPass: boolean; readonly sourceId: string; readonly onSelect: readonly OfficialEffect[] }
+  | { readonly kind: 'hand-cost'; readonly seat: SeatId; readonly cards: readonly OfficialCardInstance[]; readonly amount: number; readonly canPass: boolean; readonly sourceId: string; readonly targetId: string | null; readonly onSelect: readonly OfficialEffect[] }
   | { readonly kind: 'look-pick'; readonly seat: SeatId; readonly cards: readonly OfficialCardInstance[]; readonly viewedCount: number }
   | { readonly kind: 'search-deck'; readonly seat: SeatId; readonly cards: readonly OfficialCardInstance[]; readonly amount: number }
 

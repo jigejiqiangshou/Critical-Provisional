@@ -316,7 +316,7 @@ function executeEffect(
       break
     }
     case 'hand-cost':
-      frame(state).choice = { kind: 'hand-cost', seat, sourceId, cards: [...player.hand], amount: effect.amount,
+      frame(state).choice = { kind: 'hand-cost', seat, sourceId, targetId, cards: [...player.hand], amount: effect.amount,
         canPass: effect.canPass, onSelect: effect.onSelect }
       break
     case 'discard-hand':
@@ -490,7 +490,7 @@ function applyChoice(context: RuleContext<OfficialMatchState>, chosenIds: readon
       events.push(visible('hand-discarded', { seat, card: { id: card.id, cardId: card.cardId } }))
     }
     if (choice.kind === 'hand-cost') frame(state).queue.unshift(...choice.onSelect.map(effect => ({
-      type: 'effect' as const, seat, sourceId: choice.sourceId, targetId: null, effect,
+      type: 'effect' as const, seat, sourceId: choice.sourceId, targetId: choice.targetId, effect,
     })))
     return { state, events }
   }
@@ -607,7 +607,11 @@ function validEffectTarget(
   state: OfficialMatchState, snapshot: CardPoolSnapshot, seat: SeatId, card: OfficialCardInstance,
   trigger: OfficialTrigger, targets: readonly string[],
 ): boolean {
-  const steps = effectsFor(snapshot, card, trigger).filter(effect => effect.type === 'damage-unit' || effect.type === 'destroy-unit' || effect.type === 'shield-unit' || effect.type === 'buff-unit')
+  function flatten(effects: readonly OfficialEffect[]): OfficialEffect[] {
+    return effects.flatMap(effect => effect.type === 'hand-cost' ? [effect, ...flatten(effect.onSelect)] : [effect])
+  }
+  const steps = flatten(effectsFor(snapshot, card, trigger)).filter(effect =>
+    effect.type === 'damage-unit' || effect.type === 'destroy-unit' || effect.type === 'shield-unit' || effect.type === 'buff-unit')
   if (!steps.length) return targets.length === 0
   if (targets.length !== 1) return false
   const target = unitLocation(state, targets[0])
