@@ -64,3 +64,31 @@ it('rejects an unimplemented nested cost continuation', () => {
   try { expect(() => assertInitialEffectsReady()).toThrow('Unimplemented effect: unknown') }
   finally { list[position] = original }
 })
+
+it('朱雀羽 response waits until all targets of a group effect have settled', async () => {
+  const victim = initialEffectDefinitions.find(item => item.legacyName === '朱雀羽')!
+  const aoe = initialEffectDefinitions.find(item => item.legacyName === '燎原')!
+  const cards: Card[] = [
+    { id: aoe.cardId, name: aoe.legacyName, kind: 'spell', flagship: false,
+      data: { effects: [{ trigger: aoe.trigger, steps: aoe.steps }] } },
+    { id: victim.cardId, name: victim.legacyName, kind: 'unit', flagship: false,
+      data: { health: 1, effects: [{ trigger: victim.trigger, steps: victim.steps }] } },
+    { id: 'other', name: 'other', kind: 'unit', flagship: false, data: { health: 1 } },
+  ]
+  const snapshot = createOfficialSnapshot({ id: 'deferred-death', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] })
+  const a = createOfficialSeatState(), b = createOfficialSeatState()
+  a.hand = [{ id: 'aoe', cardId: aoe.cardId }]
+  b.hand = [{ id: 'cost', cardId: 'other' }]
+  const unit = (id: string, cardId: string): OfficialUnit => ({ id, cardId, hp: 1, canAttack: false, attacked: false,
+    skillUsed: false, skillLock: false, attackBonus: 0, deathAttackBonus: 0, stealth: false, stunned: false, shield: 0 })
+  b.board = [unit('first', victim.cardId), unit('second', 'other')]
+  const state: OfficialMatchState = { seatOrder: ['A', 'B'], seats: { A: a, B: b }, turn: 2,
+    finale: null, battleMode: false, effect: null }
+  const core = await MatchCore.create({ rules: officialRules, snapshot, state, activeSeat: 'A', random: { kind: 'recorded', inputs: [], consumed: 0 } })
+  const result = core.propose({ kind: 'action', seat: 'A', expectedRevision: 0, action: { type: 'play-card', cardId: 'aoe' } })
+  expect(result.kind).toBe('accepted')
+  if (result.kind !== 'accepted') throw new Error('expected settlement')
+  expect(result.match.progress.kind).toBe('waiting')
+  expect(result.match.state.seats.B.board).toHaveLength(0)
+  expect(result.match.state.seats.B.discard.map(card => card.id)).toEqual(['first', 'second'])
+})
