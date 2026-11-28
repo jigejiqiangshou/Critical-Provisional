@@ -183,6 +183,8 @@ export interface EffectAudit {
   readonly legacyName: string
   readonly cardId: string
   readonly fields: Readonly<Record<string, { readonly kind: 'effect' | 'core'; readonly reference: string }>>
+  /** Each legacy typed step maps to its own trigger:index:type in the new definition. */
+  readonly steps: Readonly<Record<string, string>>
 }
 const effectAudits: readonly EffectAudit[] = []
 
@@ -196,6 +198,7 @@ export function validateInitialEffectAudits(audits: readonly EffectAudit[]): voi
   const effects = new Set<string>(capabilities.effects)
   const namesById = new Map<string, string>()
   const idsByName = new Map<string, string>()
+  const registrations = new Set<string>()
   for (const definition of initialEffectDefinitions) {
     if (!expected.has(definition.legacyName)) throw new TypeError(`Unknown legacy card: ${definition.legacyName}`)
     const priorName = namesById.get(definition.cardId)
@@ -203,6 +206,9 @@ export function validateInitialEffectAudits(audits: readonly EffectAudit[]): voi
     if ((priorName && priorName !== definition.legacyName) || (priorId && priorId !== definition.cardId)) {
       throw new TypeError(`Conflicting stable ID: ${definition.cardId}`)
     }
+    const registration = `${definition.cardId}|${definition.trigger}`
+    if (registrations.has(registration)) throw new TypeError(`Duplicate effect registration: ${registration}`)
+    registrations.add(registration)
     namesById.set(definition.cardId, definition.legacyName)
     idsByName.set(definition.legacyName, definition.cardId)
     if (!triggers.has(definition.trigger)) throw new TypeError(`Unknown trigger: ${definition.trigger}`)
@@ -238,6 +244,22 @@ export function validateInitialEffectAudits(audits: readonly EffectAudit[]): voi
         definition.steps.some(step => step.type === effectType))) {
         throw new TypeError(`Unimplemented effect mapping: ${audit.legacyName}`)
       }
+    }
+    const requiredSteps = source.sourceSteps.map(step => step.path)
+    const mappedSteps = Object.keys(audit.steps)
+    if (mappedSteps.length !== requiredSteps.length || requiredSteps.some(path => !mappedSteps.includes(path))) {
+      throw new TypeError(`Unreviewed legacy step: ${audit.legacyName}`)
+    }
+    const usedSteps = new Set<string>()
+    for (const [path, reference] of Object.entries(audit.steps)) {
+      const [trigger, indexText, effectType, extra] = reference.split(':')
+      const index = Number(indexText)
+      if (!trigger || !indexText || !effectType || extra !== undefined || !Number.isSafeInteger(index) || index < 0 ||
+          usedSteps.has(reference) || !initialEffectDefinitions.some(definition =>
+            definition.cardId === audit.cardId && definition.trigger === trigger && definition.steps[index]?.type === effectType)) {
+        throw new TypeError(`Unimplemented legacy step: ${audit.legacyName}.${path}`)
+      }
+      usedSteps.add(reference)
     }
     audited.add(audit.legacyName)
   }
