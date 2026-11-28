@@ -212,6 +212,26 @@ describe('partial T045 definitions: core settlement samples', () => {
       else expect(result.state.seats.B.board[0]).toMatchObject({ hp: 9, shield: 5 })
     }
   })
+  it('朱厌 core pre-strike bypasses shield and a lethal pre-strike suppresses the normal hit', () => {
+    const entries = initialEffectDefinitions.filter(item => item.legacyName === '朱厌')
+    const card: Card = { id: entries[0].cardId, name: '朱厌', kind: 'unit', flagship: false,
+      data: { attack: 5, health: 4, effects: entries.map(entry => ({ trigger: entry.trigger, steps: entry.steps })) } }
+    const release: Release = { id: 'partial', rulesVersion: OFFICIAL_RULES_VERSION, cards: [card], presets: [] }
+    for (const hp of [1, 50]) {
+      const a = createOfficialSeatState(), b = createOfficialSeatState()
+      a.ap = 1; a.board = [{ ...unit('attacker', card.id), canAttack: true }]
+      b.hp = hp; b.coreShield = 10
+      const state: OfficialMatchState = { seatOrder: ['A', 'B'], seats: { A: a, B: b }, turn: 2,
+        finale: null, battleMode: false, effect: null }
+      const result = officialRules.resolveAction({ state, snapshot: createOfficialSnapshot(release), seat: 'A',
+        random: () => 0, action: { type: 'attack', attackerId: 'attacker', targetId: coreTargetId('B') } })
+      expect(['active', 'ended']).toContain(result.kind)
+      if (result.kind !== 'active' && result.kind !== 'ended') throw new Error('expected settlement')
+      expect(result.state.seats.B.hp).toBe(hp - 1)
+      expect(result.state.seats.B.coreShield).toBe(hp === 1 ? 10 : 5)
+      expect(result.events.filter(event => event.type === 'rule-event' && event.name === 'core-damaged')).toHaveLength(hp === 1 ? 1 : 2)
+    }
+  })
   it('maps 离火 to five damage against an enemy unit', () => {
     expect(definition('离火')).toMatchObject({ trigger: 'play', steps: [{ type: 'damage-unit', amount: 5, target: 'enemy' }] })
   })
