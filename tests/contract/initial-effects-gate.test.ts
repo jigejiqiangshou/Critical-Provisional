@@ -57,3 +57,19 @@ it('rejects incomplete fields, missing mappings and unverified core references i
     'effect.0': 'play:0:damage-unit', 'effect.1': 'play:1:draw' } }]))
     .toThrow('Initial effect migration incomplete: 128 cards')
 })
+
+it('audits nested hand-cost continuation steps individually', () => {
+  const audit = { legacyName: '烽火令', cardId: 'initial:fenghuoling',
+    fields: { effect: { kind: 'effect' as const, reference: 'play:hand-cost' } }, steps: {} }
+  expect(() => validateInitialEffectAudits([{ ...audit, steps: { 'effect.0': 'play:0:hand-cost' } }]))
+    .toThrow('Unreviewed legacy step')
+  expect(() => validateInitialEffectAudits([{ ...audit, steps: {
+    'effect.0': 'play:0:hand-cost', 'effect.1': 'play:0.0:draw' } }]))
+    .toThrow('Unimplemented legacy step')
+  expect(() => validateInitialEffectAudits([{ ...audit, steps: {
+    'effect.0': 'play:0:hand-cost', 'effect.1': 'play:0:hand-cost' } }]))
+    .toThrow('Unimplemented legacy step')
+  expect(() => validateInitialEffectAudits([{ ...audit, steps: {
+    'effect.0': 'play:0:hand-cost', 'effect.1': 'play:0.0:search-deck' } }]))
+    .toThrow('Initial effect migration incomplete: 128 cards')
+})
