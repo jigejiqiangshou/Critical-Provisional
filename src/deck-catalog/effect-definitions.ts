@@ -160,6 +160,16 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'attack-core', steps: [{ type: 'pre-strike', amount: 1 }],
   },
   {
+    cardId: 'initial:gonggong', legacyName: '共工',
+    source: 'quote/临界·模块化·2D版.html:588 enter',
+    trigger: 'enter', steps: [{ type: 'discard-hand', amount: 1 }],
+  },
+  {
+    cardId: 'initial:yuantong', legacyName: '渊瞳',
+    source: 'quote/临界·模块化·2D版.html:594 enter',
+    trigger: 'enter', steps: [{ type: 'discard-hand', amount: 1 }, { type: 'draw', amount: 1 }],
+  },
+  {
     cardId: 'initial:yanwen', legacyName: '炎纹',
     source: 'quote/临界·模块化·2D版.html:562 effect',
     trigger: 'play', steps: [{ type: 'damage-unit', amount: 3, target: 'enemy' }, { type: 'draw', amount: 1 }],

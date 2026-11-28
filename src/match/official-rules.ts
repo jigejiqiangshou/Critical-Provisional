@@ -32,7 +32,7 @@ const capabilities = Object.freeze({
   triggers: Object.freeze(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit'] as const satisfies readonly OfficialTrigger[]),
   effects: Object.freeze([
     'damage-unit', 'draw', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
-    'heal-core', 'shield-core', 'destroy-unit', 'bonus-core-attack', 'damage-all-enemies', 'pre-strike', 'shield-unit', 'shield-all-own', 'lock-field', 'lock-own-attacks',
+    'heal-core', 'shield-core', 'destroy-unit', 'bonus-core-attack', 'damage-all-enemies', 'pre-strike', 'shield-unit', 'shield-all-own', 'lock-field', 'lock-own-attacks', 'discard-hand',
   ] as const satisfies readonly OfficialEffect['type'][]),
 })
 
@@ -278,6 +278,9 @@ function executeEffect(
       })))
       break
     }
+    case 'discard-hand':
+      frame(state).choice = { kind: 'discard-hand', seat, cards: [...player.hand], amount: effect.amount }
+      break
     case 'lock-field':
       player.fieldLock = effect.attr
       events.push(visible('field-locked', { seat, attr: effect.attr }))
@@ -394,16 +397,27 @@ function boardFull(player: OfficialSeatState) {
   return player.board.length >= (player.iceEnabled ? 4 : 5)
 }
 
-function applyChoice(context: RuleContext<OfficialMatchState>, chosenId: string) {
+function applyChoice(context: RuleContext<OfficialMatchState>, chosenIds: readonly string[]) {
   const state = structuredClone(context.state)
   const { snapshot } = context
   const choice = selection(state)
-  const picked = choice.cards.find(card => card.id === chosenId)
+  const picked = choice.cards.find(card => card.id === chosenIds[0])
   if (!picked) throw new TypeError('Confirmed effect choice is missing a candidate')
   const { seat } = choice
   const player = state.seats[seat]
   const events: VisibleRuleEvent[] = []
   frame(state).choice = null
+
+  if (choice.kind === 'discard-hand') {
+    for (const chosenId of chosenIds) {
+      const index = player.hand.findIndex(card => card.id === chosenId)
+      if (index < 0) throw new TypeError('Confirmed discard is no longer in hand')
+      const [card] = player.hand.splice(index, 1)
+      player.discard.push(card)
+      events.push(visible('hand-discarded', { seat, card: { id: card.id, cardId: card.cardId } }))
+    }
+    return { state, events }
+  }
 
   if (choice.kind === 'response') {
     const index = player.facedown.findIndex(card => card.id === picked.id)
@@ -457,14 +471,14 @@ const settlement: EffectProgram<OfficialMatchState, VisibleRuleEvent> = {
           candidates: current.cards.map(({ id, cardId }) => ({
             id, payload: { cardId, name: officialCard(snapshot, cardId).name },
           })),
-          count: 1,
+          count: current.kind === 'discard-hand' ? current.amount : 1,
           mode: 'result',
           ordered: false,
           canPass: current.kind === 'response',
-          visibility: current.kind === 'response' ? 'owner' : 'public',
+          visibility: current.kind === 'response' || current.kind === 'discard-hand' ? 'owner' : 'public',
         }
       },
-      apply: (context, answer) => applyChoice(context, answer.candidateIds[0]),
+      apply: (context, answer) => applyChoice(context, answer.candidateIds),
       next: 'dispatch',
       pass: 'clear-choice',
       empty: 'clear-choice',
