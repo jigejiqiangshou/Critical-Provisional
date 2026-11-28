@@ -467,7 +467,16 @@ export interface EffectAudit {
   /** Each legacy typed step maps to its own trigger:index[.childIndex...]:type in the new definition. */
   readonly steps: Readonly<Record<string, string>>
 }
-const effectAudits: readonly EffectAudit[] = []
+const effectAudits: readonly EffectAudit[] = [
+  { legacyName: '传讯', cardId: 'initial:chuanxun', fields: { effect: { kind: 'effect', reference: 'play:draw' } },
+    steps: { effect: 'play:0:draw' } },
+  { legacyName: '离火', cardId: 'initial:lihuo', fields: { effect: { kind: 'effect', reference: 'play:damage-unit' } },
+    steps: { effect: 'play:0:damage-unit' } },
+  { legacyName: '星火', cardId: 'initial:xinghuo', fields: { effect: { kind: 'effect', reference: 'play:look-pick' } },
+    steps: { 'effect.0': 'play:0:look-pick' } },
+  { legacyName: '蓄势', cardId: 'initial:xushi', fields: { effect: { kind: 'effect', reference: 'play:hand-cost' } },
+    steps: { 'effect.0': 'play:0:hand-cost', 'effect.1': 'play:0.0:draw' } },
+]
 
 /** Fail closed before a first release can consume this in-progress catalog.
  * The future release builder must call this before writing or packaging it. */

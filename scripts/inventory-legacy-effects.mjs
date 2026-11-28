@@ -68,4 +68,4 @@ output('src/deck-catalog/legacy-card-sources.json', JSON.stringify(two.map(({ ca
   ruleFields: Object.keys(card).filter(key => !ignored.has(key)), sourceSteps: sourceSteps(card),
 })), null, 2) + '\n')
 output('src/deck-catalog/legacy-source-hashes.json', JSON.stringify(Object.fromEntries([...sources, facesPath].map(path => [path, createHash('sha256').update(readFileSync(path)).digest('hex')])), null, 2) + '\n')
-console.log(`${two.length} matching declarations inventoried; no effects marked implemented`)
+console.log(`${two.length} matching declarations inventoried`)
