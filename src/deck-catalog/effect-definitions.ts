@@ -132,6 +132,11 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'skill', steps: [{ type: 'ice-draw-pick', amount: 3 }],
   },
   {
+    cardId: 'initial:zhuyan', legacyName: '朱厌',
+    source: 'quote/临界·模块化·2D版.html:568 passive',
+    trigger: 'attack-unit', steps: [{ type: 'pre-strike', amount: 1 }],
+  },
+  {
     cardId: 'initial:yanwen', legacyName: '炎纹',
     source: 'quote/临界·模块化·2D版.html:562 effect',
     trigger: 'play', steps: [{ type: 'damage-unit', amount: 3, target: 'enemy' }, { type: 'draw', amount: 1 }],
