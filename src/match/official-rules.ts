@@ -31,7 +31,7 @@ type OfficialResolution = RuleResolution<OfficialMatchState, EffectContinuation,
 const capabilities = Object.freeze({
   triggers: Object.freeze(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit'] as const satisfies readonly OfficialTrigger[]),
   effects: Object.freeze([
-    'damage-unit', 'draw', 'heal-core', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
+    'damage-unit', 'draw', 'heal-core', 'shield-core', 'pay-life', 'pay-half-life', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
   ] as const satisfies readonly OfficialEffect['type'][]),
 })
 
@@ -254,6 +254,18 @@ function executeEffect(
       const amount = Math.max(0, Math.min(effect.amount, 50 - player.hp))
       player.hp += amount
       if (amount) events.push(visible('core-healed', { seat, amount, hp: player.hp }))
+      break
+    }
+    case 'shield-core':
+      player.coreShield += effect.amount
+      events.push(visible('core-shielded', { seat, amount: effect.amount, shield: player.coreShield }))
+      break
+    case 'pay-life':
+    case 'pay-half-life': {
+      const requested = effect.type === 'pay-life' ? effect.amount : Math.max(1, Math.floor(player.hp / 2))
+      const amount = Math.max(0, player.hp - Math.max(1, player.hp - requested))
+      player.hp -= amount
+      if (amount) events.push(visible('life-paid', { seat, amount, hp: player.hp }))
       break
     }
     case 'register-death-attack-bonus': {

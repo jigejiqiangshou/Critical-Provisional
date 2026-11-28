@@ -18,6 +18,13 @@ export const initialEffectMappings: readonly EffectMapping[] = [
   { cardId: id('复苏'), effects: [{ sourcePath: 'effect', trigger: 'play', steps: [{ type: 'heal-core', amount: 8 }] }] },
   { cardId: id('回天'), effects: [{ sourcePath: 'effect', trigger: 'play', steps: [{ type: 'heal-core', amount: 12 }] }] },
   { cardId: id('麒麟'), effects: [{ sourcePath: 'enter[0]', trigger: 'enter', steps: [{ type: 'heal-core', amount: 3 }] }] },
+  { cardId: id('龟息'), effects: [{ sourcePath: 'effect', trigger: 'play', steps: [
+    { type: 'heal-core', amount: 6 }, { type: 'shield-core', amount: 3 },
+  ] }] },
+  { cardId: id('搏命'), effects: [
+    { sourcePath: 'effect[0]', trigger: 'play', steps: [{ type: 'pay-half-life' }] },
+    { sourcePath: 'effect[1]', trigger: 'play', steps: [{ type: 'draw', amount: 5 }] },
+  ] },
   { cardId: id('火鸦'), effects: [{ sourcePath: 'skill', trigger: 'skill', steps: [{ type: 'register-death-attack-bonus', amount: 1 }] }] },
   { cardId: id('离火'), effects: [{ sourcePath: 'effect', trigger: 'play', steps: [{ type: 'damage-unit', target: 'any', amount: 5 }] }] },
   { cardId: id('传讯'), effects: [{ sourcePath: 'effect', trigger: 'play', steps: [{ type: 'draw', amount: 1 }] }] },

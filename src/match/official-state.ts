@@ -6,7 +6,8 @@ export const OFFICIAL_RULES_VERSION = '1'
 export type OfficialTrigger = 'play' | 'enter' | 'death' | 'skill' | 'attack-core' | 'attack-unit'
 export type OfficialEffect =
   | { readonly type: 'damage-unit'; readonly amount: number; readonly target: 'any' | 'own' | 'enemy' }
-  | { readonly type: 'draw' | 'heal-core' | 'register-death-attack-bonus' | 'ice-draw-pick'; readonly amount: number }
+  | { readonly type: 'draw' | 'heal-core' | 'shield-core' | 'pay-life' | 'register-death-attack-bonus' | 'ice-draw-pick'; readonly amount: number }
+  | { readonly type: 'pay-half-life' }
   | { readonly type: 'cancel-attack' }
 
 type SummonCondition =
