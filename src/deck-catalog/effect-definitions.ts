@@ -332,6 +332,24 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'play', steps: [{ type: 'pay-life', amount: 'half' }, { type: 'draw', amount: 5 }],
   },
   {
+    cardId: 'initial:fenghuoling', legacyName: '烽火令',
+    source: 'quote/临界·模块化·2D版.html:563 effect',
+    trigger: 'play', steps: [{ type: 'hand-cost', amount: 1, canPass: false,
+      onSelect: [{ type: 'search-deck', amount: 1, kind: 'unit', attr: '朱雀' }] }],
+  },
+  {
+    cardId: 'initial:hanyuan', legacyName: '寒渊',
+    source: 'quote/临界·模块化·2D版.html:589 effect',
+    trigger: 'play', steps: [{ type: 'hand-cost', amount: 2, canPass: false,
+      onSelect: [{ type: 'search-deck', amount: 2, kind: 'unit', attr: '玄武' }] }],
+  },
+  {
+    cardId: 'initial:hufu', legacyName: '虎符',
+    source: 'quote/临界·模块化·2D版.html:617 effect',
+    trigger: 'play', steps: [{ type: 'hand-cost', amount: 1, canPass: false,
+      onSelect: [{ type: 'look-pick', top: 8, kind: 'unit', attr: '白虎' }] }],
+  },
+  {
     cardId: 'initial:yanwen', legacyName: '炎纹',
     source: 'quote/临界·模块化·2D版.html:562 effect',
     trigger: 'play', steps: [{ type: 'damage-unit', amount: 3, target: 'enemy' }, { type: 'draw', amount: 1 }],

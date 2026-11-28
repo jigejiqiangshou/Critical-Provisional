@@ -631,7 +631,10 @@ function play(
   if (card.kind !== 'unit' && player.fieldLock && data.attr === player.fieldLock) return reject('field-locked')
   const targets = action.targets ?? []
   const trigger = card.kind === 'unit' ? 'enter' : 'play'
-  const costs = effectsFor(snapshot, instance, trigger).filter(effect => effect.type === 'pay-life')
+  const steps = effectsFor(snapshot, instance, trigger)
+  const first = steps[0]
+  if (first?.type === 'hand-cost' && !first.canPass && player.hand.length - 1 < first.amount) return reject('hand-cost-unavailable')
+  const costs = steps.filter(effect => effect.type === 'pay-life')
   if (costs.some(cost => cost.amount !== 'half' && player.hp <= cost.amount)) return reject('life-cost-unavailable')
   const events: VisibleRuleEvent[] = []
   let targetId: string | null = targets[0] ?? null
@@ -788,7 +791,10 @@ export const officialRules: Ruleset<OfficialMatchState, PlayerAction, EffectCont
         const skill = sourceData.skill
         if (!skill || skill.id !== action.skillId) return reject('invalid-skill')
         if (skill.oncePerTurn && source.skillUsed) return reject('skill-already-used')
-        const costs = effectsFor(snapshot, source, 'skill').filter(effect => effect.type === 'pay-life')
+        const steps = effectsFor(snapshot, source, 'skill')
+        const first = steps[0]
+        if (first?.type === 'hand-cost' && !first.canPass && player.hand.length < first.amount) return reject('hand-cost-unavailable')
+        const costs = steps.filter(effect => effect.type === 'pay-life')
         if (costs.some(cost => cost.amount !== 'half' && player.hp <= cost.amount)) return reject('life-cost-unavailable')
         if (!validEffectTarget(state, snapshot, seat, source, 'skill', action.targets ?? [])) return reject('invalid-target')
         source.skillUsed = true
