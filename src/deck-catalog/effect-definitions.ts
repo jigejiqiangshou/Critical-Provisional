@@ -28,6 +28,11 @@ export const initialEffectMappings: readonly EffectMapping[] = [
   { cardId: id('燎原'), effects: [{ sourcePath: 'effect', trigger: 'play', steps: [{ type: 'damage-all-enemies', amount: 3 }] }] },
   { cardId: id('祝融'), effects: [{ sourcePath: 'skill', trigger: 'skill', steps: [{ type: 'damage-all-enemies', amount: 2 }] }] },
   { cardId: id('蓐收'), effects: [{ sourcePath: 'skill', trigger: 'skill', steps: [{ type: 'damage-all-enemies', amount: 2 }] }] },
+  { cardId: id('凝霜'), effects: [{ sourcePath: 'effect', trigger: 'play', steps: [{ type: 'shield-unit', amount: 5, target: 'any' }] }] },
+  { cardId: id('血涟'), effects: [
+    { sourcePath: 'effect[0]', trigger: 'play', steps: [{ type: 'pay-life', amount: 3 }] },
+    { sourcePath: 'effect[1]', trigger: 'play', steps: [{ type: 'shield-unit', amount: 3, target: 'any' }] },
+  ] },
   { cardId: id('火鸦'), effects: [{ sourcePath: 'skill', trigger: 'skill', steps: [{ type: 'register-death-attack-bonus', amount: 1 }] }] },
   { cardId: id('离火'), effects: [{ sourcePath: 'effect', trigger: 'play', steps: [{ type: 'damage-unit', target: 'any', amount: 5 }] }] },
   { cardId: id('传讯'), effects: [{ sourcePath: 'effect', trigger: 'play', steps: [{ type: 'draw', amount: 1 }] }] },

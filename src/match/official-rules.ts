@@ -31,7 +31,7 @@ type OfficialResolution = RuleResolution<OfficialMatchState, EffectContinuation,
 const capabilities = Object.freeze({
   triggers: Object.freeze(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit'] as const satisfies readonly OfficialTrigger[]),
   effects: Object.freeze([
-    'damage-unit', 'damage-all-enemies', 'draw', 'heal-core', 'shield-core', 'pay-life', 'pay-half-life', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
+    'damage-unit', 'shield-unit', 'damage-all-enemies', 'draw', 'heal-core', 'shield-core', 'pay-life', 'pay-half-life', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
   ] as const satisfies readonly OfficialEffect['type'][]),
 })
 
@@ -247,6 +247,14 @@ function executeEffect(
     case 'damage-unit':
       if (targetId !== null) damageUnit(state, snapshot, targetId, effect.amount, false, events)
       break
+    case 'shield-unit': {
+      const found = targetId === null ? undefined : unitLocation(state, targetId)
+      if (found) {
+        found.unit.shield += effect.amount
+        events.push(visible('unit-shielded', { seat: found.seat, targetId, amount: effect.amount, shield: found.unit.shield }))
+      }
+      break
+    }
     case 'damage-all-enemies':
       frame(state).queue.unshift(...state.seats[opposingSeat(state, seat)].board.map(unit => ({
         type: 'area-damage' as const, seat, targetId: unit.id, amount: effect.amount,
@@ -465,7 +473,7 @@ function validEffectTarget(
   state: OfficialMatchState, snapshot: CardPoolSnapshot, seat: SeatId, card: OfficialCardInstance,
   trigger: OfficialTrigger, targets: readonly string[],
 ): boolean {
-  const steps = effectsFor(snapshot, card, trigger).filter(effect => effect.type === 'damage-unit')
+  const steps = effectsFor(snapshot, card, trigger).filter(effect => 'target' in effect)
   if (!steps.length) return targets.length === 0
   if (targets.length !== 1) return false
   const target = unitLocation(state, targets[0])
