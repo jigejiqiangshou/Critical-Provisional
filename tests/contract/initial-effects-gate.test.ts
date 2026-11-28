@@ -28,7 +28,7 @@ it('fails closed while card-level audit coverage is incomplete', () => {
 
 it.each([
   ['unrecognized trigger', { trigger: 'not-a-trigger' }, 'Unknown trigger'],
-  ['unimplemented effect', { steps: [{ type: 'not-an-effect' }] }, 'Unimplemented effect'],
+  ['unimplemented effect', { trigger: 'skill', steps: [{ type: 'not-an-effect' }] }, 'Unimplemented effect'],
   ['unknown source card', { legacyName: 'not-a-card' }, 'Unknown legacy card'],
   ['stable ID assigned to another card', { cardId: initialEffectDefinitions[1].cardId }, 'Conflicting stable ID'],
   ['another stable ID for same card', { cardId: 'different-id' }, 'Conflicting stable ID'],
@@ -39,7 +39,7 @@ it.each([
 })
 
 it('rejects incomplete fields, missing mappings and unverified core references in individual audits', () => {
-  const audit = { legacyName: '炎纹', cardId: 'initial:yanwen', fields: {} } as const
+  const audit = { legacyName: '炎纹', cardId: 'initial:yanwen', fields: {}, steps: {} } as const
   expect(() => validateInitialEffectAudits([audit])).toThrow('Unreviewed rules field')
   expect(() => validateInitialEffectAudits([{ ...audit, fields: { effect: { kind: 'effect', reference: 'play:unimplemented' } } }]))
     .toThrow('Unimplemented effect mapping')
@@ -47,6 +47,13 @@ it('rejects incomplete fields, missing mappings and unverified core references i
     .toThrow('Unverified core rule')
   expect(() => validateInitialEffectAudits([{ ...audit, fields: { effect: { kind: 'effect', reference: '' } } }]))
     .toThrow('Missing rule reference')
-  expect(() => validateInitialEffectAudits([{ ...audit, fields: { effect: { kind: 'effect', reference: 'play:damage-unit' } } }]))
+  const validField = { effect: { kind: 'effect' as const, reference: 'play:damage-unit' } }
+  expect(() => validateInitialEffectAudits([{ ...audit, fields: validField, steps: { 'effect.0': 'play:0:damage-unit' } }]))
+    .toThrow('Unreviewed legacy step')
+  expect(() => validateInitialEffectAudits([{ ...audit, fields: validField, steps: {
+    'effect.0': 'play:0:damage-unit', 'effect.1': 'play:0:damage-unit' } }]))
+    .toThrow('Unimplemented legacy step')
+  expect(() => validateInitialEffectAudits([{ ...audit, fields: validField, steps: {
+    'effect.0': 'play:0:damage-unit', 'effect.1': 'play:1:draw' } }]))
     .toThrow('Initial effect migration incomplete: 128 cards')
 })
