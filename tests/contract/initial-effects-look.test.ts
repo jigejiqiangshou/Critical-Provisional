@@ -3,7 +3,7 @@ import { MatchCore } from '../../src/match/core'
 import { projectOfficialMatch } from '../../src/match/player-interface'
 import { initialEffectDefinitions } from '../../src/deck-catalog/effect-definitions'
 import { createOfficialSeatState, createOfficialSnapshot, officialRules, OFFICIAL_RULES_VERSION } from '../../src/match/rules'
-import type { OfficialMatchState } from '../../src/match/rules'
+import type { OfficialMatchState, JsonValue } from '../../src/match/rules'
 import type { Card, Release } from '../../src/deck-catalog/catalog'
 
 it.each(['焰羽', '星火', '整备'])('%s chooses within the private top cards and shuffles deterministically', async name => {
@@ -51,4 +51,29 @@ it.each(['焰羽', '星火', '整备'])('%s chooses within the private top cards
     return { deck: core.read().state.seats.A.deck.map(card => card.id), random: core.read().random }
   }
   expect(await run()).toEqual(await run())
+})
+
+it.each(['zero-matches', 'one-viewed'])('%s does not shuffle unseen deck cards or consume randomness', async scenario => {
+  const effect = scenario === 'zero-matches'
+    ? { type: 'look-pick' as const, top: 2, kind: 'unit' }
+    : { type: 'look-pick' as const, top: 1 }
+  const cards: Card[] = [
+    { id: 'look', name: 'look', kind: 'spell', flagship: false,
+      data: { effects: [{ trigger: 'play', steps: [effect as JsonValue] }] } },
+    { id: 'spell', name: 'spell', kind: 'spell', flagship: false, data: {} },
+  ]
+  const snapshot = createOfficialSnapshot({ id: 'look-edge', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] })
+  const a = createOfficialSeatState(['a', 'b', 'c'].map(id => ({ id, cardId: 'spell' })))
+  a.hand = [{ id: 'look', cardId: 'look' }]
+  const state: OfficialMatchState = { seatOrder: ['A', 'B'], seats: { A: a, B: createOfficialSeatState() },
+    turn: 2, finale: null, battleMode: false, effect: null }
+  const core = await MatchCore.create({ rules: officialRules, snapshot, state, activeSeat: 'A',
+    random: { kind: 'recorded', inputs: [], consumed: 0 } })
+  const result = core.propose({ kind: 'action', seat: 'A', expectedRevision: 0,
+    action: { type: 'play-card', cardId: 'look' } })
+  expect(result.kind).toBe('accepted')
+  if (result.kind !== 'accepted') throw new Error('expected automatic settlement')
+  expect(result.randomInputs).toEqual([])
+  expect(result.match.state.seats.A.deck.map(card => card.id)).toEqual(scenario === 'zero-matches' ? ['a', 'b', 'c'] : ['b', 'c'])
+  expect(result.match.state.seats.A.hand.map(card => card.id)).toEqual(scenario === 'zero-matches' ? [] : ['a'])
 })
