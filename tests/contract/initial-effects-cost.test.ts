@@ -170,3 +170,36 @@ it.each([['烽火令', 1, '朱雀'], ['寒渊', 2, '玄武'], ['虎符', 1, '白
     expect(response.match.state.seats.A.hand.map(card => card.id).sort()).toEqual([`cost-${amount}`, 'found'].sort())
   },
 )
+
+it('a nested targeted continuation validates before cost and preserves target across suspension', async () => {
+  const cards: Card[] = [
+    { id: 'cost-spell', name: 'cost-spell', kind: 'spell', flagship: false, data: { effects: [{ trigger: 'play', steps: [
+      { type: 'hand-cost', amount: 1, canPass: false, onSelect: [{ type: 'damage-unit', amount: 2, target: 'enemy' }] },
+    ] }] } },
+    { id: 'unit', name: 'unit', kind: 'unit', flagship: false, data: { health: 5 } },
+  ]
+  const snapshot = createOfficialSnapshot({ id: 'cost-target', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] })
+  const a = createOfficialSeatState(), b = createOfficialSeatState()
+  a.hand = [{ id: 'source', cardId: 'cost-spell' }, { id: 'cost-1', cardId: 'unit' }, { id: 'cost-2', cardId: 'unit' }]
+  const unit = (id: string): OfficialUnit => ({ id, cardId: 'unit', hp: 5, canAttack: false, attacked: false,
+    skillUsed: false, skillLock: false, attackBonus: 0, deathAttackBonus: 0, stealth: false, stunned: false, shield: 0 })
+  a.board = [unit('own')]; b.board = [unit('target')]
+  const state: OfficialMatchState = { seatOrder: ['A', 'B'], seats: { A: a, B: b }, turn: 2, finale: null, battleMode: false, effect: null }
+  const core = await MatchCore.create({ rules: officialRules, snapshot, state, activeSeat: 'A', random: { kind: 'recorded', inputs: [], consumed: 0 } })
+  const command = (target: string) => ({ kind: 'action' as const, seat: 'A', expectedRevision: 0,
+    action: { type: 'play-card' as const, cardId: 'source', targets: [target] } })
+  expect(core.propose(command('own'))).toMatchObject({ kind: 'rejected', reason: 'invalid-target' })
+  const result = core.propose(command('target'))
+  if (result.kind !== 'accepted') throw new Error('expected offer')
+  core.confirm(result)
+  const saved = JSON.parse(JSON.stringify(core.read()))
+  const restored = await MatchCore.restore({ rules: officialRules, snapshot, match: saved })
+  const pending = restored.read()
+  if (pending.progress.kind !== 'waiting') throw new Error('expected choice')
+  expect(pending.state.seats.B.board[0].hp).toBe(5)
+  const response = restored.propose({ kind: 'decision', seat: 'A', expectedRevision: 1, decisionId: pending.progress.decision.id,
+    answer: { kind: 'select', candidateIds: ['cost-1'] } })
+  if (response.kind !== 'accepted') throw new Error('expected settlement')
+  expect(response.match.state.seats.B.board[0].hp).toBe(3)
+  expect(response.match.state.seats.A.discard.map(card => card.id)).toEqual(['source', 'cost-1'])
+})
