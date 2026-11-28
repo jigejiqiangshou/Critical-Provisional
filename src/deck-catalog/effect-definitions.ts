@@ -170,6 +170,11 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'enter', steps: [{ type: 'discard-hand', amount: 1 }, { type: 'draw', amount: 1 }],
   },
   {
+    cardId: 'initial:baize', legacyName: '白泽',
+    source: 'quote/临界·模块化·2D版.html:659 skill.effect',
+    trigger: 'skill', steps: [{ type: 'draw', amount: 1 }],
+  },
+  {
     cardId: 'initial:yanwen', legacyName: '炎纹',
     source: 'quote/临界·模块化·2D版.html:562 effect',
     trigger: 'play', steps: [{ type: 'damage-unit', amount: 3, target: 'enemy' }, { type: 'draw', amount: 1 }],
