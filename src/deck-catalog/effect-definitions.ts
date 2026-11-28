@@ -139,6 +139,9 @@ export function validateInitialEffects(
     const paths = new Set<string>()
     let lastIndex = -1
     const checked = handCheckedMappings.find(entry => entry.cardId === mapping.cardId)?.effects ?? []
+    const lockedSource = inventory.find(entry => entry.id === mapping.cardId)
+    if (checked.length && (!lockedSource || canonical(source.card) !== canonical(lockedSource.card)))
+      throw new Error(`Legacy source changed: ${mapping.cardId}`)
     const automatic = automaticEntries(source.card)
     for (const effect of mapping.effects) {
       if (!required.has(effect.sourcePath)) throw new Error(`Unknown source entry ${effect.sourcePath}: ${mapping.cardId}`)
