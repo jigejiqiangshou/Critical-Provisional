@@ -332,3 +332,35 @@ it.each(['select', 'pass'] as const)('伏兵 %s resolves before core damage', an
   expect(result.state.seats.A.ap).toBe(0)
   expect(result.state.seats.B.facedown).toHaveLength(answer === 'select' ? 0 : 1)
 })
+
+it.each([['弱水', 0], ['缚龙索', 2]] as const)('%s targets an enemy, stuns until its turn ends, and limits reuse', (name, damage) => {
+  const effect = definition(name)
+  const cards: Card[] = [
+    { id: 'unit', name: 'unit', kind: 'unit', flagship: false, data: { attack: 1, health: 8 } },
+    { id: effect.cardId, name, kind: 'spell', flagship: false, data: { oncePerTurn: true, effects: [{ trigger: effect.trigger, steps: effect.steps }] } },
+  ]
+  const snapshot = createOfficialSnapshot({ id: 'stun', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] })
+  const a = createOfficialSeatState(), b = createOfficialSeatState()
+  a.ap = 3; a.hand = [{ id: 'first', cardId: effect.cardId }, { id: 'second', cardId: effect.cardId }]
+  a.board = [{ ...unit('own', 'unit'), hp: 8 }]; b.board = [{ ...unit('enemy', 'unit'), hp: 8, canAttack: true }]
+  const state: OfficialMatchState = { seatOrder: ['A', 'B'], seats: { A: a, B: b }, turn: 2, finale: null, battleMode: false, effect: null }
+  const play = (position: OfficialMatchState, source: string, target: string) => officialRules.resolveAction({ state: position, snapshot, seat: 'A', random: () => 0,
+    action: { type: 'play-card', cardId: source, targets: [target] } })
+  expect(play(state, 'first', 'own').kind).toBe('rejected')
+  const result = play(state, 'first', 'enemy')
+  if (result.kind !== 'active') throw new Error('expected settled spell')
+  expect(result.state.seats.B.board[0]).toMatchObject({ hp: 8 - damage, stunned: true })
+  expect(play(result.state, 'second', 'enemy').kind).toBe('rejected')
+  if (damage) {
+    const names = result.events.flatMap(event => event.type === 'rule-event' ? [event.name] : [])
+    expect(names.indexOf('unit-stunned')).toBeLessThan(names.indexOf('unit-damaged'))
+  }
+  const next = officialRules.resolveAction({ state: result.state, snapshot, seat: 'A', random: () => 0, action: { type: 'end-turn' } })
+  if (next.kind !== 'active') throw new Error('expected B turn')
+  expect(officialRules.resolveAction({ state: next.state, snapshot, seat: 'B', random: () => 0,
+    action: { type: 'attack', attackerId: 'enemy', targetId: coreTargetId('A') } }).kind).toBe('rejected')
+  const back = officialRules.resolveAction({ state: next.state, snapshot, seat: 'B', random: () => 0, action: { type: 'end-turn' } })
+  if (back.kind !== 'active') throw new Error('expected A turn')
+  expect(back.state.seats.B.board[0].stunned).toBe(false)
+  expect(play(back.state, 'second', 'enemy').kind).toBe('active')
+})
