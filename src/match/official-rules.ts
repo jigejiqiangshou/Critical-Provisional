@@ -281,7 +281,8 @@ function executeEffect(
       break
     }
     case 'damage-unit':
-      if (targetId !== null) damageUnit(state, snapshot, targetId, effect.amount, effect.pierce === true, events)
+      if (targetId !== null && (!effect.requiresShield || (unitLocation(state, targetId)?.unit.shield ?? 0) > 0))
+        damageUnit(state, snapshot, targetId, effect.amount, effect.pierce === true, events)
       break
     case 'damage-all-enemies': {
       const targets = state.seats[opposingSeat(state, seat)].board.map(unit => unit.id)

@@ -151,6 +151,11 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'attack-unit', steps: [{ type: 'pre-strike', amount: 1 }],
   },
   {
+    cardId: 'initial:duanjin', legacyName: '断金',
+    source: 'quote/临界·模块化·2D版.html:610 effect',
+    trigger: 'play', steps: [{ type: 'damage-unit', target: 'enemy', amount: 8, pierce: true, requiresShield: true }],
+  },
+  {
     cardId: 'initial:ruoshui', legacyName: '弱水',
     source: 'quote/临界·模块化·2D版.html:590 effect',
     trigger: 'play', steps: [{ type: 'stun-unit', target: 'enemy' }],
