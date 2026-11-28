@@ -28,9 +28,9 @@ describe('first release legacy effect inventory', () => {
   })
 
   it('rejects unknown triggers and effects even when all IDs are present', () => {
-    const source = [{ id: 'test-card' }]
+    const source = [{ id: 'test-card', card: { effect: { type: 'draw', n: 1 } } }]
     const capabilities = { triggers: ['play'], effects: ['draw'] }
-    const valid = [{ cardId: 'test-card', effects: [{ trigger: 'play' as const, steps: [{ type: 'draw' as const, amount: 1 }] }] }]
+    const valid = [{ cardId: 'test-card', effects: [{ sourcePath: 'effect', trigger: 'play' as const, steps: [{ type: 'draw' as const, amount: 1 }] }] }]
     expect(() => validateInitialEffects(source, valid, capabilities)).not.toThrow()
     expect(() => validateInitialEffects(source, [], capabilities)).toThrow()
     expect(() => validateInitialEffects(source, [...valid, ...valid], capabilities)).toThrow()
