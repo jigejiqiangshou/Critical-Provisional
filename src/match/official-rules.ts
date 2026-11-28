@@ -171,9 +171,10 @@ function effectsFor(snapshot: CardPoolSnapshot, card: OfficialCardInstance, trig
 function effectTasks(
   snapshot: CardPoolSnapshot, seat: SeatId, card: OfficialCardInstance, trigger: OfficialTrigger, targetId: string | null,
 ): RuleTask[] {
-  return effectsFor(snapshot, card, trigger).map(effect => ({
-    type: 'effect', seat, sourceId: card.id, targetId, effect,
-  }))
+  const registrations = officialCardData(officialCard(snapshot, card.cardId)).effects ?? []
+  return registrations.filter(item => item.trigger === trigger).flatMap(item => item.steps.map(effect => ({
+    type: 'effect' as const, seat, sourceId: card.id, targetId, effect, timing: item.timing ?? 'immediate',
+  })))
 }
 
 function frame(state: OfficialMatchState) {
@@ -199,8 +200,8 @@ function destroyUnit(
   player.discard.push(card)
   events.push(visible('unit-destroyed', { seat, card }))
   const deathTasks = effectTasks(snapshot, seat, card, 'death', null)
-  const immediate = deathTasks.filter(task => task.type !== 'effect' || task.effect.type !== 'hand-cost')
-  const deferred = deathTasks.filter(task => task.type === 'effect' && task.effect.type === 'hand-cost')
+  const immediate = deathTasks.filter(task => task.type !== 'effect' || task.timing !== 'after-action')
+  const deferred = deathTasks.filter(task => task.type === 'effect' && task.timing === 'after-action')
   frame(state).queue.unshift(...immediate, { type: 'death-bonuses', seat })
   frame(state).deferredDeath.push(...deferred)
 }
