@@ -260,6 +260,28 @@ describe('partial T045 definitions: core settlement samples', () => {
     expect(result.state.seats.B.coreShield).toBe(10)
     expect(result.events.filter(event => event.type === 'rule-event' && event.name === 'core-damaged')).toHaveLength(0)
   })
+  it('白泽 skill draws once and cannot be reused in the same turn', () => {
+    const entry = definition('白泽')
+    const cards: Card[] = [
+      { id: entry.cardId, name: '白泽', kind: 'unit', flagship: false,
+        data: { attack: 2, health: 3, skill: { id: 'skill', oncePerTurn: true },
+          effects: [{ trigger: entry.trigger, steps: entry.steps }] } },
+      { id: 'filler', name: 'filler', kind: 'unit', flagship: false, data: { attack: 1, health: 1 } },
+    ]
+    const release: Release = { id: 'partial', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] }
+    const a = createOfficialSeatState([{ id: 'first', cardId: 'filler' }, { id: 'second', cardId: 'filler' }])
+    a.board = [unit('source', entry.cardId)]
+    const state: OfficialMatchState = { seatOrder: ['A', 'B'], seats: { A: a, B: createOfficialSeatState() },
+      turn: 2, finale: null, battleMode: false, effect: null }
+    const snapshot = createOfficialSnapshot(release)
+    const invoke = (position: OfficialMatchState) => officialRules.resolveAction({ state: position, snapshot, seat: 'A',
+      random: () => 0, action: { type: 'activate-skill', sourceId: 'source', skillId: 'skill' } })
+    const result = invoke(state)
+    expect(result.kind).toBe('active')
+    if (result.kind !== 'active') throw new Error('expected settlement')
+    expect(result.state.seats.A.hand.map(card => card.id)).toEqual(['first'])
+    expect(invoke(result.state)).toMatchObject({ kind: 'rejected', reason: 'skill-already-used' })
+  })
   it('maps 离火 to five damage against an enemy unit', () => {
     expect(definition('离火')).toMatchObject({ trigger: 'play', steps: [{ type: 'damage-unit', amount: 5, target: 'enemy' }] })
   })
