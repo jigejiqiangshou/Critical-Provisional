@@ -30,3 +30,15 @@ describe('independent first release effect acceptance', () => {
     expect(() => validateInitialEffectAudits([{ legacyName: '毕方', cardId: 'initial:bifang', fields: {}, steps: {} }])).toThrow()
   })
 })
+
+it('accepts the four audited entries while still rejecting missing fields and steps', () => {
+  const audits = [
+    { legacyName: '传讯', cardId: 'initial:chuanxun', fields: { effect: { kind: 'effect' as const, reference: 'play:draw' } }, steps: { effect: 'play:0:draw' } },
+    { legacyName: '离火', cardId: 'initial:lihuo', fields: { effect: { kind: 'effect' as const, reference: 'play:damage-unit' } }, steps: { effect: 'play:0:damage-unit' } },
+    { legacyName: '星火', cardId: 'initial:xinghuo', fields: { effect: { kind: 'effect' as const, reference: 'play:look-pick' } }, steps: { 'effect.0': 'play:0:look-pick' } },
+    { legacyName: '蓄势', cardId: 'initial:xushi', fields: { effect: { kind: 'effect' as const, reference: 'play:hand-cost' } }, steps: { 'effect.0': 'play:0:hand-cost', 'effect.1': 'play:0.0:draw' } },
+  ]
+  expect(() => validateInitialEffectAudits(audits)).toThrow('Initial effect migration incomplete: 125 cards')
+  expect(() => validateInitialEffectAudits([{ ...audits[0], fields: {} }])).toThrow('Unreviewed rules field')
+  expect(() => validateInitialEffectAudits([{ ...audits[3], steps: { 'effect.0': 'play:0:hand-cost' } }])).toThrow('Unreviewed legacy step')
+})
