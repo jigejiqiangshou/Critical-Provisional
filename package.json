@@ -1,0 +1,28 @@
+{
+  "name": "critical-provisional",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "build": "tsc --noEmit && vite build",
+    "preflight:cloud": "npm run build && node scripts/cloud-preflight.ts",
+    "dev": "vite",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:baseline": "vitest run tests/baseline/",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@types/node": "^24.19.4",
+    "typescript": "^6.0.3",
+    "vite": "^8.4.0",
+    "vitest": "^5.1.2"
+  },
+  "dependencies": {
+    "@sqlite.org/sqlite-wasm": "3.54.1-build1"
+  }
+}
