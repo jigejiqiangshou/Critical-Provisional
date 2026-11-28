@@ -151,6 +151,11 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'attack-unit', steps: [{ type: 'pre-strike', amount: 1 }],
   },
   {
+    cardId: 'initial:bihu', legacyName: '庇护',
+    source: 'quote/临界·模块化·2D版.html:653 effect',
+    trigger: 'play', steps: [{ type: 'immunize-unit', target: 'own' }],
+  },
+  {
     cardId: 'initial:duanjin', legacyName: '断金',
     source: 'quote/临界·模块化·2D版.html:610 effect',
     trigger: 'play', steps: [{ type: 'damage-unit', target: 'enemy', amount: 8, pierce: true, requiresShield: true }],
