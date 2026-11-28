@@ -30,7 +30,8 @@ it.each([
   ['unrecognized trigger', { trigger: 'not-a-trigger' }, 'Unknown trigger'],
   ['unimplemented effect', { steps: [{ type: 'not-an-effect' }] }, 'Unimplemented effect'],
   ['unknown source card', { legacyName: 'not-a-card' }, 'Unknown legacy card'],
-  ['stable ID assigned to another card', { cardId: initialEffectDefinitions[1].cardId }, 'Duplicate card ID'],
+  ['stable ID assigned to another card', { cardId: initialEffectDefinitions[1].cardId }, 'Conflicting stable ID'],
+  ['another stable ID for same card', { cardId: 'different-id' }, 'Conflicting stable ID'],
 ])('rejects %s before reporting incomplete coverage', (_name, patch, message) => {
   const list = initialEffectDefinitions as InitialEffectDefinition[]
   list.push({ ...list[0], ...patch } as InitialEffectDefinition)
