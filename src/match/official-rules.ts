@@ -31,7 +31,7 @@ type OfficialResolution = RuleResolution<OfficialMatchState, EffectContinuation,
 const capabilities = Object.freeze({
   triggers: Object.freeze(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit'] as const satisfies readonly OfficialTrigger[]),
   effects: Object.freeze([
-    'damage-unit', 'shield-unit', 'damage-all-enemies', 'draw', 'heal-core', 'shield-core', 'pay-life', 'pay-half-life', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
+    'damage-unit', 'shield-unit', 'stun-unit', 'damage-all-enemies', 'draw', 'heal-core', 'shield-core', 'pay-life', 'pay-half-life', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
   ] as const satisfies readonly OfficialEffect['type'][]),
 })
 
@@ -252,6 +252,14 @@ function executeEffect(
       if (found) {
         found.unit.shield += effect.amount
         events.push(visible('unit-shielded', { seat: found.seat, targetId, amount: effect.amount, shield: found.unit.shield }))
+      }
+      break
+    }
+    case 'stun-unit': {
+      const found = targetId === null ? undefined : unitLocation(state, targetId)
+      if (found) {
+        found.unit.stunned = true
+        events.push(visible('unit-stunned', { seat: found.seat, targetId }))
       }
       break
     }

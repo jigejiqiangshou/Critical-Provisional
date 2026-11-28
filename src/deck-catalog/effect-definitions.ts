@@ -33,6 +33,11 @@ export const initialEffectMappings: readonly EffectMapping[] = [
     { sourcePath: 'effect[0]', trigger: 'play', steps: [{ type: 'pay-life', amount: 3 }] },
     { sourcePath: 'effect[1]', trigger: 'play', steps: [{ type: 'shield-unit', amount: 3, target: 'any' }] },
   ] },
+  { cardId: id('弱水'), effects: [{ sourcePath: 'effect', trigger: 'play', steps: [{ type: 'stun-unit', target: 'any' }] }] },
+  { cardId: id('缚龙索'), effects: [
+    { sourcePath: 'effect[0]', trigger: 'play', steps: [{ type: 'stun-unit', target: 'any' }] },
+    { sourcePath: 'effect[1]', trigger: 'play', steps: [{ type: 'damage-unit', amount: 2, target: 'any' }] },
+  ] },
   { cardId: id('火鸦'), effects: [{ sourcePath: 'skill', trigger: 'skill', steps: [{ type: 'register-death-attack-bonus', amount: 1 }] }] },
   { cardId: id('离火'), effects: [{ sourcePath: 'effect', trigger: 'play', steps: [{ type: 'damage-unit', target: 'any', amount: 5 }] }] },
   { cardId: id('传讯'), effects: [{ sourcePath: 'effect', trigger: 'play', steps: [{ type: 'draw', amount: 1 }] }] },
