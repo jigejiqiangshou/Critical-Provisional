@@ -99,6 +99,13 @@ export interface EffectCapabilities {
   readonly effects: readonly string[]
 }
 
+function canonical(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`
+  if (value && typeof value === 'object') return `{${Object.entries(value).sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, item]) => `${JSON.stringify(key)}:${canonical(item)}`).join(',')}}`
+  return JSON.stringify(value)
+}
+
 /** Each legacy entry is independently accounted for, including non-active rule features. */
 export function legacyEffectPaths(card: Record<string, unknown>): string[] {
   const keys = ['kw', 'deathrattle', 'skill', 'passive', 'enter', 'effect', 'fieldLock',
@@ -131,6 +138,8 @@ export function validateInitialEffects(
     const required = new Set(sourcePaths)
     const paths = new Set<string>()
     let lastIndex = -1
+    const checked = handCheckedMappings.find(entry => entry.cardId === mapping.cardId)?.effects ?? []
+    const automatic = automaticEntries(source.card)
     for (const effect of mapping.effects) {
       if (!required.has(effect.sourcePath)) throw new Error(`Unknown source entry ${effect.sourcePath}: ${mapping.cardId}`)
       if (paths.has(effect.sourcePath)) throw new Error(`Duplicate source entry ${effect.sourcePath}: ${mapping.cardId}`)
@@ -143,6 +152,10 @@ export function validateInitialEffects(
       for (const step of effect.steps) {
         if (!capabilities.effects.includes(step.type)) throw new Error(`Unimplemented effect ${step.type}: ${mapping.cardId}`)
       }
+      const expectedEffect = checked.find(entry => entry.sourcePath === effect.sourcePath) ??
+        automatic.find(entry => entry.sourcePath === effect.sourcePath)
+      if (!expectedEffect || canonical(effect) !== canonical(expectedEffect))
+        throw new Error(`Unverified source semantics ${effect.sourcePath}: ${mapping.cardId}`)
     }
     const missingPaths = [...required].filter(path => !paths.has(path))
     if (missingPaths.length) throw new Error(`Missing source entries ${missingPaths.join(', ')}: ${mapping.cardId}`)
