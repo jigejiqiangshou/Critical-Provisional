@@ -32,7 +32,7 @@ const capabilities = Object.freeze({
   triggers: Object.freeze(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit'] as const satisfies readonly OfficialTrigger[]),
   effects: Object.freeze([
     'damage-unit', 'draw', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
-    'heal-core', 'shield-core', 'destroy-unit', 'bonus-core-attack', 'damage-all-enemies', 'pre-strike', 'shield-unit', 'shield-all-own', 'lock-field', 'lock-own-attacks', 'discard-hand', 'look-pick', 'search-deck',
+    'heal-core', 'shield-core', 'destroy-unit', 'bonus-core-attack', 'damage-all-enemies', 'pre-strike', 'shield-unit', 'shield-all-own', 'buff-unit', 'lock-field', 'lock-own-attacks', 'discard-hand', 'look-pick', 'search-deck',
   ] as const satisfies readonly OfficialEffect['type'][]),
 })
 
@@ -314,6 +314,16 @@ function executeEffect(
       player.selfAttackLock = true
       events.push(visible('own-attacks-locked', { seat }))
       break
+    case 'buff-unit': {
+      const target = targetId === null ? undefined : unitLocation(state, targetId)
+      if (target) {
+        target.unit.attackBonus += effect.attack
+        target.unit.hp += effect.health
+        if (effect.rush) target.unit.canAttack = true
+        events.push(visible('unit-buffed', { seat: target.seat, targetId, attack: effect.attack, health: effect.health, rush: effect.rush === true }))
+      }
+      break
+    }
     case 'shield-unit': {
       const target = targetId === null ? undefined : unitLocation(state, targetId)
       if (target) {
@@ -565,11 +575,13 @@ function validEffectTarget(
   state: OfficialMatchState, snapshot: CardPoolSnapshot, seat: SeatId, card: OfficialCardInstance,
   trigger: OfficialTrigger, targets: readonly string[],
 ): boolean {
-  const steps = effectsFor(snapshot, card, trigger).filter(effect => effect.type === 'damage-unit' || effect.type === 'destroy-unit' || effect.type === 'shield-unit')
+  const steps = effectsFor(snapshot, card, trigger).filter(effect => effect.type === 'damage-unit' || effect.type === 'destroy-unit' || effect.type === 'shield-unit' || effect.type === 'buff-unit')
   if (!steps.length) return targets.length === 0
   if (targets.length !== 1) return false
   const target = unitLocation(state, targets[0])
-  return !!target && steps.every(effect => effect.target === 'any' || (effect.target === 'own' ? target.seat === seat : target.seat !== seat))
+  return !!target && steps.every(effect =>
+    (effect.target === 'any' || (effect.target === 'own' ? target.seat === seat : target.seat !== seat)) &&
+    (effect.type !== 'buff-unit' || !effect.attr || officialCardData(officialCard(snapshot, target.unit.cardId)).attr === effect.attr))
 }
 
 function play(
