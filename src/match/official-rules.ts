@@ -297,7 +297,7 @@ function executeEffect(
       const viewed = player.deck.slice(0, effect.top)
       const candidates = viewed.filter(card => {
         const data = officialCard(snapshot, card.cardId)
-        return (!effect.kind || data.kind === effect.kind) && (!effect.attr || officialCardData(data).attr === effect.attr)
+        return data.kind !== 'ace' && (!effect.kind || data.kind === effect.kind) && (!effect.attr || officialCardData(data).attr === effect.attr)
       })
       events.push(visible('cards-looked', { seat, cards: viewed.map(card => ({ id: card.id, cardId: card.cardId })) }, seat))
       frame(state).choice = { kind: 'look-pick', seat, cards: candidates, viewedCount: viewed.length }
