@@ -131,6 +131,11 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'attack-core', steps: [{ type: 'cancel-attack' }],
   },
   {
+    cardId: 'initial:fubing', legacyName: '伏兵',
+    source: 'quote/临界·模块化·2D版.html:675 trap.effect',
+    trigger: 'attack-core', steps: [{ type: 'draw', amount: 2 }],
+  },
+  {
     cardId: 'initial:cangfeng', legacyName: '藏锋',
     source: 'quote/临界·模块化·2D版.html:663 trap.effect',
     trigger: 'attack-unit', steps: [{ type: 'cancel-attack' }],
