@@ -198,7 +198,11 @@ function destroyUnit(
   const card = { id: unit.id, cardId: unit.cardId }
   player.discard.push(card)
   events.push(visible('unit-destroyed', { seat, card }))
-  frame(state).queue.unshift(...effectTasks(snapshot, seat, card, 'death', null), { type: 'death-bonuses', seat })
+  const deathTasks = effectTasks(snapshot, seat, card, 'death', null)
+  const immediate = deathTasks.filter(task => task.type !== 'effect' || task.effect.type !== 'hand-cost')
+  const deferred = deathTasks.filter(task => task.type === 'effect' && task.effect.type === 'hand-cost')
+  frame(state).queue.unshift(...immediate, { type: 'death-bonuses', seat })
+  frame(state).deferredDeath.push(...deferred)
 }
 
 function damageUnit(
@@ -528,10 +532,22 @@ const settlement: EffectProgram<OfficialMatchState, VisibleRuleEvent> = {
       kind: 'branch',
       next: ({ state }) => {
         if (state.effect?.choice) return 'choice'
-        return state.effect?.queue.length ? 'task' : 'clear'
+        if (state.effect?.queue.length) return 'task'
+        return state.effect?.deferredDeath.length ? 'flush-deferred' : 'clear'
       },
     },
     task: { kind: 'apply', apply: performTask, next: 'dispatch' },
+    'flush-deferred': {
+      kind: 'apply',
+      apply: ({ state }) => {
+        const next = structuredClone(state)
+        const current = frame(next)
+        current.queue.push(...current.deferredDeath)
+        current.deferredDeath = []
+        return { state: next }
+      },
+      next: 'dispatch',
+    },
     choice: {
       kind: 'choose',
       choices: ({ state, snapshot }) => {
@@ -574,7 +590,7 @@ function resolveEffects(
   context: RuleContext<OfficialMatchState>, state: OfficialMatchState, queue: RuleTask[],
   events: readonly VisibleRuleEvent[], activeSeat = context.seat,
 ): OfficialResolution {
-  state.effect = { queue, cancelAttack: false, choice: null }
+  state.effect = { queue, deferredDeath: [], cancelAttack: false, choice: null }
   const result = effects.start({ ...context, state }, 'settlement', activeSeat)
   if (result.kind === 'rejected') return result
   const allEvents = [...events, ...result.events]

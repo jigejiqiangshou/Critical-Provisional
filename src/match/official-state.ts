@@ -101,6 +101,7 @@ type ChoiceFrame =
 
 interface EffectFrame {
   queue: RuleTask[]
+  deferredDeath: RuleTask[]
   cancelAttack: boolean
   choice: ChoiceFrame | null
 }
