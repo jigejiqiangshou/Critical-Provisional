@@ -5,7 +5,8 @@ export const OFFICIAL_RULES_VERSION = '1'
 
 export type OfficialTrigger = 'play' | 'enter' | 'death' | 'skill' | 'attack-core' | 'attack-unit'
 export type OfficialEffect =
-  | { readonly type: 'damage-unit'; readonly amount: number; readonly target: 'any' | 'own' | 'enemy' }
+  | { readonly type: 'damage-unit'; readonly amount: number; readonly target: 'any' | 'own' | 'enemy'; readonly pierce?: boolean }
+  | { readonly type: 'damage-all-enemies'; readonly amount: number; readonly pierce: boolean }
   | { readonly type: 'destroy-unit'; readonly target: 'any' | 'own' | 'enemy' }
   | { readonly type: 'draw' | 'register-death-attack-bonus' | 'ice-draw-pick'; readonly amount: number }
   | { readonly type: 'heal-core' | 'shield-core' | 'bonus-core-attack'; readonly amount: number }

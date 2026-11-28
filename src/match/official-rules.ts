@@ -32,7 +32,7 @@ const capabilities = Object.freeze({
   triggers: Object.freeze(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit'] as const satisfies readonly OfficialTrigger[]),
   effects: Object.freeze([
     'damage-unit', 'draw', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
-    'heal-core', 'shield-core', 'destroy-unit', 'bonus-core-attack',
+    'heal-core', 'shield-core', 'destroy-unit', 'bonus-core-attack', 'damage-all-enemies',
   ] as const satisfies readonly OfficialEffect['type'][]),
 })
 
@@ -258,8 +258,16 @@ function executeEffect(
   const player = state.seats[seat]
   switch (effect.type) {
     case 'damage-unit':
-      if (targetId !== null) damageUnit(state, snapshot, targetId, effect.amount, false, events)
+      if (targetId !== null) damageUnit(state, snapshot, targetId, effect.amount, effect.pierce === true, events)
       break
+    case 'damage-all-enemies': {
+      const targets = state.seats[opposingSeat(state, seat)].board.map(unit => unit.id)
+      frame(state).queue.unshift(...targets.map(target => ({
+        type: 'effect' as const, seat, sourceId, targetId: target,
+        effect: { type: 'damage-unit' as const, amount: effect.amount, target: 'enemy' as const, pierce: effect.pierce },
+      })))
+      break
+    }
     case 'destroy-unit':
       if (targetId !== null) destroyUnit(state, snapshot, targetId, events)
       break
