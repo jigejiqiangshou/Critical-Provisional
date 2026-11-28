@@ -11,8 +11,16 @@ const id = (name: string) => `legacy:${encodeURIComponent(name)}`
 // All other entries remain explicitly unmapped until their semantics are implemented.
 export const initialEffectMappings: readonly EffectMapping[] = [
   { cardId: id('毕方'), effects: [{ sourcePath: 'deathrattle', trigger: 'death', steps: [{ type: 'draw', amount: 1 }] }] },
+  { cardId: id('冰夷'), effects: [{ sourcePath: 'deathrattle', trigger: 'death', steps: [{ type: 'draw', amount: 1 }] }] },
+  { cardId: id('青苗'), effects: [{ sourcePath: 'deathrattle', trigger: 'death', steps: [{ type: 'draw', amount: 1 }] }] },
+  { cardId: id('青鸾'), effects: [{ sourcePath: 'enter[0]', trigger: 'enter', steps: [{ type: 'draw', amount: 1 }] }] },
   { cardId: id('火鸦'), effects: [{ sourcePath: 'skill', trigger: 'skill', steps: [{ type: 'register-death-attack-bonus', amount: 1 }] }] },
   { cardId: id('离火'), effects: [{ sourcePath: 'effect', trigger: 'play', steps: [{ type: 'damage-unit', target: 'any', amount: 5 }] }] },
+  { cardId: id('传讯'), effects: [{ sourcePath: 'effect', trigger: 'play', steps: [{ type: 'draw', amount: 1 }] }] },
+  { cardId: id('炎纹'), effects: [
+    { sourcePath: 'effect[0]', trigger: 'play', steps: [{ type: 'damage-unit', target: 'any', amount: 3 }] },
+    { sourcePath: 'effect[1]', trigger: 'play', steps: [{ type: 'draw', amount: 1 }] },
+  ] },
   { cardId: id('镇岳'), effects: [{ sourcePath: 'trap', trigger: 'attack-core', steps: [{ type: 'cancel-attack' }] }] },
   { cardId: id('探珠'), effects: [{ sourcePath: 'skill', trigger: 'skill', steps: [{ type: 'ice-draw-pick', amount: 3 }] }] },
 ]
