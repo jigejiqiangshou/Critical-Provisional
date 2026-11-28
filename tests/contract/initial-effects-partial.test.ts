@@ -45,6 +45,27 @@ describe('partial T045 definitions: core settlement samples', () => {
       ? [(event.data as { seat: string }).seat] : [])
     expect(drawSeats).toEqual(['B', 'A'])
   })
+  it.each([['青鸾', 'enter', 1], ['传讯', 'play', 1], ['洞察', 'play', 2]] as const)(
+    '%s applies its draw when the card is played', (name, trigger, amount) => {
+      const entry = definition(name)
+      expect(entry.trigger).toBe(trigger)
+      const cards: Card[] = [
+        { id: entry.cardId, name, kind: trigger === 'enter' ? 'unit' : 'spell', flagship: false,
+          data: { attack: 1, health: 1, effects: [{ trigger: entry.trigger, steps: entry.steps }] } },
+        { id: 'filler', name: 'filler', kind: 'unit', flagship: false, data: { attack: 1, health: 1 } },
+      ]
+      const release: Release = { id: 'partial', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] }
+      const a = createOfficialSeatState([{ id: 'draw-1', cardId: 'filler' }, { id: 'draw-2', cardId: 'filler' }])
+      a.hand = [{ id: 'played', cardId: entry.cardId }]
+      const state: OfficialMatchState = { seatOrder: ['A', 'B'], seats: { A: a, B: createOfficialSeatState() },
+        turn: 2, finale: null, battleMode: false, effect: null }
+      const result = officialRules.resolveAction({ state, snapshot: createOfficialSnapshot(release), seat: 'A',
+        random: () => 0, action: { type: 'play-card', cardId: 'played' } })
+      expect(result.kind).toBe('active')
+      if (result.kind !== 'active') throw new Error('expected settled action')
+      expect(result.state.seats.A.hand.map(card => card.id)).toEqual(['draw-1', 'draw-2'].slice(0, amount))
+    },
+  )
   it('maps 离火 to five damage against any unit', () => {
     expect(definition('离火')).toMatchObject({ trigger: 'play', steps: [{ type: 'damage-unit', amount: 5, target: 'any' }] })
   })
