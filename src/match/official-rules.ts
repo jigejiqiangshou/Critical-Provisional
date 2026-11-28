@@ -32,7 +32,7 @@ const capabilities = Object.freeze({
   triggers: Object.freeze(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit'] as const satisfies readonly OfficialTrigger[]),
   effects: Object.freeze([
     'damage-unit', 'draw', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
-    'heal-core', 'shield-core', 'destroy-unit',
+    'heal-core', 'shield-core', 'destroy-unit', 'bonus-core-attack',
   ] as const satisfies readonly OfficialEffect['type'][]),
 })
 
@@ -240,7 +240,11 @@ function finishAttack(
   events.push(visible('attack', { seat, attackerId, targetId, cancelled }))
   if (cancelled) return
   const power = officialCardData(officialCard(snapshot, attacker.cardId)).attack ?? 0
-  const amount = Math.max(0, power + attacker.attackBonus)
+  const bonus = targetId === coreTargetId(opposingSeat(state, seat))
+    ? effectsFor(snapshot, attacker, 'attack-core').reduce((total, effect) =>
+      total + (effect.type === 'bonus-core-attack' ? effect.amount : 0), 0)
+    : 0
+  const amount = Math.max(0, power + attacker.attackBonus + bonus)
   const opponent = opposingSeat(state, seat)
   if (targetId === coreTargetId(opponent)) damageCore(state, opponent, amount, events)
   else damageUnit(state, snapshot, targetId, amount, hasKeyword(snapshot, attacker, 'pierce', '穿透'), events)
