@@ -179,7 +179,7 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
 /** Each legacy rules-bearing field needs an explicit reviewed mapping. A field
  * mapped to an effect names the corresponding trigger; core mappings name the
  * existing versioned rule. Audits remain empty until reviewed end to end. */
-interface EffectAudit {
+export interface EffectAudit {
   readonly legacyName: string
   readonly cardId: string
   readonly fields: Readonly<Record<string, { readonly kind: 'effect' | 'core'; readonly reference: string }>>
@@ -188,7 +188,7 @@ const effectAudits: readonly EffectAudit[] = []
 
 /** Fail closed before a first release can consume this in-progress catalog.
  * The future release builder must call this before writing or packaging it. */
-export function assertInitialEffectsReady(): void {
+export function validateInitialEffectAudits(audits: readonly EffectAudit[]): void {
   const expected = new Map(legacySources.map(source => [source.name, source]))
   const capabilities = getRuleCapabilities(OFFICIAL_RULES_VERSION)
   if (!capabilities) throw new TypeError('Initial rules version is unavailable')
@@ -211,7 +211,7 @@ export function assertInitialEffectsReady(): void {
     }
   }
   const audited = new Set<string>()
-  for (const audit of effectAudits) {
+  for (const audit of audits) {
     const source = expected.get(audit.legacyName)
     if (!source || audited.has(audit.legacyName) || !audit.cardId) throw new TypeError('Invalid initial effect audit coverage')
     const previousName = namesById.get(audit.cardId)
@@ -227,8 +227,15 @@ export function assertInitialEffectsReady(): void {
     }
     for (const mapping of Object.values(audit.fields)) {
       if (!mapping.reference) throw new TypeError(`Missing rule reference: ${audit.legacyName}`)
-      if (mapping.kind === 'effect' && !initialEffectDefinitions.some(definition =>
-        definition.cardId === audit.cardId && definition.trigger === mapping.reference && definition.steps.length > 0)) {
+      if (mapping.kind === 'core') {
+        // No core-field reference has yet completed the source-to-rule audit.
+        throw new TypeError(`Unverified core rule: ${mapping.reference}`)
+      }
+      if (mapping.kind !== 'effect') throw new TypeError(`Unknown rule mapping: ${audit.legacyName}`)
+      const [trigger, effectType] = mapping.reference.split(':')
+      if (!trigger || !effectType || !initialEffectDefinitions.some(definition =>
+        definition.cardId === audit.cardId && definition.trigger === trigger &&
+        definition.steps.some(step => step.type === effectType))) {
         throw new TypeError(`Unimplemented effect mapping: ${audit.legacyName}`)
       }
     }
@@ -236,4 +243,8 @@ export function assertInitialEffectsReady(): void {
   }
   const incomplete = [...expected.keys()].filter(name => !audited.has(name))
   if (incomplete.length) throw new TypeError(`Initial effect migration incomplete: ${incomplete.length} cards`)
+}
+
+export function assertInitialEffectsReady(): void {
+  validateInitialEffectAudits(effectAudits)
 }
