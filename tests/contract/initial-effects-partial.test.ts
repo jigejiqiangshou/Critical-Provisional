@@ -364,3 +364,23 @@ it.each([['弱水', 0], ['缚龙索', 2]] as const)('%s targets an enemy, stuns 
   expect(back.state.seats.B.board[0].stunned).toBe(false)
   expect(play(back.state, 'second', 'enemy').kind).toBe('active')
 })
+
+it.each([0, 5])('断金 with target shield %i applies only through shields', shield => {
+  const effect = definition('断金')
+  const cards: Card[] = [
+    { id: 'unit', name: 'unit', kind: 'unit', flagship: false, data: { attack: 1, health: 12 } },
+    { id: effect.cardId, name: '断金', kind: 'spell', flagship: false, data: { effects: [{ trigger: effect.trigger, steps: effect.steps }] } },
+  ]
+  const snapshot = createOfficialSnapshot({ id: 'duanjin', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] })
+  const a = createOfficialSeatState(), b = createOfficialSeatState()
+  a.hand = [{ id: 'source', cardId: effect.cardId }]
+  a.board = [{ ...unit('own', 'unit'), hp: 12, shield: 5 }]
+  b.board = [{ ...unit('enemy', 'unit'), hp: 12, shield }]
+  const state: OfficialMatchState = { seatOrder: ['A', 'B'], seats: { A: a, B: b }, turn: 2, finale: null, battleMode: false, effect: null }
+  const cast = (target: string) => officialRules.resolveAction({ state, snapshot, seat: 'A', random: () => 0,
+    action: { type: 'play-card', cardId: 'source', targets: [target] } })
+  expect(cast('own').kind).toBe('rejected')
+  const result = cast('enemy')
+  if (result.kind !== 'active') throw new Error('expected settled spell')
+  expect(result.state.seats.B.board[0]).toMatchObject({ hp: shield ? 4 : 12, shield })
+})
