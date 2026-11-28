@@ -14,6 +14,7 @@ export type OfficialEffect =
   | { readonly type: 'lock-field'; readonly attr: string }
   | { readonly type: 'lock-own-attacks' }
   | { readonly type: 'discard-hand'; readonly amount: number }
+  | { readonly type: 'hand-cost'; readonly amount: number; readonly canPass: boolean; readonly onSelect: readonly OfficialEffect[] }
   | { readonly type: 'look-pick'; readonly top: number; readonly kind?: 'unit'; readonly attr?: string }
   | { readonly type: 'search-deck'; readonly amount: number; readonly kind?: 'unit' | 'spell'; readonly attr?: string;
       readonly names?: readonly string[]; readonly evoStage?: number; readonly evoStageMin?: number;
@@ -93,6 +94,7 @@ type ChoiceFrame =
       readonly cards: readonly OfficialCardInstance[] }
   | { readonly kind: 'ice'; readonly seat: SeatId; readonly cards: readonly OfficialCardInstance[] }
   | { readonly kind: 'discard-hand'; readonly seat: SeatId; readonly cards: readonly OfficialCardInstance[]; readonly amount: number }
+  | { readonly kind: 'hand-cost'; readonly seat: SeatId; readonly cards: readonly OfficialCardInstance[]; readonly amount: number; readonly canPass: boolean; readonly sourceId: string; readonly onSelect: readonly OfficialEffect[] }
   | { readonly kind: 'look-pick'; readonly seat: SeatId; readonly cards: readonly OfficialCardInstance[]; readonly viewedCount: number }
   | { readonly kind: 'search-deck'; readonly seat: SeatId; readonly cards: readonly OfficialCardInstance[]; readonly amount: number }
 

@@ -32,7 +32,7 @@ const capabilities = Object.freeze({
   triggers: Object.freeze(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit'] as const satisfies readonly OfficialTrigger[]),
   effects: Object.freeze([
     'damage-unit', 'draw', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
-    'heal-core', 'shield-core', 'destroy-unit', 'bonus-core-attack', 'damage-all-enemies', 'pre-strike', 'shield-unit', 'shield-all-own', 'buff-unit', 'lock-field', 'lock-own-attacks', 'discard-hand', 'look-pick', 'search-deck',
+    'heal-core', 'shield-core', 'destroy-unit', 'bonus-core-attack', 'damage-all-enemies', 'pre-strike', 'shield-unit', 'shield-all-own', 'buff-unit', 'lock-field', 'lock-own-attacks', 'discard-hand', 'look-pick', 'search-deck', 'hand-cost',
   ] as const satisfies readonly OfficialEffect['type'][]),
 })
 
@@ -303,6 +303,10 @@ function executeEffect(
       frame(state).choice = { kind: 'look-pick', seat, cards: candidates, viewedCount: viewed.length }
       break
     }
+    case 'hand-cost':
+      frame(state).choice = { kind: 'hand-cost', seat, sourceId, cards: [...player.hand], amount: effect.amount,
+        canPass: effect.canPass, onSelect: effect.onSelect }
+      break
     case 'discard-hand':
       frame(state).choice = { kind: 'discard-hand', seat, cards: [...player.hand], amount: effect.amount }
       break
@@ -465,7 +469,7 @@ function applyChoice(context: RuleContext<OfficialMatchState>, chosenIds: readon
     return { state, events }
   }
 
-  if (choice.kind === 'discard-hand') {
+  if (choice.kind === 'discard-hand' || choice.kind === 'hand-cost') {
     for (const chosenId of chosenIds) {
       const index = player.hand.findIndex(card => card.id === chosenId)
       if (index < 0) throw new TypeError('Confirmed discard is no longer in hand')
@@ -473,6 +477,9 @@ function applyChoice(context: RuleContext<OfficialMatchState>, chosenIds: readon
       player.discard.push(card)
       events.push(visible('hand-discarded', { seat, card: { id: card.id, cardId: card.cardId } }))
     }
+    if (choice.kind === 'hand-cost') frame(state).queue.unshift(...choice.onSelect.map(effect => ({
+      type: 'effect' as const, seat, sourceId: choice.sourceId, targetId: null, effect,
+    })))
     return { state, events }
   }
 
@@ -528,16 +535,17 @@ const settlement: EffectProgram<OfficialMatchState, VisibleRuleEvent> = {
           candidates: current.cards.map(({ id, cardId }) => ({
             id, payload: { cardId, name: officialCard(snapshot, cardId).name },
           })),
-          count: current.kind === 'discard-hand' || current.kind === 'search-deck' ? current.amount : 1,
-          mode: 'result',
+          count: current.kind === 'discard-hand' || current.kind === 'hand-cost' || current.kind === 'search-deck' ? current.amount : 1,
+          mode: current.kind === 'hand-cost' ? 'condition' : 'result',
           ordered: false,
-          canPass: current.kind === 'response',
-          visibility: current.kind === 'response' || current.kind === 'discard-hand' || current.kind === 'look-pick' || current.kind === 'search-deck' ? 'owner' : 'public',
+          canPass: current.kind === 'response' || (current.kind === 'hand-cost' && current.canPass),
+          visibility: current.kind === 'response' || current.kind === 'discard-hand' || current.kind === 'hand-cost' || current.kind === 'look-pick' || current.kind === 'search-deck' ? 'owner' : 'public',
         }
       },
       apply: (context, answer) => applyChoice(context, answer.candidateIds),
       next: 'dispatch',
       pass: 'clear-choice',
+      unavailable: 'clear-choice',
       empty: 'clear-choice',
     },
     'clear-choice': {

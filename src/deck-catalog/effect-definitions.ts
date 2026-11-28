@@ -315,6 +315,11 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'play', steps: [{ type: 'buff-unit', target: 'own', attack: 2, health: 2 }],
   },
   {
+    cardId: 'initial:zhuqueyu', legacyName: '朱雀羽',
+    source: 'quote/临界·模块化·2D版.html:579 deathrattle',
+    trigger: 'death', steps: [{ type: 'hand-cost', amount: 1, canPass: true, onSelect: [{ type: 'draw', amount: 2 }] }],
+  },
+  {
     cardId: 'initial:yanwen', legacyName: '炎纹',
     source: 'quote/临界·模块化·2D版.html:562 effect',
     trigger: 'play', steps: [{ type: 'damage-unit', amount: 3, target: 'enemy' }, { type: 'draw', amount: 1 }],
@@ -357,9 +362,11 @@ export function validateInitialEffectAudits(audits: readonly EffectAudit[]): voi
     namesById.set(definition.cardId, definition.legacyName)
     idsByName.set(definition.legacyName, definition.cardId)
     if (!triggers.has(definition.trigger)) throw new TypeError(`Unknown trigger: ${definition.trigger}`)
-    for (const step of definition.steps) {
+    const verifyStep = (step: OfficialEffect): void => {
       if (!effects.has(step.type)) throw new TypeError(`Unimplemented effect: ${step.type}`)
+      if (step.type === 'hand-cost') step.onSelect.forEach(verifyStep)
     }
+    definition.steps.forEach(verifyStep)
   }
   const audited = new Set<string>()
   for (const audit of audits) {
