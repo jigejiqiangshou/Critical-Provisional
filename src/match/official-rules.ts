@@ -504,10 +504,8 @@ const settlement: EffectProgram<OfficialMatchState, VisibleRuleEvent> = {
     },
     'clear-choice': {
       kind: 'apply',
-      apply: ({ state, random }) => {
+      apply: ({ state }) => {
         const next = structuredClone(state)
-        const current = frame(next).choice
-        if (current?.kind === 'look-pick') shuffle(next.seats[current.seat].deck, random)
         frame(next).choice = null
         return { state: next }
       },
