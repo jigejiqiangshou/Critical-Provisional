@@ -232,6 +232,34 @@ describe('partial T045 definitions: core settlement samples', () => {
       expect(result.events.filter(event => event.type === 'rule-event' && event.name === 'core-damaged')).toHaveLength(hp === 1 ? 1 : 2)
     }
   })
+  it.each(['朱厌', '金乌'])('镇岳 cancels %s attack including its pre-strike or bonus', name => {
+    const entries = initialEffectDefinitions.filter(item => item.legacyName === name)
+    const trap = definition('镇岳')
+    const cards: Card[] = [
+      { id: entries[0].cardId, name, kind: 'unit', flagship: false,
+        data: { attack: 5, health: 4, effects: entries.map(entry => ({ trigger: entry.trigger, steps: entry.steps })) } },
+      { id: trap.cardId, name: '镇岳', kind: 'trap', flagship: false,
+        data: { effects: [{ trigger: trap.trigger, steps: trap.steps }] } },
+    ]
+    const release: Release = { id: 'partial', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] }
+    const a = createOfficialSeatState(), b = createOfficialSeatState()
+    a.ap = 1; a.board = [{ ...unit('attacker', entries[0].cardId), canAttack: true }]
+    b.facedown = [{ id: 'trap', cardId: trap.cardId }]; b.coreShield = 10
+    const state: OfficialMatchState = { seatOrder: ['A', 'B'], seats: { A: a, B: b }, turn: 2,
+      finale: null, battleMode: false, effect: null }
+    const snapshot = createOfficialSnapshot(release)
+    const waiting = officialRules.resolveAction({ state, snapshot, seat: 'A', random: () => 0,
+      action: { type: 'attack', attackerId: 'attacker', targetId: coreTargetId('B') } })
+    expect(waiting.kind).toBe('waiting')
+    if (waiting.kind !== 'waiting') throw new Error('expected response window')
+    const result = officialRules.resumeDecision({ state: waiting.state, snapshot, seat: 'B', random: () => 0,
+      decision: { id: 'decision', ...waiting.decision }, answer: { kind: 'select', candidateIds: ['trap'] } })
+    expect(result.kind).toBe('active')
+    if (result.kind !== 'active') throw new Error('expected settled action')
+    expect(result.state.seats.B.hp).toBe(50)
+    expect(result.state.seats.B.coreShield).toBe(10)
+    expect(result.events.filter(event => event.type === 'rule-event' && event.name === 'core-damaged')).toHaveLength(0)
+  })
   it('maps 离火 to five damage against an enemy unit', () => {
     expect(definition('离火')).toMatchObject({ trigger: 'play', steps: [{ type: 'damage-unit', amount: 5, target: 'enemy' }] })
   })
