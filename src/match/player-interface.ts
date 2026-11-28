@@ -1,8 +1,5 @@
-import type { EffectContinuation, EffectDecisionEvent } from './effects'
-import type { OfficialCore, OfficialRuleEvent } from './official-rules'
-import { coreTargetId, officialCard } from './official-state'
-import type { OfficialCardInstance, OfficialMatchState } from './official-state'
-import type { Match, MatchCandidate } from './core'
+import type { EffectDecisionEvent } from './effects'
+import type { Match } from './core'
 import {
   negotiatePlayerProtocol, parsePlayerMessage, parseProtocolRange, PLAYER_PROTOCOL_V1,
 } from './player-protocol'
@@ -10,7 +7,7 @@ import type {
   CommandReceipt, CommandReceiptKey, CommandRequest, CommandRequestSummary, JsonValue, PlayerAction,
   PlayerEvent, ProtocolRange, ProtocolVersion, QueryRequest, SeatId, ServerMessage, SessionId, ViewBasis, ViewScope,
 } from './player-protocol'
-import type { CardPoolSnapshot, DecisionChoices, MatchOutcome } from './rules'
+import type { DecisionChoices, MatchOutcome } from './rules'
 
 type Awaitable<T> = T | Promise<T>
 
@@ -127,109 +124,6 @@ export interface PlayerCore<State, History = unknown> {
   adjudicate(input: AdjudicationInput<State>): Awaitable<CoreAdjudication<State, History>>
   // Advance a stateful core only after durable confirmation.
   confirm?(accepted: AcceptedAdjudication<State, History>): void
-}
-
-export type OfficialMatch = Match<OfficialMatchState, EffectContinuation>
-
-export interface OfficialHistory {
-  readonly events: readonly OfficialRuleEvent[]
-  readonly randomInputs: readonly number[]
-}
-
-/** M03 and replay use the same authorized public and private face projection. */
-export function projectOfficialMatch(match: OfficialMatch, pool: CardPoolSnapshot, scope: ViewScope): JsonValue {
-  const { state, progress } = match
-  const viewer = scope.type === 'seat' ? scope.seatId : null
-  const face = ({ id, cardId }: OfficialCardInstance) => {
-    const { name, kind, flagship, data } = officialCard(pool, cardId)
-    return { id, cardId, name, kind, flagship, data }
-  }
-  const players = state.seatOrder.map((seat): JsonValue => {
-    const side = state.seats[seat]
-    const visibleCards = (cards: readonly OfficialCardInstance[]) => [...cards]
-      .sort((a, b) => a.id < b.id ? -1 : Number(a.id > b.id)).map(face)
-    return {
-      seat, coreId: coreTargetId(seat), hp: side.hp, ap: side.ap, fatigue: side.fatigue,
-      coreShield: side.coreShield, temporaryHealth: side.temporaryHealth,
-      handCount: side.hand.length, deckCount: side.deck.length, facedownCount: side.facedown.length,
-      ice: visibleCards(side.ice), iceEnabled: side.iceEnabled, discard: visibleCards(side.discard),
-      board: side.board.map(unit => ({ ...face(unit), hp: unit.hp, canAttack: unit.canAttack,
-        attacked: unit.attacked, skillUsed: unit.skillUsed, skillLock: unit.skillLock,
-        attackBonus: unit.attackBonus, shield: unit.shield, stealth: unit.stealth, stunned: unit.stunned })),
-      ...(viewer === seat ? {
-        hand: side.hand.map(face), facedown: side.facedown.map(face), mulliganUsed: side.mulliganUsed,
-      } : {}),
-    }
-  })
-  const pending = progress.kind === 'waiting' ? progress.decision : null
-  const decision = pending && (pending.choices.visibility === 'public' || viewer === pending.owner) ? {
-    id: pending.id, owner: pending.owner, choices: projectEffectChoices(pending.choices),
-  } : null
-  const activeSeat = progress.kind === 'active' ? progress.activeSeat :
-    progress.kind === 'waiting' ? progress.decision.continuation.activeSeat : null
-  return {
-    turn: state.turn, finale: state.finale, battleMode: state.battleMode, players, activeSeat, decision,
-    waiting: progress.kind === 'waiting',
-    outcome: progress.kind === 'ended' ? { winner: progress.outcome.winner, reason: progress.outcome.reason } : null,
-  }
-}
-
-function routeOfficialEvent(event: OfficialRuleEvent): RoutedPlayerEvent[] {
-  if (event.type === 'effect-decision') {
-    const routed = routeEffectDecisionEvent(event)
-    if (event.stage === 'offered' && event.choices.visibility === 'owner') {
-      return [
-        { visibility: { type: 'public' }, event: { type: 'decision', payload: { stage: 'waiting' } } },
-        routed,
-      ]
-    }
-    return [routed]
-  }
-  return [{
-    visibility: event.privateTo === null ? { type: 'public' } : { type: 'seat', seatId: event.privateTo },
-    event: { type: 'action', payload: { name: event.name, data: event.data } },
-  }]
-}
-
-/** Adapt M02 player intent to the sole authoritative MatchCore. */
-export function createOfficialPlayerCore(core: OfficialCore): PlayerCore<OfficialMatch, OfficialHistory> {
-  const candidates = new WeakMap<
-    AcceptedAdjudication<OfficialMatch, OfficialHistory>,
-    MatchCandidate<OfficialMatchState, EffectContinuation, OfficialRuleEvent>
-  >()
-  return {
-    project(current, scope) {
-      return projectOfficialMatch(current.state, core.readSnapshot(), scope)
-    },
-    adjudicate({ current, seatId: seat, expectedRevision, action }) {
-      const confirmed = core.read()
-      if (confirmed.revision !== current.revision || confirmed.versionHash !== current.versionHash) {
-        throw new TypeError('Player receipt state and official core are not aligned')
-      }
-      const candidate = action.type === 'respond' ? core.propose({
-        kind: 'decision', seat, expectedRevision, decisionId: action.decisionId,
-        answer: action.choice.type === 'pass' ? { kind: 'pass' } : {
-          kind: 'select', candidateIds: action.choice.targetIds,
-        },
-      }) : core.propose({ kind: 'action', seat, expectedRevision, action })
-      if (candidate.kind === 'rejected') return { status: 'rejected', reason: candidate.reason }
-      const accepted: AcceptedAdjudication<OfficialMatch, OfficialHistory> = {
-        status: 'accepted',
-        next: toConfirmedMatch(candidate.match),
-        result: { confirmed: true },
-        events: candidate.events.flatMap(routeOfficialEvent),
-        history: { events: candidate.events, randomInputs: candidate.randomInputs },
-      }
-      candidates.set(accepted, candidate)
-      return accepted
-    },
-    confirm(accepted) {
-      const candidate = candidates.get(accepted)
-      if (!candidate) throw new TypeError('Unknown official core proposal')
-      core.confirm(candidate)
-      candidates.delete(accepted)
-    },
-  }
 }
 
 export interface CommandConfirmation<State, History = unknown> {
