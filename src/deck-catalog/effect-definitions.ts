@@ -285,6 +285,36 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'skill', steps: [{ type: 'damage-unit', amount: 5, target: 'enemy' }],
   },
   {
+    cardId: 'initial:lienyanbenxi', legacyName: '烈焰奔袭',
+    source: 'quote/临界·模块化·2D版.html:565 effect',
+    trigger: 'play', steps: [{ type: 'buff-unit', target: 'own', attack: 1, health: 0, rush: true, attr: '朱雀' }],
+  },
+  {
+    cardId: 'initial:mengzhang', legacyName: '青龙·孟章',
+    source: 'quote/临界·模块化·2D版.html:632 skill.effect',
+    trigger: 'skill', steps: [{ type: 'buff-unit', target: 'own', attack: 2, health: 2 }],
+  },
+  {
+    cardId: 'initial:jumang', legacyName: '句芒',
+    source: 'quote/临界·模块化·2D版.html:633 skill.effect',
+    trigger: 'skill', steps: [{ type: 'lock-field', attr: '青龙' }, { type: 'buff-unit', target: 'own', attack: 2, health: 2 }],
+  },
+  {
+    cardId: 'initial:mujia', legacyName: '木甲',
+    source: 'quote/临界·模块化·2D版.html:635 effect',
+    trigger: 'play', steps: [{ type: 'buff-unit', target: 'own', attack: 3, health: 3 }],
+  },
+  {
+    cardId: 'initial:chunyu', legacyName: '春雨',
+    source: 'quote/临界·模块化·2D版.html:637 effect',
+    trigger: 'play', steps: [{ type: 'buff-unit', target: 'own', attack: 1, health: 1 }, { type: 'shield-unit', target: 'own', amount: 1 }],
+  },
+  {
+    cardId: 'initial:qingcui', legacyName: '青翠',
+    source: 'quote/临界·模块化·2D版.html:638 effect',
+    trigger: 'play', steps: [{ type: 'buff-unit', target: 'own', attack: 2, health: 2 }],
+  },
+  {
     cardId: 'initial:yanwen', legacyName: '炎纹',
     source: 'quote/临界·模块化·2D版.html:562 effect',
     trigger: 'play', steps: [{ type: 'damage-unit', amount: 3, target: 'enemy' }, { type: 'draw', amount: 1 }],
