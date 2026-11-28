@@ -32,7 +32,7 @@ const capabilities = Object.freeze({
   triggers: Object.freeze(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit'] as const satisfies readonly OfficialTrigger[]),
   effects: Object.freeze([
     'damage-unit', 'draw', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
-    'heal-core', 'shield-core', 'destroy-unit', 'bonus-core-attack', 'damage-all-enemies', 'pre-strike', 'shield-unit', 'shield-all-own', 'buff-unit', 'lock-field', 'lock-own-attacks', 'discard-hand', 'look-pick', 'search-deck', 'hand-cost',
+    'heal-core', 'shield-core', 'destroy-unit', 'bonus-core-attack', 'damage-all-enemies', 'pre-strike', 'shield-unit', 'shield-all-own', 'buff-unit', 'lock-field', 'lock-own-attacks', 'discard-hand', 'look-pick', 'search-deck', 'hand-cost', 'pay-life',
   ] as const satisfies readonly OfficialEffect['type'][]),
 })
 
@@ -198,7 +198,11 @@ function destroyUnit(
   const card = { id: unit.id, cardId: unit.cardId }
   player.discard.push(card)
   events.push(visible('unit-destroyed', { seat, card }))
-  frame(state).queue.unshift(...effectTasks(snapshot, seat, card, 'death', null), { type: 'death-bonuses', seat })
+  const deathTasks = effectTasks(snapshot, seat, card, 'death', null)
+  const immediate = deathTasks.filter(task => task.type !== 'effect' || task.effect.type !== 'hand-cost')
+  const deferred = deathTasks.filter(task => task.type === 'effect' && task.effect.type === 'hand-cost')
+  frame(state).queue.unshift(...immediate, { type: 'death-bonuses', seat })
+  frame(state).deferredDeath.push(...deferred)
 }
 
 function damageUnit(
@@ -301,6 +305,13 @@ function executeEffect(
       })
       events.push(visible('cards-looked', { seat, cards: viewed.map(card => ({ id: card.id, cardId: card.cardId })) }, seat))
       frame(state).choice = { kind: 'look-pick', seat, cards: candidates, viewedCount: viewed.length }
+      break
+    }
+    case 'pay-life': {
+      const amount = effect.amount === 'half' ? Math.min(player.hp - 1, Math.max(1, Math.floor(player.hp / 2))) : effect.amount
+      if (amount < 0 || player.hp <= amount) throw new TypeError('Life cost is not payable')
+      player.hp -= amount
+      events.push(visible('life-paid', { seat, amount, hp: player.hp }))
       break
     }
     case 'hand-cost':
@@ -521,10 +532,22 @@ const settlement: EffectProgram<OfficialMatchState, VisibleRuleEvent> = {
       kind: 'branch',
       next: ({ state }) => {
         if (state.effect?.choice) return 'choice'
-        return state.effect?.queue.length ? 'task' : 'clear'
+        if (state.effect?.queue.length) return 'task'
+        return state.effect?.deferredDeath.length ? 'flush-deferred' : 'clear'
       },
     },
     task: { kind: 'apply', apply: performTask, next: 'dispatch' },
+    'flush-deferred': {
+      kind: 'apply',
+      apply: ({ state }) => {
+        const next = structuredClone(state)
+        const current = frame(next)
+        current.queue.push(...current.deferredDeath)
+        current.deferredDeath = []
+        return { state: next }
+      },
+      next: 'dispatch',
+    },
     choice: {
       kind: 'choose',
       choices: ({ state, snapshot }) => {
@@ -567,7 +590,7 @@ function resolveEffects(
   context: RuleContext<OfficialMatchState>, state: OfficialMatchState, queue: RuleTask[],
   events: readonly VisibleRuleEvent[], activeSeat = context.seat,
 ): OfficialResolution {
-  state.effect = { queue, cancelAttack: false, choice: null }
+  state.effect = { queue, deferredDeath: [], cancelAttack: false, choice: null }
   const result = effects.start({ ...context, state }, 'settlement', activeSeat)
   if (result.kind === 'rejected') return result
   const allEvents = [...events, ...result.events]
@@ -607,6 +630,8 @@ function play(
   if (card.kind !== 'unit' && player.fieldLock && data.attr === player.fieldLock) return reject('field-locked')
   const targets = action.targets ?? []
   const trigger = card.kind === 'unit' ? 'enter' : 'play'
+  const costs = effectsFor(snapshot, instance, trigger).filter(effect => effect.type === 'pay-life')
+  if (costs.some(cost => cost.amount !== 'half' && player.hp <= cost.amount)) return reject('life-cost-unavailable')
   const events: VisibleRuleEvent[] = []
   let targetId: string | null = targets[0] ?? null
   if (data.oncePerTurn && player.usedCardIds.includes(card.id)) return reject('card-already-used')
@@ -762,6 +787,8 @@ export const officialRules: Ruleset<OfficialMatchState, PlayerAction, EffectCont
         const skill = sourceData.skill
         if (!skill || skill.id !== action.skillId) return reject('invalid-skill')
         if (skill.oncePerTurn && source.skillUsed) return reject('skill-already-used')
+        const costs = effectsFor(snapshot, source, 'skill').filter(effect => effect.type === 'pay-life')
+        if (costs.some(cost => cost.amount !== 'half' && player.hp <= cost.amount)) return reject('life-cost-unavailable')
         if (!validEffectTarget(state, snapshot, seat, source, 'skill', action.targets ?? [])) return reject('invalid-target')
         source.skillUsed = true
         if (skill.lock) source.skillLock = true
