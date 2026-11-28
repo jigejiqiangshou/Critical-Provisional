@@ -21,7 +21,7 @@ Three.js 为 603,445 字节，JPEG 数据 URL 共 10,313,408 字节。生成的 
 ```sh
 npm ci
 node scripts/build-frontend-spike.ts
-python -m http.server 43104 --bind 127.0.0.1 --directory .tools/frontend-spike
+python3 -m http.server 43104 --bind 127.0.0.1 --directory .tools/frontend-spike
 ```
 
 从另一个终端核对官方样本为 `10932804` 字节，静态源站的包入口返回 `404`。

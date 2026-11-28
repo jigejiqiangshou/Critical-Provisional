@@ -4,6 +4,8 @@
 
 ## 环境与执行顺序
 
+依赖清单和 Docker 沙箱的构建、启动与复验命令见[环境依赖与 Docker 复验](../../ENVIRONMENT.md)。
+
 1. 云端使用 Node.js 24 LTS、锁定依赖及可运行 WebGL 2 的桌面 Chromium。用 `npm ci` 准备依赖，使用 `npm run dev` 开发，运行 `npm run test`、`npm run test:baseline`、`npm run test:e2e` 复验，用 `npm run build` 生成站点与前端包。桌面设备验收通过 HTTPS 静态构建预览安装 PWA。US7 使用下文的云端自主验收入口单独取证。
 2. 云端完成业务闭环后，交接构建提交、锁文件、Node 与 Chromium 完整版本、图形后端、HTTPS 及受控入口配置、复验命令、夹具和证据位置。本地 Codex 克隆同一提交，以锁文件安装依赖并复跑桌面场景，记录本地环境差异。
 3. 本地通过手机可访问的 HTTPS 静态预览安装同一构建，在已安装的 Android Chrome PWA 中集中执行 T048、T049。使用 Chrome 远程调试和 ADB 采集界面与日志。独立离线场景先断开手机网络及调试连接，并按场景关闭应用和另一台设备，再从安装图标冷启动。冷启动结果在设备上观察，恢复调试连接后补取记录。
