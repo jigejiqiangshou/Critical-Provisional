@@ -14,6 +14,7 @@ export type OfficialEffect =
   | { readonly type: 'lock-field'; readonly attr: string }
   | { readonly type: 'lock-own-attacks' }
   | { readonly type: 'discard-hand'; readonly amount: number }
+  | { readonly type: 'recover-discard'; readonly amount: number; readonly kind?: 'spell' }
   | { readonly type: 'hand-cost'; readonly amount: number; readonly canPass: boolean; readonly onSelect: readonly OfficialEffect[] }
   | { readonly type: 'pay-life'; readonly amount: number | 'half' }
   | { readonly type: 'look-pick'; readonly top: number; readonly kind?: 'unit'; readonly attr?: string }
@@ -98,6 +99,7 @@ type ChoiceFrame =
   | { readonly kind: 'hand-cost'; readonly seat: SeatId; readonly cards: readonly OfficialCardInstance[]; readonly amount: number; readonly canPass: boolean; readonly sourceId: string; readonly targetId: string | null; readonly onSelect: readonly OfficialEffect[] }
   | { readonly kind: 'look-pick'; readonly seat: SeatId; readonly cards: readonly OfficialCardInstance[]; readonly viewedCount: number }
   | { readonly kind: 'search-deck'; readonly seat: SeatId; readonly cards: readonly OfficialCardInstance[]; readonly amount: number }
+  | { readonly kind: 'recover-discard'; readonly seat: SeatId; readonly cards: readonly OfficialCardInstance[]; readonly amount: number }
 
 interface EffectFrame {
   queue: RuleTask[]

@@ -32,7 +32,7 @@ const capabilities = Object.freeze({
   triggers: Object.freeze(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit'] as const satisfies readonly OfficialTrigger[]),
   effects: Object.freeze([
     'damage-unit', 'draw', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
-    'heal-core', 'shield-core', 'destroy-unit', 'bonus-core-attack', 'damage-all-enemies', 'pre-strike', 'shield-unit', 'shield-all-own', 'buff-unit', 'lock-field', 'lock-own-attacks', 'discard-hand', 'look-pick', 'search-deck', 'hand-cost', 'pay-life',
+    'heal-core', 'shield-core', 'destroy-unit', 'bonus-core-attack', 'damage-all-enemies', 'pre-strike', 'shield-unit', 'shield-all-own', 'buff-unit', 'lock-field', 'lock-own-attacks', 'discard-hand', 'look-pick', 'search-deck', 'hand-cost', 'pay-life', 'recover-discard',
   ] as const satisfies readonly OfficialEffect['type'][]),
 })
 
@@ -283,6 +283,11 @@ function executeEffect(
       })))
       break
     }
+    case 'recover-discard': {
+      const cards = player.discard.filter(card => !effect.kind || officialCard(snapshot, card.cardId).kind === effect.kind)
+      frame(state).choice = { kind: 'recover-discard', seat, cards, amount: effect.amount }
+      break
+    }
     case 'search-deck': {
       const cards = player.deck.filter(card => {
         const candidate = officialCard(snapshot, card.cardId)
@@ -459,6 +464,19 @@ function applyChoice(context: RuleContext<OfficialMatchState>, chosenIds: readon
   const events: VisibleRuleEvent[] = []
   frame(state).choice = null
 
+  if (choice.kind === 'recover-discard') {
+    const cards: { id: string; cardId: string }[] = []
+    for (const chosenId of chosenIds) {
+      const index = player.discard.findIndex(card => card.id === chosenId)
+      if (index < 0) throw new TypeError('Confirmed recovered card is missing from discard')
+      const [card] = player.discard.splice(index, 1)
+      player.hand.push(card)
+      cards.push({ id: card.id, cardId: card.cardId })
+    }
+    events.push(visible('cards-recovered', { seat, cards }))
+    return { state, events }
+  }
+
   if (choice.kind === 'search-deck') {
     const cards: { id: string; cardId: string }[] = []
     for (const chosenId of chosenIds) {
@@ -559,7 +577,7 @@ const settlement: EffectProgram<OfficialMatchState, VisibleRuleEvent> = {
           candidates: current.cards.map(({ id, cardId }) => ({
             id, payload: { cardId, name: officialCard(snapshot, cardId).name },
           })),
-          count: current.kind === 'discard-hand' || current.kind === 'hand-cost' || current.kind === 'search-deck' ? current.amount : 1,
+          count: current.kind === 'discard-hand' || current.kind === 'hand-cost' || current.kind === 'search-deck' || current.kind === 'recover-discard' ? current.amount : 1,
           mode: current.kind === 'hand-cost' ? 'condition' : 'result',
           ordered: false,
           canPass: current.kind === 'response' || (current.kind === 'hand-cost' && current.canPass),

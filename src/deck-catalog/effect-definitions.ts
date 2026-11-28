@@ -350,6 +350,22 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
       onSelect: [{ type: 'look-pick', top: 8, kind: 'unit', attr: '白虎' }] }],
   },
   {
+    cardId: 'initial:suyuan', legacyName: '溯源',
+    source: 'quote/临界·模块化·2D版.html:657 effect',
+    trigger: 'play', steps: [{ type: 'recover-discard', amount: 1 }],
+  },
+  {
+    cardId: 'initial:duihuan', legacyName: '兑换',
+    source: 'quote/临界·模块化·2D版.html:658 effect',
+    trigger: 'play', steps: [{ type: 'recover-discard', amount: 1, kind: 'spell' }],
+  },
+  {
+    cardId: 'initial:huiliu', legacyName: '回流',
+    source: 'quote/临界·模块化·2D版.html:604 effect',
+    trigger: 'play', steps: [{ type: 'lock-own-attacks' }, { type: 'hand-cost', amount: 2, canPass: false,
+      onSelect: [{ type: 'recover-discard', amount: 1 }] }],
+  },
+  {
     cardId: 'initial:yanwen', legacyName: '炎纹',
     source: 'quote/临界·模块化·2D版.html:562 effect',
     trigger: 'play', steps: [{ type: 'damage-unit', amount: 3, target: 'enemy' }, { type: 'draw', amount: 1 }],
