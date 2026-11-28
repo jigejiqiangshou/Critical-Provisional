@@ -15,11 +15,12 @@ it.each(['焰羽', '星火', '整备'])('%s chooses within the private top cards
       data: { attack: 1, health: 1, effects: [{ trigger: definition.trigger, steps: definition.steps }] } },
     { id: 'unit', name: 'unit', kind: 'unit', flagship: false, data: { health: 1 } },
     { id: 'spell', name: 'spell', kind: 'spell', flagship: false, data: {} },
+    { id: 'ace', name: 'ace', kind: 'ace', flagship: true, data: {} },
   ]
   const release: Release = { id: 'look-test', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] }
   const snapshot = createOfficialSnapshot(release)
   const a = createOfficialSeatState(Array.from({ length: step.top + 1 }, (_, i) => ({
-    id: `deck-${i}`, cardId: i === 1 ? 'spell' : 'unit',
+    id: `deck-${i}`, cardId: i === 1 ? 'spell' : i === 2 ? 'ace' : 'unit',
   })))
   a.hand = [{ id: 'source', cardId: definition.cardId }]
   const state: OfficialMatchState = { seatOrder: ['A', 'B'], seats: { A: a, B: createOfficialSeatState() },
@@ -34,6 +35,7 @@ it.each(['焰羽', '星火', '整备'])('%s chooses within the private top cards
     const looked = offer.events.find(event => event.type === 'rule-event' && event.name === 'cards-looked')
     expect(looked).toMatchObject({ privateTo: 'A' })
     expect(JSON.stringify(looked)).toContain('deck-1')
+    expect(JSON.stringify(looked)).toContain('deck-2')
     core.confirm(offer)
     const pending = core.read()
     if (pending.progress.kind !== 'waiting') throw new Error('expected choice')
@@ -41,6 +43,7 @@ it.each(['焰羽', '星火', '整备'])('%s chooses within the private top cards
     expect(choices.visibility).toBe('owner')
     expect(choices.canPass).toBe(false)
     expect(choices.candidates.map(candidate => candidate.id)).not.toContain(`deck-${step.top}`)
+    expect(choices.candidates.map(candidate => candidate.id)).not.toContain('deck-2')
     if (step.kind === 'unit') expect(choices.candidates.map(candidate => candidate.id)).not.toContain('deck-1')
     expect(JSON.stringify(projectOfficialMatch(pending, snapshot, { type: 'spectator' }))).not.toContain('deck-0')
     const selection = core.propose({ kind: 'decision', seat: 'A', expectedRevision: 1,
