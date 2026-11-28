@@ -32,7 +32,7 @@ const capabilities = Object.freeze({
   triggers: Object.freeze(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit'] as const satisfies readonly OfficialTrigger[]),
   effects: Object.freeze([
     'damage-unit', 'draw', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
-    'heal-core', 'shield-core', 'destroy-unit', 'bonus-core-attack', 'damage-all-enemies', 'pre-strike', 'shield-unit', 'shield-all-own', 'lock-field', 'lock-own-attacks', 'discard-hand',
+    'heal-core', 'shield-core', 'destroy-unit', 'bonus-core-attack', 'damage-all-enemies', 'pre-strike', 'shield-unit', 'shield-all-own', 'lock-field', 'lock-own-attacks', 'discard-hand', 'look-pick',
   ] as const satisfies readonly OfficialEffect['type'][]),
 })
 
@@ -278,6 +278,16 @@ function executeEffect(
       })))
       break
     }
+    case 'look-pick': {
+      const viewed = player.deck.slice(0, effect.top)
+      const candidates = viewed.filter(card => {
+        const data = officialCard(snapshot, card.cardId)
+        return (!effect.kind || data.kind === effect.kind) && (!effect.attr || officialCardData(data).attr === effect.attr)
+      })
+      events.push(visible('cards-looked', { seat, cards: viewed.map(card => ({ id: card.id, cardId: card.cardId })) }, seat))
+      frame(state).choice = { kind: 'look-pick', seat, cards: candidates }
+      break
+    }
     case 'discard-hand':
       frame(state).choice = { kind: 'discard-hand', seat, cards: [...player.hand], amount: effect.amount }
       break
@@ -408,6 +418,15 @@ function applyChoice(context: RuleContext<OfficialMatchState>, chosenIds: readon
   const events: VisibleRuleEvent[] = []
   frame(state).choice = null
 
+  if (choice.kind === 'look-pick') {
+    const index = player.deck.findIndex(card => card.id === picked.id)
+    if (index < 0) throw new TypeError('Confirmed looked card is missing from deck')
+    player.hand.push(...player.deck.splice(index, 1))
+    shuffle(player.deck, context.random)
+    events.push(visible('look-picked', { seat, card: { id: picked.id, cardId: picked.cardId } }, seat))
+    return { state, events }
+  }
+
   if (choice.kind === 'discard-hand') {
     for (const chosenId of chosenIds) {
       const index = player.hand.findIndex(card => card.id === chosenId)
@@ -475,7 +494,7 @@ const settlement: EffectProgram<OfficialMatchState, VisibleRuleEvent> = {
           mode: 'result',
           ordered: false,
           canPass: current.kind === 'response',
-          visibility: current.kind === 'response' || current.kind === 'discard-hand' ? 'owner' : 'public',
+          visibility: current.kind === 'response' || current.kind === 'discard-hand' || current.kind === 'look-pick' ? 'owner' : 'public',
         }
       },
       apply: (context, answer) => applyChoice(context, answer.candidateIds),
@@ -485,8 +504,10 @@ const settlement: EffectProgram<OfficialMatchState, VisibleRuleEvent> = {
     },
     'clear-choice': {
       kind: 'apply',
-      apply: ({ state }) => {
+      apply: ({ state, random }) => {
         const next = structuredClone(state)
+        const current = frame(next).choice
+        if (current?.kind === 'look-pick') shuffle(next.seats[current.seat].deck, random)
         frame(next).choice = null
         return { state: next }
       },
