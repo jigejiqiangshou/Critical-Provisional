@@ -131,6 +131,11 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'attack-core', steps: [{ type: 'cancel-attack' }],
   },
   {
+    cardId: 'initial:cangfeng', legacyName: '藏锋',
+    source: 'quote/临界·模块化·2D版.html:663 trap.effect',
+    trigger: 'attack-unit', steps: [{ type: 'cancel-attack' }],
+  },
+  {
     cardId: 'initial:tanzhu', legacyName: '探珠',
     source: 'quote/临界·模块化·2D版.html:697 skill.effect',
     trigger: 'skill', steps: [{ type: 'ice-draw-pick', amount: 3 }],
