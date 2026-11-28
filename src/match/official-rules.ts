@@ -32,7 +32,7 @@ const capabilities = Object.freeze({
   triggers: Object.freeze(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit'] as const satisfies readonly OfficialTrigger[]),
   effects: Object.freeze([
     'damage-unit', 'draw', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
-    'heal-core', 'shield-core', 'destroy-unit', 'bonus-core-attack', 'damage-all-enemies', 'pre-strike', 'shield-unit', 'shield-all-own', 'lock-field', 'lock-own-attacks', 'discard-hand', 'look-pick',
+    'heal-core', 'shield-core', 'destroy-unit', 'bonus-core-attack', 'damage-all-enemies', 'pre-strike', 'shield-unit', 'shield-all-own', 'lock-field', 'lock-own-attacks', 'discard-hand', 'look-pick', 'search-deck',
   ] as const satisfies readonly OfficialEffect['type'][]),
 })
 
@@ -278,6 +278,21 @@ function executeEffect(
       })))
       break
     }
+    case 'search-deck': {
+      const cards = player.deck.filter(card => {
+        const candidate = officialCard(snapshot, card.cardId)
+        const data = officialCardData(candidate)
+        return candidate.kind !== 'ace' && (!effect.kind || candidate.kind === effect.kind) &&
+          (!effect.attr || data.attr === effect.attr) && (!effect.names || effect.names.includes(candidate.name)) &&
+          (effect.evoStage === undefined || data.evoStage === effect.evoStage) &&
+          (effect.evoStageMin === undefined || (data.evoStage ?? -1) >= effect.evoStageMin) &&
+          (effect.attackMin === undefined || (candidate.kind === 'unit' && (data.attack ?? -1) >= effect.attackMin)) &&
+          (effect.healthMin === undefined || (candidate.kind === 'unit' && (data.health ?? -1) >= effect.healthMin)) &&
+          (!effect.keyword || data.keywords?.includes(effect.keyword))
+      })
+      frame(state).choice = { kind: 'search-deck', seat, cards, amount: effect.amount }
+      break
+    }
     case 'look-pick': {
       const viewed = player.deck.slice(0, effect.top)
       const candidates = viewed.filter(card => {
@@ -418,6 +433,19 @@ function applyChoice(context: RuleContext<OfficialMatchState>, chosenIds: readon
   const events: VisibleRuleEvent[] = []
   frame(state).choice = null
 
+  if (choice.kind === 'search-deck') {
+    const cards: { id: string; cardId: string }[] = []
+    for (const chosenId of chosenIds) {
+      const index = player.deck.findIndex(card => card.id === chosenId)
+      if (index < 0) throw new TypeError('Confirmed searched card is missing from deck')
+      const [card] = player.deck.splice(index, 1)
+      player.hand.push(card)
+      cards.push({ id: card.id, cardId: card.cardId })
+    }
+    events.push(visible('cards-searched', { seat, cards }, seat))
+    return { state, events }
+  }
+
   if (choice.kind === 'look-pick') {
     const index = player.deck.findIndex(card => card.id === picked.id)
     if (index < 0) throw new TypeError('Confirmed looked card is missing from deck')
@@ -490,11 +518,11 @@ const settlement: EffectProgram<OfficialMatchState, VisibleRuleEvent> = {
           candidates: current.cards.map(({ id, cardId }) => ({
             id, payload: { cardId, name: officialCard(snapshot, cardId).name },
           })),
-          count: current.kind === 'discard-hand' ? current.amount : 1,
+          count: current.kind === 'discard-hand' || current.kind === 'search-deck' ? current.amount : 1,
           mode: 'result',
           ordered: false,
           canPass: current.kind === 'response',
-          visibility: current.kind === 'response' || current.kind === 'discard-hand' || current.kind === 'look-pick' ? 'owner' : 'public',
+          visibility: current.kind === 'response' || current.kind === 'discard-hand' || current.kind === 'look-pick' || current.kind === 'search-deck' ? 'owner' : 'public',
         }
       },
       apply: (context, answer) => applyChoice(context, answer.candidateIds),
