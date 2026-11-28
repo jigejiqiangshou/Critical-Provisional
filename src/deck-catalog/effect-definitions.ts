@@ -175,6 +175,21 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'skill', steps: [{ type: 'draw', amount: 1 }],
   },
   {
+    cardId: 'initial:yanyu', legacyName: '焰羽',
+    source: 'quote/临界·模块化·2D版.html:561 enter',
+    trigger: 'enter', steps: [{ type: 'look-pick', top: 5, kind: 'unit' }],
+  },
+  {
+    cardId: 'initial:xinghuo', legacyName: '星火',
+    source: 'quote/临界·模块化·2D版.html:648 effect',
+    trigger: 'play', steps: [{ type: 'look-pick', top: 3 }],
+  },
+  {
+    cardId: 'initial:zhengbei', legacyName: '整备',
+    source: 'quote/临界·模块化·2D版.html:650 effect',
+    trigger: 'play', steps: [{ type: 'look-pick', top: 8, kind: 'unit' }],
+  },
+  {
     cardId: 'initial:yanwen', legacyName: '炎纹',
     source: 'quote/临界·模块化·2D版.html:562 effect',
     trigger: 'play', steps: [{ type: 'damage-unit', amount: 3, target: 'enemy' }, { type: 'draw', amount: 1 }],
