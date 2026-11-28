@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { initialEffectDefinitions } from '../../src/deck-catalog/effect-definitions'
-import { createOfficialSeatState, createOfficialSnapshot, officialRules, OFFICIAL_RULES_VERSION } from '../../src/match/rules'
+import { coreTargetId, createOfficialSeatState, createOfficialSnapshot, officialRules, OFFICIAL_RULES_VERSION } from '../../src/match/rules'
 import type { OfficialMatchState, OfficialUnit } from '../../src/match/rules'
 import type { Card, Release } from '../../src/deck-catalog/catalog'
 
@@ -121,6 +121,38 @@ describe('partial T045 definitions: core settlement samples', () => {
     const events = result.events.flatMap(event => event.type === 'rule-event' ? [event.name] : [])
     expect(events.indexOf('unit-destroyed')).toBeLessThan(events.indexOf('draw'))
   })
+  it.each([['金乌', 3, 2], ['三足金乌', 5, 2], ['天狼', 4, 1]] as const)(
+    '%s applies its bonus to core attacks only and shields absorb it', (name, attack, bonus) => {
+      const entry = definition(name)
+      const attacker: Card = { id: entry.cardId, name, kind: 'unit', flagship: false,
+        data: { attack, health: 5, effects: [{ trigger: entry.trigger, steps: entry.steps }] } }
+      const defender: Card = { id: 'defender', name: 'defender', kind: 'unit', flagship: false,
+        data: { attack: 1, health: 20 } }
+      const release: Release = { id: 'partial', rulesVersion: OFFICIAL_RULES_VERSION, cards: [attacker, defender], presets: [] }
+      const makeState = () => {
+        const a = createOfficialSeatState(), b = createOfficialSeatState()
+        a.ap = 1
+        a.board = [{ ...unit('attacker', entry.cardId), hp: 5, canAttack: true }]
+        b.coreShield = 2
+        return { seatOrder: ['A', 'B'], seats: { A: a, B: b }, turn: 2, finale: null,
+          battleMode: false, effect: null } satisfies OfficialMatchState
+      }
+      const state = makeState()
+      const core = officialRules.resolveAction({ state, snapshot: createOfficialSnapshot(release), seat: 'A',
+        random: () => 0, action: { type: 'attack', attackerId: 'attacker', targetId: coreTargetId('B') } })
+      expect(core.kind).toBe('active')
+      if (core.kind !== 'active') throw new Error('expected settled action')
+      expect(core.state.seats.B.hp).toBe(50 - attack - bonus + 2)
+      expect(core.state.seats.B.coreShield).toBe(0)
+      const versus = makeState()
+      versus.seats.B.board = [{ ...unit('target', defender.id), hp: 20 }]
+      const target = officialRules.resolveAction({ state: versus, snapshot: createOfficialSnapshot(release), seat: 'A',
+        random: () => 0, action: { type: 'attack', attackerId: 'attacker', targetId: 'target' } })
+      expect(target.kind).toBe('active')
+      if (target.kind !== 'active') throw new Error('expected settled action')
+      expect(target.state.seats.B.board[0].hp).toBe(20 - attack)
+    },
+  )
   it('maps 离火 to five damage against an enemy unit', () => {
     expect(definition('离火')).toMatchObject({ trigger: 'play', steps: [{ type: 'damage-unit', amount: 5, target: 'enemy' }] })
   })
