@@ -32,7 +32,7 @@ const capabilities = Object.freeze({
   triggers: Object.freeze(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit'] as const satisfies readonly OfficialTrigger[]),
   effects: Object.freeze([
     'damage-unit', 'draw', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
-    'heal-core', 'shield-core', 'destroy-unit', 'stun-unit', 'bonus-core-attack', 'damage-all-enemies', 'pre-strike', 'shield-unit', 'shield-all-own', 'buff-unit', 'lock-field', 'lock-own-attacks', 'discard-hand', 'look-pick', 'search-deck', 'hand-cost', 'pay-life', 'recover-discard',
+    'heal-core', 'shield-core', 'destroy-unit', 'stun-unit', 'bonus-core-attack', 'damage-all-enemies', 'pre-strike', 'shield-unit', 'shield-all-own', 'buff-unit', 'lock-field', 'lock-own-attacks', 'discard-hand', 'discard-all-hand', 'look-pick', 'search-deck', 'hand-cost', 'pay-life', 'recover-discard',
   ] as const satisfies readonly OfficialEffect['type'][]),
 })
 
@@ -332,6 +332,12 @@ function executeEffect(
     case 'hand-cost':
       frame(state).choice = { kind: 'hand-cost', seat, sourceId, targetId, cards: [...player.hand], amount: effect.amount,
         canPass: effect.canPass, onSelect: effect.onSelect }
+      break
+    case 'discard-all-hand':
+      for (const card of player.hand.splice(0)) {
+        player.discard.push(card)
+        events.push(visible('hand-discarded', { seat, card: { id: card.id, cardId: card.cardId } }))
+      }
       break
     case 'discard-hand':
       frame(state).choice = { kind: 'discard-hand', seat, cards: [...player.hand], amount: effect.amount }

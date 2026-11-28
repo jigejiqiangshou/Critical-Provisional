@@ -15,6 +15,7 @@ export type OfficialEffect =
   | { readonly type: 'lock-field'; readonly attr: string }
   | { readonly type: 'lock-own-attacks' }
   | { readonly type: 'discard-hand'; readonly amount: number }
+  | { readonly type: 'discard-all-hand' }
   | { readonly type: 'recover-discard'; readonly amount: number; readonly kind?: 'spell' }
   | { readonly type: 'hand-cost'; readonly amount: number; readonly canPass: boolean; readonly onSelect: readonly OfficialEffect[] }
   | { readonly type: 'pay-life'; readonly amount: number | 'half' }

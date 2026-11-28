@@ -352,6 +352,11 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
       { type: 'look-pick', top: 8, kind: 'unit', attr: '玄武' }],
   },
   {
+    cardId: 'initial:chongshi', legacyName: '重筮',
+    source: 'quote/临界·模块化·2D版.html:677 effect',
+    trigger: 'play', steps: [{ type: 'discard-all-hand' }, { type: 'draw', amount: 4 }],
+  },
+  {
     cardId: 'initial:boming', legacyName: '搏命',
     source: 'quote/临界·模块化·2D版.html:678 effect',
     trigger: 'play', steps: [{ type: 'pay-life', amount: 'half' }, { type: 'draw', amount: 5 }],
