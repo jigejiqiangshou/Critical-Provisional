@@ -471,12 +471,6 @@ export interface EffectAudit {
 const effectAudits: readonly EffectAudit[] = [
   { legacyName: '断金', cardId: 'initial:duanjin', approvedDefinitions: [{ trigger: 'play', steps: [{ type: 'damage-unit', target: 'enemy', amount: 8, pierce: true, requiresShield: true }] }],
     fields: { effect: { kind: 'effect', reference: 'play:damage-unit' } }, steps: { effect: 'play:0:damage-unit' } },
-  { legacyName: '虎啸', cardId: 'initial:huxiao', approvedDefinitions: [{ trigger: 'enemy-enter', steps: [{ type: 'damage-unit', target: 'enemy', amount: 3 }] }],
-    fields: { trap: { kind: 'effect', reference: 'enemy-enter:damage-unit' } }, steps: { 'trap.effect': 'enemy-enter:0:damage-unit' } },
-  { legacyName: '藤缚', cardId: 'initial:tengfu', approvedDefinitions: [{ trigger: 'enemy-enter', steps: [{ type: 'damage-unit', target: 'enemy', amount: 5 }] }],
-    fields: { trap: { kind: 'effect', reference: 'enemy-enter:damage-unit' } }, steps: { 'trap.effect': 'enemy-enter:0:damage-unit' } },
-  { legacyName: '暗哨', cardId: 'initial:anshao', approvedDefinitions: [{ trigger: 'enemy-enter', steps: [{ type: 'draw', amount: 1 }] }],
-    fields: { trap: { kind: 'effect', reference: 'enemy-enter:draw' } }, steps: { 'trap.effect': 'enemy-enter:0:draw' } },
   { legacyName: '伏兵', cardId: 'initial:fubing', approvedDefinitions: [{ trigger: 'attack-core', steps: [{ type: 'draw', amount: 2 }] }],
     fields: { trap: { kind: 'effect', reference: 'attack-core:draw' } }, steps: { 'trap.effect': 'attack-core:0:draw' } },
   { legacyName: '藏锋', cardId: 'initial:cangfeng', approvedDefinitions: [{ trigger: 'attack-unit', steps: [{ type: 'cancel-attack' }] }],
