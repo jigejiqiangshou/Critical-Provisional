@@ -94,7 +94,34 @@ describe('partial T045 definitions: core settlement samples', () => {
       }
     },
   )
-  it('maps 离火 to five damage against any unit', () => {
-    expect(definition('离火')).toMatchObject({ trigger: 'play', steps: [{ type: 'damage-unit', amount: 5, target: 'any' }] })
+  it.each(['三昧真火', '湮灭'])('%s destroys the selected enemy through shield and triggers death', name => {
+    const spell = definition(name), victim = definition('毕方')
+    const cards: Card[] = [
+      { id: spell.cardId, name, kind: 'spell', flagship: false,
+        data: { effects: [{ trigger: spell.trigger, steps: spell.steps }] } },
+      { id: victim.cardId, name: victim.legacyName, kind: 'unit', flagship: false,
+        data: { health: 1, effects: [{ trigger: victim.trigger, steps: victim.steps }] } },
+    ]
+    const release: Release = { id: 'partial', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] }
+    const a = createOfficialSeatState(), b = createOfficialSeatState([{ id: 'draw', cardId: victim.cardId }])
+    a.hand = [{ id: 'spell', cardId: spell.cardId }]
+    a.board = [unit('own', victim.cardId)]
+    b.board = [{ ...unit('enemy', victim.cardId), hp: 100, shield: 100 }]
+    const state: OfficialMatchState = { seatOrder: ['A', 'B'], seats: { A: a, B: b }, turn: 2,
+      finale: null, battleMode: false, effect: null }
+    const invoke = (target: string) => officialRules.resolveAction({ state, snapshot: createOfficialSnapshot(release),
+      seat: 'A', random: () => 0, action: { type: 'play-card', cardId: 'spell', targets: [target] } })
+    expect(invoke('own').kind).toBe('rejected')
+    const result = invoke('enemy')
+    expect(result.kind).toBe('active')
+    if (result.kind !== 'active') throw new Error('expected settled action')
+    expect(result.state.seats.B.board).toHaveLength(0)
+    expect(result.state.seats.B.discard.map(card => card.id)).toEqual(['enemy'])
+    expect(result.state.seats.B.hand.map(card => card.id)).toEqual(['draw'])
+    const events = result.events.flatMap(event => event.type === 'rule-event' ? [event.name] : [])
+    expect(events.indexOf('unit-destroyed')).toBeLessThan(events.indexOf('draw'))
+  })
+  it('maps 离火 to five damage against an enemy unit', () => {
+    expect(definition('离火')).toMatchObject({ trigger: 'play', steps: [{ type: 'damage-unit', amount: 5, target: 'enemy' }] })
   })
 })
