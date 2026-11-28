@@ -95,7 +95,7 @@ type RuleTask =
       readonly targetId: string | null; readonly effect: OfficialEffect; readonly timing?: 'immediate' | 'after-action' }
   | { readonly type: 'death-bonuses'; readonly seat: SeatId }
   | { readonly type: 'discard-played-ice'; readonly seat: SeatId; readonly card: OfficialCardInstance }
-  | { readonly type: 'response'; readonly seat: SeatId; readonly trigger: 'attack-core' | 'attack-unit' | 'enemy-enter'; readonly targetId?: string; readonly responseCardId?: string }
+  | { readonly type: 'response'; readonly seat: SeatId; readonly trigger: 'attack-core' | 'attack-unit' | 'enemy-enter'; readonly targetId?: string }
   | { readonly type: 'attack'; readonly seat: SeatId; readonly attackerId: string; readonly targetId: string }
 
 type ChoiceFrame =
