@@ -129,3 +129,44 @@ it('multiple 朱雀羽 deaths resolve deferred choices in order after restoratio
   expect(restored.read().progress.kind).toBe('active')
   expect(restored.read().state.seats.B.hand.map(card => card.id)).toEqual(['draw-1', 'draw-2'])
 })
+
+it.each([['烽火令', 1, '朱雀'], ['寒渊', 2, '玄武'], ['虎符', 1, '白虎']] as const)(
+  '%s requires full hand cost before searching', async (name, amount, attr) => {
+    const entry = initialEffectDefinitions.find(item => item.legacyName === name)!
+    const cards: Card[] = [
+      { id: entry.cardId, name, kind: 'spell', flagship: false, data: { effects: [{ trigger: entry.trigger, steps: entry.steps }] } },
+      { id: 'cost', name: 'cost', kind: 'unit', flagship: false, data: { health: 1, attr: '中立' } },
+      { id: 'match', name: 'match', kind: 'unit', flagship: false, data: { health: 1, attr } },
+    ]
+    const snapshot = createOfficialSnapshot({ id: 'hand-cost', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] })
+    const make = (count: number) => {
+      const a = createOfficialSeatState([{ id: 'found', cardId: 'match' }])
+      a.hand = [{ id: 'source', cardId: entry.cardId }, ...Array.from({ length: count }, (_, i) => ({ id: `cost-${i}`, cardId: 'cost' }))]
+      return { seatOrder: ['A', 'B'], seats: { A: a, B: createOfficialSeatState() }, turn: 2,
+        finale: null, battleMode: false, effect: null } satisfies OfficialMatchState
+    }
+    const create = (count: number) => MatchCore.create({ rules: officialRules, snapshot, state: make(count), activeSeat: 'A',
+      random: { kind: 'recorded', inputs: [], consumed: 0 } })
+    const missing = await create(amount - 1)
+    const action = { type: 'play-card' as const, cardId: 'source' }
+    const original = missing.read()
+    expect(missing.propose({ kind: 'action', seat: 'A', expectedRevision: 0, action })).toMatchObject({ kind: 'rejected', reason: 'hand-cost-unavailable' })
+    expect(missing.read()).toBe(original)
+    const exact = await create(amount)
+    const accepted = exact.propose({ kind: 'action', seat: 'A', expectedRevision: 0, action })
+    if (accepted.kind !== 'accepted') throw new Error('expected automatic payment')
+    expect(accepted.match.progress.kind).toBe('active')
+    expect(accepted.match.state.seats.A.hand.map(card => card.id)).toEqual(['found'])
+    expect(accepted.match.state.seats.A.discard.map(card => card.id)).toEqual(['source', ...Array.from({ length: amount }, (_, i) => `cost-${i}`)])
+    const extra = await create(amount + 1)
+    const waiting = extra.propose({ kind: 'action', seat: 'A', expectedRevision: 0, action })
+    if (waiting.kind !== 'accepted' || waiting.match.progress.kind !== 'waiting') throw new Error('expected decision')
+    expect(waiting.match.progress.decision.choices).toMatchObject({ min: amount, max: amount, canPass: false, visibility: 'owner' })
+    expect(waiting.match.state.seats.A.discard.map(card => card.id)).toEqual(['source'])
+    extra.confirm(waiting)
+    const response = extra.propose({ kind: 'decision', seat: 'A', expectedRevision: 1, decisionId: waiting.match.progress.decision.id,
+      answer: { kind: 'select', candidateIds: Array.from({ length: amount }, (_, i) => `cost-${i}`) } })
+    if (response.kind !== 'accepted') throw new Error('expected payment settlement')
+    expect(response.match.state.seats.A.hand.map(card => card.id).sort()).toEqual([`cost-${amount}`, 'found'].sort())
+  },
+)
