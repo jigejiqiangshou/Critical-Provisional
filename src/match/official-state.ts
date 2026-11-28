@@ -7,6 +7,7 @@ export type OfficialTrigger = 'play' | 'enter' | 'death' | 'skill' | 'attack-cor
 export type OfficialEffect =
   | { readonly type: 'damage-unit'; readonly amount: number; readonly target: 'any' | 'own' | 'enemy' }
   | { readonly type: 'draw' | 'register-death-attack-bonus' | 'ice-draw-pick'; readonly amount: number }
+  | { readonly type: 'heal-core' | 'shield-core'; readonly amount: number }
   | { readonly type: 'cancel-attack' }
 
 type SummonCondition =

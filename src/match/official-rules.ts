@@ -32,6 +32,7 @@ const capabilities = Object.freeze({
   triggers: Object.freeze(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit'] as const satisfies readonly OfficialTrigger[]),
   effects: Object.freeze([
     'damage-unit', 'draw', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
+    'heal-core', 'shield-core',
   ] as const satisfies readonly OfficialEffect['type'][]),
 })
 
@@ -249,6 +250,16 @@ function executeEffect(
       break
     case 'draw':
       draw(state, seat, effect.amount, events)
+      break
+    case 'heal-core': {
+      const healed = Math.max(0, Math.min(50, player.hp + effect.amount) - player.hp)
+      player.hp += healed
+      if (healed) events.push(visible('core-healed', { seat, amount: healed, hp: player.hp }))
+      break
+    }
+    case 'shield-core':
+      player.coreShield += effect.amount
+      events.push(visible('core-shielded', { seat, amount: effect.amount, shield: player.coreShield }))
       break
     case 'register-death-attack-bonus': {
       const unit = player.board.find(item => item.id === sourceId)
