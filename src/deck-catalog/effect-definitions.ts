@@ -104,11 +104,13 @@ export function legacyEffectPaths(card: Record<string, unknown>): string[] {
   const keys = ['kw', 'deathrattle', 'skill', 'passive', 'enter', 'effect', 'fieldLock',
     'evolveFrom', 'divine', 'summonCondition', 'onEvent', 'once', 'trap', 'shield',
     'overheat', 'selfAttackLock', 'sacrifice', 'atkGrowth']
-  return keys.flatMap(key => {
+  const metadata = new Set(['name', 'attr', 'type', 'atk', 'hp', 'text', 'evoStage'])
+  const unknown = Object.keys(card).filter(key => !metadata.has(key) && !keys.includes(key)).map(key => `unknown:${key}`)
+  return [...unknown, ...keys.flatMap(key => {
     const value = card[key]
     if (value === undefined) return []
     return Array.isArray(value) ? value.map((_, index) => `${key}[${index}]`) : [key]
-  })
+  })]
 }
 
 /** Fail closed until every source entry has an explicit, supported mapping. */
@@ -125,6 +127,7 @@ export function validateInitialEffects(
     if (seen.has(mapping.cardId)) throw new Error(`Duplicate effect mapping: ${mapping.cardId}`)
     seen.add(mapping.cardId)
     const sourcePaths = legacyEffectPaths(source.card)
+    if (sourcePaths.some(path => path.startsWith('unknown:'))) throw new Error(`Unknown legacy field: ${mapping.cardId}`)
     const required = new Set(sourcePaths)
     const paths = new Set<string>()
     let lastIndex = -1
