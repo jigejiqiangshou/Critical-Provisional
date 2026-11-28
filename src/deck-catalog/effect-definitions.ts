@@ -152,6 +152,11 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'skill', steps: [{ type: 'shield-all-own', amount: 2, excludeSource: false }],
   },
   {
+    cardId: 'initial:zhuyan', legacyName: '朱厌',
+    source: 'quote/临界·模块化·2D版.html:568 passive',
+    trigger: 'attack-core', steps: [{ type: 'pre-strike', amount: 1 }],
+  },
+  {
     cardId: 'initial:yanwen', legacyName: '炎纹',
     source: 'quote/临界·模块化·2D版.html:562 effect',
     trigger: 'play', steps: [{ type: 'damage-unit', amount: 3, target: 'enemy' }, { type: 'draw', amount: 1 }],

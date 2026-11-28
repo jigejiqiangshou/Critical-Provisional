@@ -215,10 +215,10 @@ function damageUnit(
   if (unit.hp <= 0) destroyUnit(state, snapshot, targetId, events)
 }
 
-function damageCore(state: OfficialMatchState, seat: SeatId, amount: number, events: VisibleRuleEvent[]): void {
+function damageCore(state: OfficialMatchState, seat: SeatId, amount: number, events: VisibleRuleEvent[], pierce = false): void {
   const player = state.seats[seat]
   const buffered = Math.min(player.temporaryHealth, amount)
-  const shielded = Math.min(player.coreShield, amount - buffered)
+  const shielded = pierce ? 0 : Math.min(player.coreShield, amount - buffered)
   player.temporaryHealth -= buffered
   player.coreShield -= shielded
   player.hp -= amount - buffered - shielded
@@ -246,8 +246,12 @@ function finishAttack(
     : 0
   const amount = Math.max(0, power + attacker.attackBonus + bonus)
   const opponent = opposingSeat(state, seat)
-  if (targetId === coreTargetId(opponent)) damageCore(state, opponent, amount, events)
-  else {
+  if (targetId === coreTargetId(opponent)) {
+    for (const effect of effectsFor(snapshot, attacker, 'attack-core')) {
+      if (effect.type === 'pre-strike') damageCore(state, opponent, effect.amount, events, true)
+    }
+    if (state.seats[opponent].hp > 0) damageCore(state, opponent, amount, events)
+  } else {
     for (const effect of effectsFor(snapshot, attacker, 'attack-unit')) {
       if (effect.type === 'pre-strike') damageUnit(state, snapshot, targetId, effect.amount, true, events)
     }
