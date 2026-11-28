@@ -137,7 +137,7 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'attack-unit', steps: [{ type: 'pre-strike', amount: 1 }],
   },
   {
-    cardId: 'initial:ningxiang', legacyName: '凝霜',
+    cardId: 'initial:ningshuang', legacyName: '凝霜',
     source: 'quote/临界·模块化·2D版.html:592 effect',
     trigger: 'play', steps: [{ type: 'shield-unit', amount: 5, target: 'own' }],
   },
