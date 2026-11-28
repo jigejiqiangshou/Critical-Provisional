@@ -88,7 +88,10 @@ function automaticEntries(card: Record<string, unknown>): MigratedEffect[] {
 export const initialEffectMappings: readonly EffectMapping[] = inventory.map(source => {
   const checked = handCheckedMappings.find(mapping => mapping.cardId === source.id)?.effects ?? []
   const occupied = new Set(checked.map(effect => effect.sourcePath))
-  return { cardId: source.id, effects: [...checked, ...automaticEntries(source.card).filter(effect => !occupied.has(effect.sourcePath))] }
+  const order = legacyEffectPaths(source.card)
+  const effects = [...checked, ...automaticEntries(source.card).filter(effect => !occupied.has(effect.sourcePath))]
+  effects.sort((left, right) => order.indexOf(left.sourcePath) - order.indexOf(right.sourcePath))
+  return { cardId: source.id, effects }
 })
 
 export interface EffectCapabilities {
@@ -121,11 +124,16 @@ export function validateInitialEffects(
     if (!source) throw new Error(`Unknown source card: ${mapping.cardId}`)
     if (seen.has(mapping.cardId)) throw new Error(`Duplicate effect mapping: ${mapping.cardId}`)
     seen.add(mapping.cardId)
-    const required = new Set(legacyEffectPaths(source.card))
+    const sourcePaths = legacyEffectPaths(source.card)
+    const required = new Set(sourcePaths)
     const paths = new Set<string>()
+    let lastIndex = -1
     for (const effect of mapping.effects) {
       if (!required.has(effect.sourcePath)) throw new Error(`Unknown source entry ${effect.sourcePath}: ${mapping.cardId}`)
       if (paths.has(effect.sourcePath)) throw new Error(`Duplicate source entry ${effect.sourcePath}: ${mapping.cardId}`)
+      const index = sourcePaths.indexOf(effect.sourcePath)
+      if (index <= lastIndex) throw new Error(`Out-of-order source entry ${effect.sourcePath}: ${mapping.cardId}`)
+      lastIndex = index
       paths.add(effect.sourcePath)
       if (!capabilities.triggers.includes(effect.trigger)) throw new Error(`Unknown trigger ${effect.trigger}: ${mapping.cardId}`)
       if (!effect.steps.length) throw new Error(`Empty effect steps: ${mapping.cardId}`)
