@@ -12,6 +12,7 @@ export type OfficialEffect =
   | { readonly type: 'shield-all-own'; readonly amount: number; readonly excludeSource: boolean }
   | { readonly type: 'lock-field'; readonly attr: string }
   | { readonly type: 'lock-own-attacks' }
+  | { readonly type: 'discard-hand'; readonly amount: number }
   | { readonly type: 'draw' | 'register-death-attack-bonus' | 'ice-draw-pick'; readonly amount: number }
   | { readonly type: 'heal-core' | 'shield-core' | 'bonus-core-attack' | 'pre-strike'; readonly amount: number }
   | { readonly type: 'cancel-attack' }
@@ -85,6 +86,7 @@ type ChoiceFrame =
   | { readonly kind: 'response'; readonly seat: SeatId; readonly trigger: 'attack-core' | 'attack-unit';
       readonly cards: readonly OfficialCardInstance[] }
   | { readonly kind: 'ice'; readonly seat: SeatId; readonly cards: readonly OfficialCardInstance[] }
+  | { readonly kind: 'discard-hand'; readonly seat: SeatId; readonly cards: readonly OfficialCardInstance[]; readonly amount: number }
 
 interface EffectFrame {
   queue: RuleTask[]
