@@ -681,3 +681,31 @@ it('LG-08 keeps the selected pulse out of discard until its nested effect finish
   expect(finished).toContain('nested-2')
   expect(finished.at(-1)).toBe(pulse.id)
 })
+
+it.each([[40, 5, 45, 5], [48, 5, 50, 2], [50, 5, 50, 0]])(
+  'healing at %i by %i caps at 50 and publishes actual amount', async (hp, amount, expectedHp, actualAmount) => {
+    const source = initial(sample('LG-08', 'playable'), '2d')
+    const state = fixtureState(source)
+    state.seats.A.hp = hp
+    state.seats.A.ap = 5
+    const pulse = { id: 'heal-pulse', cardId: 'heal-fixture' }
+    state.seats.A.hand.push(pulse)
+    const pool = release('2d')
+    const snapshot = createOfficialSnapshot({ ...pool, cards: [...pool.cards, {
+      id: pulse.cardId, name: 'Healing fixture', kind: 'spell', flagship: false,
+      data: { effects: [{ trigger: 'play', steps: [{ type: 'heal-core', amount }] }] },
+    }] })
+    const core = await MatchCore.create({ rules: officialRules, snapshot, state, activeSeat: 'A', random: random([]) })
+    const clients = await peers(core)
+    expectAccepted(await clients.A.submit('heal', { type: 'play-card', cardId: pulse.id }))
+    expect(core.read().state.seats.A.hp).toBe(expectedHp)
+    for (const client of [clients.A, clients.B, clients.observer]) {
+      const heals = client.events().filter(event => event.type === 'action' && event.payload &&
+        typeof event.payload === 'object' && 'name' in event.payload && event.payload.name === 'core-healed')
+      if (!actualAmount) expect(heals).toHaveLength(0)
+      else expect(heals).toEqual([expect.objectContaining({ payload: expect.objectContaining({
+        name: 'core-healed', data: { seat: 'A', amount: actualAmount, hp: expectedHp },
+      }) })])
+    }
+  },
+)
