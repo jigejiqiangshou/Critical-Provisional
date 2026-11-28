@@ -350,6 +350,36 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
       onSelect: [{ type: 'look-pick', top: 8, kind: 'unit', attr: '白虎' }] }],
   },
   {
+    cardId: 'initial:yuanyin', legacyName: '渊引',
+    source: 'quote/临界·模块化·2D版.html:596 effect',
+    trigger: 'play', steps: [{ type: 'hand-cost', amount: 2, canPass: false,
+      onSelect: [{ type: 'search-deck', amount: 1, kind: 'unit', attr: '玄武' }] }],
+  },
+  {
+    cardId: 'initial:yizai', legacyName: '移栽',
+    source: 'quote/临界·模块化·2D版.html:639 effect',
+    trigger: 'play', steps: [{ type: 'hand-cost', amount: 1, canPass: false,
+      onSelect: [{ type: 'search-deck', amount: 1, kind: 'unit', attr: '青龙' }] }],
+  },
+  {
+    cardId: 'initial:xushi', legacyName: '蓄势',
+    source: 'quote/临界·模块化·2D版.html:649 effect',
+    trigger: 'play', steps: [{ type: 'hand-cost', amount: 1, canPass: false,
+      onSelect: [{ type: 'draw', amount: 2 }] }],
+  },
+  {
+    cardId: 'initial:liuzhuan', legacyName: '流转',
+    source: 'quote/临界·模块化·2D版.html:672 effect',
+    trigger: 'play', steps: [{ type: 'hand-cost', amount: 1, canPass: false,
+      onSelect: [{ type: 'draw', amount: 1 }] }],
+  },
+  {
+    cardId: 'initial:qingcang', legacyName: '清仓',
+    source: 'quote/临界·模块化·2D版.html:673 effect',
+    trigger: 'play', steps: [{ type: 'hand-cost', amount: 3, canPass: false,
+      onSelect: [{ type: 'draw', amount: 2 }] }],
+  },
+  {
     cardId: 'initial:suyuan', legacyName: '溯源',
     source: 'quote/临界·模块化·2D版.html:657 effect',
     trigger: 'play', steps: [{ type: 'recover-discard', amount: 1 }],
