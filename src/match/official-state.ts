@@ -3,7 +3,7 @@ import type { CardPoolSnapshot, SeatId } from './rules'
 
 export const OFFICIAL_RULES_VERSION = '1'
 
-export type OfficialTrigger = 'play' | 'enter' | 'death' | 'skill' | 'attack-core' | 'attack-unit'
+export type OfficialTrigger = 'play' | 'enter' | 'death' | 'skill' | 'attack-core' | 'attack-unit' | 'enemy-enter'
 export type OfficialEffect =
   | { readonly type: 'damage-unit'; readonly amount: number; readonly target: 'any' | 'own' | 'enemy'; readonly pierce?: boolean; readonly requiresShield?: boolean }
   | { readonly type: 'damage-all-enemies'; readonly amount: number; readonly pierce: boolean }
@@ -92,11 +92,11 @@ type RuleTask =
       readonly targetId: string | null; readonly effect: OfficialEffect; readonly timing?: 'immediate' | 'after-action' }
   | { readonly type: 'death-bonuses'; readonly seat: SeatId }
   | { readonly type: 'discard-played-ice'; readonly seat: SeatId; readonly card: OfficialCardInstance }
-  | { readonly type: 'response'; readonly seat: SeatId; readonly trigger: 'attack-core' | 'attack-unit' }
+  | { readonly type: 'response'; readonly seat: SeatId; readonly trigger: 'attack-core' | 'attack-unit' | 'enemy-enter'; readonly targetId?: string }
   | { readonly type: 'attack'; readonly seat: SeatId; readonly attackerId: string; readonly targetId: string }
 
 type ChoiceFrame =
-  | { readonly kind: 'response'; readonly seat: SeatId; readonly trigger: 'attack-core' | 'attack-unit';
+  | { readonly kind: 'response'; readonly seat: SeatId; readonly trigger: 'attack-core' | 'attack-unit' | 'enemy-enter'; readonly targetId?: string;
       readonly cards: readonly OfficialCardInstance[] }
   | { readonly kind: 'ice'; readonly seat: SeatId; readonly cards: readonly OfficialCardInstance[] }
   | { readonly kind: 'discard-hand'; readonly seat: SeatId; readonly cards: readonly OfficialCardInstance[]; readonly amount: number }
