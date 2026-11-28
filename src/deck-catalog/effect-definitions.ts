@@ -9,7 +9,7 @@ const id = (name: string) => `legacy:${encodeURIComponent(name)}`
 
 // These registrations correspond to the already implemented LG-04–LG-08 primitives.
 // All other entries remain explicitly unmapped until their semantics are implemented.
-export const initialEffectMappings: readonly EffectMapping[] = [
+const handCheckedMappings: readonly EffectMapping[] = [
   { cardId: id('毕方'), effects: [{ sourcePath: 'deathrattle', trigger: 'death', steps: [{ type: 'draw', amount: 1 }] }] },
   { cardId: id('冰夷'), effects: [{ sourcePath: 'deathrattle', trigger: 'death', steps: [{ type: 'draw', amount: 1 }] }] },
   { cardId: id('青苗'), effects: [{ sourcePath: 'deathrattle', trigger: 'death', steps: [{ type: 'draw', amount: 1 }] }] },
@@ -48,6 +48,48 @@ export const initialEffectMappings: readonly EffectMapping[] = [
   { cardId: id('镇岳'), effects: [{ sourcePath: 'trap', trigger: 'attack-core', steps: [{ type: 'cancel-attack' }] }] },
   { cardId: id('探珠'), effects: [{ sourcePath: 'skill', trigger: 'skill', steps: [{ type: 'ice-draw-pick', amount: 3 }] }] },
 ]
+
+/** Translate only exact legacy primitive shapes with equivalent core steps. */
+function translatePrimitive(value: unknown, text: string): OfficialEffect | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return
+  const item = value as Record<string, unknown>
+  const type = item.type
+  const target = text.includes('目标你的单位') ? 'own' : text.includes('目标对方单位') ? 'enemy' :
+    text.includes('目标单位') ? 'any' : undefined
+  if (type === 'stun' && target && Object.keys(item).length === 1) return { type: 'stun-unit', target }
+  if (type === 'payLifeHalf' && Object.keys(item).length === 1) return { type: 'pay-half-life' }
+  if (Object.keys(item).length !== 2 || typeof item.n !== 'number' || !Number.isInteger(item.n) || item.n < 0) return
+  switch (type) {
+    case 'unit': return target ? { type: 'damage-unit', target, amount: item.n } : undefined
+    case 'shieldUnit': return target ? { type: 'shield-unit', target, amount: item.n } : undefined
+    case 'aoe': return { type: 'damage-all-enemies', amount: item.n }
+    case 'draw': return { type: 'draw', amount: item.n }
+    case 'heal': return { type: 'heal-core', amount: item.n }
+    case 'payLife': return { type: 'pay-life', amount: item.n }
+  }
+}
+
+function automaticEntries(card: Record<string, unknown>): MigratedEffect[] {
+  const result: MigratedEffect[] = []
+  const add = (key: string, trigger: OfficialTrigger) => {
+    const value = card[key]
+    if (value === undefined) return
+    const entries = Array.isArray(value) ? value : [value]
+    entries.forEach((entry, index) => {
+      const step = translatePrimitive(entry, typeof card.text === 'string' ? card.text : '')
+      if (step) result.push({ sourcePath: Array.isArray(value) ? `${key}[${index}]` : key, trigger, steps: [step] })
+    })
+  }
+  if (card.type === 'spell' || card.type === 'ace') add('effect', 'play')
+  if (card.type === 'unit') { add('enter', 'enter'); add('deathrattle', 'death') }
+  return result
+}
+
+export const initialEffectMappings: readonly EffectMapping[] = inventory.map(source => {
+  const checked = handCheckedMappings.find(mapping => mapping.cardId === source.id)?.effects ?? []
+  const occupied = new Set(checked.map(effect => effect.sourcePath))
+  return { cardId: source.id, effects: [...checked, ...automaticEntries(source.card).filter(effect => !occupied.has(effect.sourcePath))] }
+})
 
 export interface EffectCapabilities {
   readonly triggers: readonly string[]
