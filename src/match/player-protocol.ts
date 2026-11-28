@@ -66,7 +66,7 @@ export type PlayerAction =
     readonly skillId: string
     readonly targets?: readonly string[]
   }
-  | { readonly type: 'end-turn' | 'concede' }
+  | { readonly type: 'begin-battle' | 'end-turn' | 'concede' }
   | { readonly type: 'respond'; readonly decisionId: DecisionId; readonly choice: DecisionChoice }
 
 interface PlayerRequest {
@@ -202,6 +202,7 @@ export function parsePlayerAction(value: unknown): PlayerAction | undefined {
       if (id(decisionId) && choice) return { type, decisionId, choice }
       break
     }
+    case 'begin-battle':
     case 'end-turn':
     case 'concede':
       return { type }
