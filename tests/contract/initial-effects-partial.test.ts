@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { MatchCore } from '../../src/match/core'
 import { initialEffectDefinitions } from '../../src/deck-catalog/effect-definitions'
 import { coreTargetId, createOfficialSeatState, createOfficialSnapshot, officialRules, OFFICIAL_RULES_VERSION } from '../../src/match/rules'
 import type { OfficialMatchState, OfficialUnit } from '../../src/match/rules'
@@ -452,4 +453,54 @@ it('evolution does not inherit 庇护 immunity', () => {
   if (result.kind !== 'active') throw new Error('expected evolution')
   expect(result.state.seats.A.board[0].cardId).toBe('evolved')
   expect(result.state.seats.A.board[0].immune).not.toBe(true)
+})
+
+it.each([['虎啸', 3], ['藤缚', 5], ['暗哨', 0]] as const)('%s responds after enemy deployment and survives restoration', async (name, amount) => {
+  const effect = definition(name)
+  const cards: Card[] = [
+    { id: 'unit', name: 'unit', kind: 'unit', flagship: false, data: { health: 10, effects: [{ trigger: 'enter', steps: [{ type: 'draw', amount: 1 }] }] } },
+    { id: 'other', name: 'other', kind: 'unit', flagship: false, data: { health: 10 } },
+    { id: effect.cardId, name, kind: 'trap', flagship: false, data: { effects: [{ trigger: effect.trigger, steps: effect.steps }] } },
+  ]
+  const snapshot = createOfficialSnapshot({ id: 'enter-response', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] })
+  const a = createOfficialSeatState([{ id: 'a-draw', cardId: 'other' }]), b = createOfficialSeatState([{ id: 'b-draw', cardId: 'other' }])
+  a.hand = [{ id: 'played', cardId: 'unit' }]; a.board = [{ ...unit('existing', 'other'), hp: 10 }]
+  b.facedown = [{ id: 'trap', cardId: effect.cardId }]
+  const state: OfficialMatchState = { seatOrder: ['A', 'B'], seats: { A: a, B: b }, turn: 2, finale: null, battleMode: false, effect: null }
+  const core = await MatchCore.create({ rules: officialRules, snapshot, state, activeSeat: 'A', random: { kind: 'recorded', inputs: [], consumed: 0 } })
+  const offer = core.propose({ kind: 'action', seat: 'A', expectedRevision: 0, action: { type: 'play-card', cardId: 'played' } })
+  if (offer.kind !== 'accepted' || offer.match.progress.kind !== 'waiting') throw new Error('expected response')
+  expect(offer.match.state.seats.A.hand.map(card => card.id)).toEqual(['a-draw'])
+  core.confirm(offer)
+  const restored = await MatchCore.restore({ rules: officialRules, snapshot, match: JSON.parse(JSON.stringify(core.read())) })
+  const pending = restored.read()
+  if (pending.progress.kind !== 'waiting') throw new Error('expected response after restore')
+  const respond = (pass: boolean) => restored.propose({ kind: 'decision', seat: 'B', expectedRevision: 1, decisionId: pending.progress.decision.id,
+    answer: pass ? { kind: 'pass' } : { kind: 'select', candidateIds: ['trap'] } })
+  const pass = respond(true), flip = respond(false)
+  if (pass.kind !== 'accepted' || flip.kind !== 'accepted') throw new Error('expected settlement')
+  expect(pass.match.state.seats.A.board.find(card => card.id === 'played')?.hp).toBe(10)
+  expect(pass.match.state.seats.B.facedown).toHaveLength(1)
+  expect(flip.match.state.seats.A.board.find(card => card.id === 'played')?.hp).toBe(10 - amount)
+  expect(flip.match.state.seats.A.board.find(card => card.id === 'existing')?.hp).toBe(10)
+  expect(flip.match.state.seats.B.hand.map(card => card.id)).toEqual(name === '暗哨' ? ['b-draw'] : [])
+  expect(flip.match.state.seats.B.facedown).toHaveLength(0)
+})
+
+it.each(['虎啸', '藤缚', '暗哨'])('%s does not respond to evolution', name => {
+  const effect = definition(name)
+  const cards: Card[] = [
+    { id: 'base', name: 'base', kind: 'unit', flagship: false, data: { health: 5 } },
+    { id: 'evolved', name: 'evolved', kind: 'unit', flagship: false, data: { health: 8, evolveFrom: ['base'] } },
+    { id: effect.cardId, name, kind: 'trap', flagship: false, data: { effects: [{ trigger: effect.trigger, steps: effect.steps }] } },
+  ]
+  const snapshot = createOfficialSnapshot({ id: 'enter-evolution', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] })
+  const a = createOfficialSeatState(), b = createOfficialSeatState()
+  a.hand = [{ id: 'evo-card', cardId: 'evolved' }]; a.board = [{ ...unit('base-unit', 'base'), hp: 5 }]
+  b.facedown = [{ id: 'trap', cardId: effect.cardId }]
+  const state: OfficialMatchState = { seatOrder: ['A', 'B'], seats: { A: a, B: b }, turn: 2, finale: null, battleMode: false, effect: null }
+  const result = officialRules.resolveAction({ state, snapshot, seat: 'A', random: () => 0,
+    action: { type: 'evolve', cardId: 'evo-card', targets: ['base-unit'] } })
+  if (result.kind !== 'active') throw new Error('expected evolution without response')
+  expect(result.state.seats.B.facedown).toHaveLength(1)
 })
