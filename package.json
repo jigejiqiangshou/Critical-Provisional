@@ -13,7 +13,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:baseline": "vitest run tests/baseline/",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "build:initial": "node scripts/inventory-legacy-effects.mjs --check && node scripts/check-initial-effects.ts && npm run build"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.1",

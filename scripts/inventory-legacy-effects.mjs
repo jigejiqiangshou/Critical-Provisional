@@ -1,15 +1,25 @@
 /** Report source declarations only. This does not validate or implement effects. */
 import { readFileSync, writeFileSync } from 'node:fs'
 import { runInNewContext } from 'node:vm'
+import { createHash } from 'node:crypto'
+
+const checkOnly = process.argv.includes('--check')
+function output(path, contents) {
+  if (checkOnly) {
+    if (readFileSync(path, 'utf8') !== contents) throw new Error(`Stale legacy source inventory: ${path}`)
+  } else writeFileSync(path, contents)
+}
 
 const sources = ['quote/临界·模块化·2D版.html', 'quote/临界·模块化·3D版.html']
 const ignored = new Set(['name', 'attr', 'type', 'atk', 'hp', 'text'])
 function readCards(path) {
   const cards = []
-  for (const [index, line] of readFileSync(path, 'utf8').split('\n').entries()) {
+  const text = readFileSync(path, 'utf8')
+  for (const [index, line] of text.split('\n').entries()) {
     if (!line.trimStart().startsWith('addCard(')) continue
     runInNewContext(line, { addCard(card) { cards.push({ line: index + 1, card }) } }, { timeout: 1000 })
   }
+  if ((text.match(/\baddCard\s*\(/g) ?? []).length !== cards.length + 1) throw new Error(`Unparsed card declaration: ${path}`)
   if (new Set(cards.map(({ card }) => card.name)).size !== cards.length) throw new Error(`Duplicate names: ${path}`)
   return cards
 }
@@ -39,9 +49,10 @@ for (const [{ card, line }, other] of two.map((value, i) => [value, three[i]])) 
   out.push(`| ${card.name.replaceAll('|', '\\|')} | ${line} | ${other.line} | ${fields} |`)
 }
 out.push('')
-writeFileSync('specs/001-offline-game-refactor/legacy-effect-inventory.md', out.join('\n'))
-writeFileSync('src/deck-catalog/legacy-card-sources.json', JSON.stringify(two.map(({ card, line }, i) => ({
+output('specs/001-offline-game-refactor/legacy-effect-inventory.md', out.join('\n'))
+output('src/deck-catalog/legacy-card-sources.json', JSON.stringify(two.map(({ card, line }, i) => ({
   name: card.name, line2d: line, line3d: three[i].line,
   ruleFields: Object.keys(card).filter(key => !ignored.has(key)), sourceSteps: sourceSteps(card),
 })), null, 2) + '\n')
+output('src/deck-catalog/legacy-source-hashes.json', JSON.stringify(Object.fromEntries(sources.map(path => [path, createHash('sha256').update(readFileSync(path)).digest('hex')])), null, 2) + '\n')
 console.log(`${two.length} matching declarations inventoried; no effects marked implemented`)
