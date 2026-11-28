@@ -30,4 +30,8 @@ for (const [{ card, line }, other] of two.map((value, i) => [value, three[i]])) 
 }
 out.push('')
 writeFileSync('specs/001-offline-game-refactor/legacy-effect-inventory.md', out.join('\n'))
+writeFileSync('src/deck-catalog/legacy-card-sources.json', JSON.stringify(two.map(({ card, line }, i) => ({
+  name: card.name, line2d: line, line3d: three[i].line,
+  ruleFields: Object.keys(card).filter(key => !ignored.has(key)),
+})), null, 2) + '\n')
 console.log(`${two.length} matching declarations inventoried; no effects marked implemented`)
