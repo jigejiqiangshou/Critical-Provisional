@@ -190,6 +190,101 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'play', steps: [{ type: 'look-pick', top: 8, kind: 'unit' }],
   },
   {
+    cardId: 'initial:lingguang', legacyName: '朱雀·陵光',
+    source: 'quote/临界·模块化·2D版.html:569 enter',
+    trigger: 'enter', steps: [{ type: 'search-deck', amount: 1, kind: 'spell', attr: '朱雀' }],
+  },
+  {
+    cardId: 'initial:zhengzhao', legacyName: '征召',
+    source: 'quote/临界·模块化·2D版.html:574 effect',
+    trigger: 'play', steps: [{ type: 'search-deck', amount: 1, kind: 'unit', attr: '朱雀' }],
+  },
+  {
+    cardId: 'initial:xuanwuzhiming', legacyName: '玄武·执明',
+    source: 'quote/临界·模块化·2D版.html:585 enter',
+    trigger: 'enter', steps: [{ type: 'search-deck', amount: 1, kind: 'spell', attr: '玄武' }],
+  },
+  {
+    cardId: 'initial:xuanzhao', legacyName: '玄召',
+    source: 'quote/临界·模块化·2D版.html:597 effect',
+    trigger: 'play', steps: [{ type: 'search-deck', amount: 1, kind: 'unit', attr: '玄武' }],
+  },
+  {
+    cardId: 'initial:jianbing', legacyName: '白虎·监兵',
+    source: 'quote/临界·模块化·2D版.html:618 enter',
+    trigger: 'enter', steps: [{ type: 'search-deck', amount: 1, kind: 'spell', attr: '白虎' }],
+  },
+  {
+    cardId: 'initial:huben', legacyName: '虎贲',
+    source: 'quote/临界·模块化·2D版.html:622 effect',
+    trigger: 'play', steps: [{ type: 'search-deck', amount: 1, kind: 'unit', attr: '白虎' }],
+  },
+  {
+    cardId: 'initial:mengzhang', legacyName: '青龙·孟章',
+    source: 'quote/临界·模块化·2D版.html:632 enter',
+    trigger: 'enter', steps: [{ type: 'search-deck', amount: 1, kind: 'spell', attr: '青龙' }],
+  },
+  {
+    cardId: 'initial:qingdishi', legacyName: '青帝侍',
+    source: 'quote/临界·模块化·2D版.html:641 enter',
+    trigger: 'enter', steps: [{ type: 'search-deck', amount: 1, kind: 'unit', names: ['青苗'] }],
+  },
+  {
+    cardId: 'initial:yulu', legacyName: '雨露',
+    source: 'quote/临界·模块化·2D版.html:642 effect',
+    trigger: 'play', steps: [{ type: 'search-deck', amount: 1, kind: 'unit', attr: '青龙' }],
+  },
+  {
+    cardId: 'initial:yinlu', legacyName: '引路',
+    source: 'quote/临界·模块化·2D版.html:647 effect',
+    trigger: 'play', steps: [{ type: 'search-deck', amount: 1, kind: 'spell' }],
+  },
+  {
+    cardId: 'initial:xunmiao', legacyName: '寻苗',
+    source: 'quote/临界·模块化·2D版.html:665 effect',
+    trigger: 'play', steps: [{ type: 'search-deck', amount: 1, evoStage: 1 }],
+  },
+  {
+    cardId: 'initial:xunguo', legacyName: '寻果',
+    source: 'quote/临界·模块化·2D版.html:666 effect',
+    trigger: 'play', steps: [{ type: 'search-deck', amount: 1, evoStageMin: 2 }],
+  },
+  {
+    cardId: 'initial:junling', legacyName: '军令',
+    source: 'quote/临界·模块化·2D版.html:667 effect',
+    trigger: 'play', steps: [{ type: 'search-deck', amount: 1, attackMin: 4 }],
+  },
+  {
+    cardId: 'initial:tiebi', legacyName: '铁壁',
+    source: 'quote/临界·模块化·2D版.html:668 effect',
+    trigger: 'play', steps: [{ type: 'search-deck', amount: 1, healthMin: 6 }],
+  },
+  {
+    cardId: 'initial:pojia', legacyName: '破甲',
+    source: 'quote/临界·模块化·2D版.html:669 effect',
+    trigger: 'play', steps: [{ type: 'search-deck', amount: 1, kind: 'unit', keyword: '穿透' }],
+  },
+  {
+    cardId: 'initial:yijin', legacyName: '遗烬',
+    source: 'quote/临界·模块化·2D版.html:670 effect',
+    trigger: 'play', steps: [{ type: 'search-deck', amount: 1, kind: 'unit', keyword: '遗蜕' }],
+  },
+  {
+    cardId: 'initial:bilei', legacyName: '壁垒',
+    source: 'quote/临界·模块化·2D版.html:671 effect',
+    trigger: 'play', steps: [{ type: 'search-deck', amount: 1, kind: 'unit', keyword: '守护' }],
+  },
+  {
+    cardId: 'initial:guiyuan', legacyName: '归源',
+    source: 'quote/临界·模块化·2D版.html:703 effect',
+    trigger: 'play', steps: [{ type: 'search-deck', amount: 1, names: ['输川', '引流', '承波', '蓄塘'] }],
+  },
+  {
+    cardId: 'initial:lingguang', legacyName: '朱雀·陵光',
+    source: 'quote/临界·模块化·2D版.html:569 skill.effect',
+    trigger: 'skill', steps: [{ type: 'damage-unit', amount: 5, target: 'enemy' }],
+  },
+  {
     cardId: 'initial:yanwen', legacyName: '炎纹',
     source: 'quote/临界·模块化·2D版.html:562 effect',
     trigger: 'play', steps: [{ type: 'damage-unit', amount: 3, target: 'enemy' }, { type: 'draw', amount: 1 }],
