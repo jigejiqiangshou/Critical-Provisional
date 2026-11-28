@@ -442,7 +442,7 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
   {
     cardId: 'initial:duihuan', legacyName: '兑换',
     source: 'quote/临界·模块化·2D版.html:658 effect',
-    trigger: 'play', steps: [{ type: 'recover-discard', amount: 1, kind: 'spell' }],
+    trigger: 'play', steps: [{ type: 'recover-discard', amount: 1 }],
   },
   {
     cardId: 'initial:huiliu', legacyName: '回流',
