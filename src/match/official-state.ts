@@ -9,6 +9,7 @@ export type OfficialEffect =
   | { readonly type: 'stun-unit'; readonly target: 'any' | 'own' | 'enemy' }
   | { readonly type: 'draw' | 'heal-core' | 'shield-core' | 'pay-life' | 'damage-all-enemies' | 'register-death-attack-bonus' | 'ice-draw-pick'; readonly amount: number }
   | { readonly type: 'pay-half-life' }
+  | { readonly type: 'shield-all'; readonly amount: number; readonly excludeSource: boolean }
   | { readonly type: 'cancel-attack' }
 
 type SummonCondition =

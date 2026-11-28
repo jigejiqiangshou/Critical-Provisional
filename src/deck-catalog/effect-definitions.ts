@@ -38,6 +38,8 @@ const handCheckedMappings: readonly EffectMapping[] = [
     { sourcePath: 'effect[0]', trigger: 'play', steps: [{ type: 'stun-unit', target: 'any' }] },
     { sourcePath: 'effect[1]', trigger: 'play', steps: [{ type: 'damage-unit', amount: 2, target: 'any' }] },
   ] },
+  { cardId: id('冰尉'), effects: [{ sourcePath: 'enter[0]', trigger: 'enter', steps: [{ type: 'shield-all', amount: 1, excludeSource: true }] }] },
+  { cardId: id('玄武·执明'), effects: [{ sourcePath: 'skill', trigger: 'skill', steps: [{ type: 'shield-all', amount: 2, excludeSource: false }] }] },
   { cardId: id('火鸦'), effects: [{ sourcePath: 'skill', trigger: 'skill', steps: [{ type: 'register-death-attack-bonus', amount: 1 }] }] },
   { cardId: id('离火'), effects: [{ sourcePath: 'effect', trigger: 'play', steps: [{ type: 'damage-unit', target: 'any', amount: 5 }] }] },
   { cardId: id('传讯'), effects: [{ sourcePath: 'effect', trigger: 'play', steps: [{ type: 'draw', amount: 1 }] }] },
