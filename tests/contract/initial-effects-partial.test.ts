@@ -384,3 +384,23 @@ it.each([0, 5])('断金 with target shield %i applies only through shields', shi
   if (result.kind !== 'active') throw new Error('expected settled spell')
   expect(result.state.seats.B.board[0]).toMatchObject({ hp: shield ? 4 : 12, shield })
 })
+
+it.each([0, 2])('重筮 discards %i remaining cards before drawing four', count => {
+  const effect = definition('重筮')
+  const cards: Card[] = [
+    { id: 'unit', name: 'unit', kind: 'unit', flagship: false, data: { health: 1 } },
+    { id: effect.cardId, name: '重筮', kind: 'spell', flagship: false, data: { oncePerTurn: true, effects: [{ trigger: effect.trigger, steps: effect.steps }] } },
+  ]
+  const snapshot = createOfficialSnapshot({ id: 'chongshi', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] })
+  const a = createOfficialSeatState(Array.from({ length: 4 }, (_, i) => ({ id: `draw-${i}`, cardId: 'unit' })))
+  a.hand = [{ id: 'source', cardId: effect.cardId }, ...Array.from({ length: count }, (_, i) => ({ id: `old-${i}`, cardId: 'unit' }))]
+  const state: OfficialMatchState = { seatOrder: ['A', 'B'], seats: { A: a, B: createOfficialSeatState() }, turn: 2, finale: null, battleMode: false, effect: null }
+  const result = officialRules.resolveAction({ state, snapshot, seat: 'A', random: () => 0, action: { type: 'play-card', cardId: 'source' } })
+  if (result.kind !== 'active') throw new Error('expected settled spell')
+  expect(result.state.seats.A.discard.map(card => card.id)).toEqual(['source', ...Array.from({ length: count }, (_, i) => `old-${i}`)])
+  expect(result.state.seats.A.hand.map(card => card.id)).toEqual(['draw-0', 'draw-1', 'draw-2', 'draw-3'])
+  const events = result.events.flatMap(event => event.type === 'rule-event' ? [event.name] : [])
+  expect(events.filter(name => name === 'hand-discarded')).toHaveLength(count)
+  if (count) expect(events.lastIndexOf('hand-discarded')).toBeLessThan(events.indexOf('draw'))
+  expect(result.state.seats.A.usedCardIds).toContain(effect.cardId)
+})
