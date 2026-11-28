@@ -32,7 +32,7 @@ const capabilities = Object.freeze({
   triggers: Object.freeze(['play', 'enter', 'death', 'skill', 'attack-core', 'attack-unit'] as const satisfies readonly OfficialTrigger[]),
   effects: Object.freeze([
     'damage-unit', 'draw', 'register-death-attack-bonus', 'ice-draw-pick', 'cancel-attack',
-    'heal-core', 'shield-core',
+    'heal-core', 'shield-core', 'destroy-unit',
   ] as const satisfies readonly OfficialEffect['type'][]),
 })
 
@@ -187,24 +187,32 @@ function selection(state: OfficialMatchState): ChoiceFrame {
   return choice
 }
 
-function damageUnit(
-  state: OfficialMatchState, snapshot: CardPoolSnapshot, targetId: string,
-  amount: number, pierce: boolean, events: VisibleRuleEvent[],
+function destroyUnit(
+  state: OfficialMatchState, snapshot: CardPoolSnapshot, targetId: string, events: VisibleRuleEvent[],
 ): void {
   const found = unitLocation(state, targetId)
   if (!found) return
   const { seat, index, unit } = found
-  const absorbed = pierce ? 0 : Math.min(unit.shield, amount)
-  unit.shield -= absorbed
-  unit.hp -= amount - absorbed
-  events.push(visible('unit-damaged', { seat, targetId, amount: amount - absorbed, hp: unit.hp }))
-  if (unit.hp > 0) return
   const player = state.seats[seat]
   player.board.splice(index, 1)
   const card = { id: unit.id, cardId: unit.cardId }
   player.discard.push(card)
   events.push(visible('unit-destroyed', { seat, card }))
   frame(state).queue.unshift(...effectTasks(snapshot, seat, card, 'death', null), { type: 'death-bonuses', seat })
+}
+
+function damageUnit(
+  state: OfficialMatchState, snapshot: CardPoolSnapshot, targetId: string,
+  amount: number, pierce: boolean, events: VisibleRuleEvent[],
+): void {
+  const found = unitLocation(state, targetId)
+  if (!found) return
+  const { seat, unit } = found
+  const absorbed = pierce ? 0 : Math.min(unit.shield, amount)
+  unit.shield -= absorbed
+  unit.hp -= amount - absorbed
+  events.push(visible('unit-damaged', { seat, targetId, amount: amount - absorbed, hp: unit.hp }))
+  if (unit.hp <= 0) destroyUnit(state, snapshot, targetId, events)
 }
 
 function damageCore(state: OfficialMatchState, seat: SeatId, amount: number, events: VisibleRuleEvent[]): void {
@@ -247,6 +255,9 @@ function executeEffect(
   switch (effect.type) {
     case 'damage-unit':
       if (targetId !== null) damageUnit(state, snapshot, targetId, effect.amount, false, events)
+      break
+    case 'destroy-unit':
+      if (targetId !== null) destroyUnit(state, snapshot, targetId, events)
       break
     case 'draw':
       draw(state, seat, effect.amount, events)
@@ -448,7 +459,7 @@ function validEffectTarget(
   state: OfficialMatchState, snapshot: CardPoolSnapshot, seat: SeatId, card: OfficialCardInstance,
   trigger: OfficialTrigger, targets: readonly string[],
 ): boolean {
-  const steps = effectsFor(snapshot, card, trigger).filter(effect => effect.type === 'damage-unit')
+  const steps = effectsFor(snapshot, card, trigger).filter(effect => effect.type === 'damage-unit' || effect.type === 'destroy-unit')
   if (!steps.length) return targets.length === 0
   if (targets.length !== 1) return false
   const target = unitLocation(state, targets[0])

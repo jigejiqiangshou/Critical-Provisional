@@ -72,6 +72,16 @@ export const initialEffectDefinitions: readonly InitialEffectDefinition[] = [
     trigger: 'play', steps: [{ type: 'heal-core', amount: 6 }, { type: 'shield-core', amount: 3 }],
   },
   {
+    cardId: 'initial:sanmeizhenhuo', legacyName: '三昧真火',
+    source: 'quote/临界·模块化·2D版.html:571 effect',
+    trigger: 'play', steps: [{ type: 'destroy-unit', target: 'enemy' }],
+  },
+  {
+    cardId: 'initial:yanmie', legacyName: '湮灭',
+    source: 'quote/临界·模块化·2D版.html:656 effect',
+    trigger: 'play', steps: [{ type: 'destroy-unit', target: 'enemy' }],
+  },
+  {
     cardId: 'initial:yanwen', legacyName: '炎纹',
     source: 'quote/临界·模块化·2D版.html:562 effect',
     trigger: 'play', steps: [{ type: 'damage-unit', amount: 3, target: 'any' }, { type: 'draw', amount: 1 }],
