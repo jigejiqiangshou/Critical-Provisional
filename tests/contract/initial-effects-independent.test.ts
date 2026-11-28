@@ -32,7 +32,7 @@ describe('independent first release effect acceptance', () => {
 })
 
 it('accepts the four audited entries while still rejecting missing fields and steps', () => {
-  const audits = [
+  const audits: import('../../src/deck-catalog/effect-definitions').EffectAudit[] = [
     { legacyName: '传讯', cardId: 'initial:chuanxun', fields: { effect: { kind: 'effect' as const, reference: 'play:draw' } }, steps: { effect: 'play:0:draw' } },
     { legacyName: '离火', cardId: 'initial:lihuo', fields: { effect: { kind: 'effect' as const, reference: 'play:damage-unit' } }, steps: { effect: 'play:0:damage-unit' } },
     { legacyName: '星火', cardId: 'initial:xinghuo', fields: { effect: { kind: 'effect' as const, reference: 'play:look-pick' } }, steps: { 'effect.0': 'play:0:look-pick' } },

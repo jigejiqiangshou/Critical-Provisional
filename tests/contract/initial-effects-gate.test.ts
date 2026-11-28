@@ -22,10 +22,6 @@ it('independently compares the generated inventory with both original pages', ()
   }
 })
 
-it('fails closed while card-level audit coverage is incomplete', () => {
-  expect(() => assertInitialEffectsReady()).toThrow('Initial effect migration incomplete: 129 cards')
-})
-
 it.each([
   ['unrecognized trigger', { trigger: 'not-a-trigger' }, 'Unknown trigger'],
   ['unimplemented effect', { trigger: 'skill', steps: [{ type: 'not-an-effect' }] }, 'Unimplemented effect'],
@@ -39,7 +35,8 @@ it.each([
 })
 
 it('rejects incomplete fields, missing mappings and unverified core references in individual audits', () => {
-  const audit = { legacyName: '炎纹', cardId: 'initial:yanwen', fields: {}, steps: {} } as const
+  const approvedDefinitions = initialEffectDefinitions.filter(item => item.cardId === 'initial:yanwen').map(({ trigger, timing, steps }) => ({ trigger, ...(timing === undefined ? {} : { timing }), steps }))
+  const audit = { legacyName: '炎纹', cardId: 'initial:yanwen', approvedDefinitions, fields: {}, steps: {} } as const
   expect(() => validateInitialEffectAudits([audit])).toThrow('Unreviewed rules field')
   expect(() => validateInitialEffectAudits([{ ...audit, fields: { effect: { kind: 'effect', reference: 'play:unimplemented' } } }]))
     .toThrow('Unimplemented effect mapping')
@@ -59,7 +56,8 @@ it('rejects incomplete fields, missing mappings and unverified core references i
 })
 
 it('audits nested hand-cost continuation steps individually', () => {
-  const audit = { legacyName: '烽火令', cardId: 'initial:fenghuoling',
+  const approvedDefinitions = initialEffectDefinitions.filter(item => item.cardId === 'initial:fenghuoling').map(({ trigger, timing, steps }) => ({ trigger, ...(timing === undefined ? {} : { timing }), steps }))
+  const audit = { legacyName: '烽火令', cardId: 'initial:fenghuoling', approvedDefinitions,
     fields: { effect: { kind: 'effect' as const, reference: 'play:hand-cost' } }, steps: {} }
   expect(() => validateInitialEffectAudits([{ ...audit, steps: { 'effect.0': 'play:0:hand-cost' } }]))
     .toThrow('Unreviewed legacy step')

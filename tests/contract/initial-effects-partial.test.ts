@@ -475,7 +475,8 @@ it.each([['虎啸', 3], ['藤缚', 5], ['暗哨', 0]] as const)('%s responds aft
   const restored = await MatchCore.restore({ rules: officialRules, snapshot, match: JSON.parse(JSON.stringify(core.read())) })
   const pending = restored.read()
   if (pending.progress.kind !== 'waiting') throw new Error('expected response after restore')
-  const respond = (pass: boolean) => restored.propose({ kind: 'decision', seat: 'B', expectedRevision: 1, decisionId: pending.progress.decision.id,
+  const decisionId = pending.progress.decision.id
+  const respond = (pass: boolean) => restored.propose({ kind: 'decision', seat: 'B', expectedRevision: 1, decisionId,
     answer: pass ? { kind: 'pass' } : { kind: 'select', candidateIds: ['trap'] } })
   const pass = respond(true), flip = respond(false)
   if (pass.kind !== 'accepted' || flip.kind !== 'accepted') throw new Error('expected settlement')
