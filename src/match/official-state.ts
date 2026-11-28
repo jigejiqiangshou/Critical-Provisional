@@ -8,6 +8,7 @@ export type OfficialEffect =
   | { readonly type: 'damage-unit'; readonly amount: number; readonly target: 'any' | 'own' | 'enemy'; readonly pierce?: boolean }
   | { readonly type: 'damage-all-enemies'; readonly amount: number; readonly pierce: boolean }
   | { readonly type: 'destroy-unit'; readonly target: 'any' | 'own' | 'enemy' }
+  | { readonly type: 'stun-unit'; readonly target: 'any' | 'own' | 'enemy' }
   | { readonly type: 'shield-unit'; readonly target: 'any' | 'own' | 'enemy'; readonly amount: number }
   | { readonly type: 'buff-unit'; readonly target: 'any' | 'own' | 'enemy'; readonly attack: number; readonly health: number; readonly rush?: boolean; readonly attr?: string }
   | { readonly type: 'shield-all-own'; readonly amount: number; readonly excludeSource: boolean }
