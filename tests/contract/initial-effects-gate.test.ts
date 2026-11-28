@@ -1,0 +1,38 @@
+import { readFileSync } from 'node:fs'
+import { runInNewContext } from 'node:vm'
+import { expect, it } from 'vitest'
+import { assertInitialEffectsReady, initialEffectDefinitions } from '../../src/deck-catalog/effect-definitions'
+import type { InitialEffectDefinition } from '../../src/deck-catalog/effect-definitions'
+import sources from '../../src/deck-catalog/legacy-card-sources.json'
+
+it('independently compares the generated inventory with both original pages', () => {
+  for (const edition of ['2D', '3D'] as const) {
+    const html = readFileSync(new URL(`../../quote/临界·模块化·${edition}版.html`, import.meta.url), 'utf8')
+    const entries: { name: string; line: number; fields: string[] }[] = []
+    for (const [index, line] of html.split('\n').entries()) {
+      if (!line.trimStart().startsWith('addCard(')) continue
+      runInNewContext(line, { addCard: (card: Record<string, unknown>) => entries.push({
+        name: String(card.name), line: index + 1,
+        fields: Object.keys(card).filter(key => !['name', 'attr', 'type', 'atk', 'hp', 'text'].includes(key)),
+      }) }, { timeout: 1000 })
+    }
+    expect(sources).toHaveLength(129)
+    expect(sources.map(row => ({ name: row.name, line: edition === '2D' ? row.line2d : row.line3d, fields: row.ruleFields })))
+      .toEqual(entries)
+  }
+})
+
+it('fails closed while card-level audit coverage is incomplete', () => {
+  expect(() => assertInitialEffectsReady()).toThrow('Initial effect migration incomplete: 129 cards')
+})
+
+it.each([
+  ['unrecognized trigger', { trigger: 'not-a-trigger' }, 'Unknown trigger'],
+  ['unimplemented effect', { steps: [{ type: 'not-an-effect' }] }, 'Unimplemented effect'],
+  ['unknown source card', { legacyName: 'not-a-card' }, 'Unknown legacy card'],
+  ['stable ID assigned to another card', { cardId: initialEffectDefinitions[1].cardId }, 'Duplicate card ID'],
+])('rejects %s before reporting incomplete coverage', (_name, patch, message) => {
+  const list = initialEffectDefinitions as InitialEffectDefinition[]
+  list.push({ ...list[0], ...patch } as InitialEffectDefinition)
+  try { expect(() => assertInitialEffectsReady()).toThrow(message) } finally { list.pop() }
+})
