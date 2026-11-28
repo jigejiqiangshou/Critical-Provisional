@@ -92,3 +92,40 @@ it('朱雀羽 response waits until all targets of a group effect have settled', 
   expect(result.match.state.seats.B.board).toHaveLength(0)
   expect(result.match.state.seats.B.discard.map(card => card.id)).toEqual(['first', 'second'])
 })
+
+it('multiple 朱雀羽 deaths resolve deferred choices in order after restoration', async () => {
+  const victim = initialEffectDefinitions.find(item => item.legacyName === '朱雀羽')!
+  const aoe = initialEffectDefinitions.find(item => item.legacyName === '燎原')!
+  const cards: Card[] = [
+    { id: aoe.cardId, name: aoe.legacyName, kind: 'spell', flagship: false, data: { effects: [{ trigger: aoe.trigger, steps: aoe.steps }] } },
+    { id: victim.cardId, name: victim.legacyName, kind: 'unit', flagship: false, data: { health: 1, effects: [{ trigger: victim.trigger, steps: victim.steps }] } },
+  ]
+  const snapshot = createOfficialSnapshot({ id: 'two-deaths', rulesVersion: OFFICIAL_RULES_VERSION, cards, presets: [] })
+  const a = createOfficialSeatState(), b = createOfficialSeatState([{ id: 'draw-1', cardId: victim.cardId }, { id: 'draw-2', cardId: victim.cardId }])
+  a.hand = [{ id: 'aoe', cardId: aoe.cardId }]; b.hand = [{ id: 'cost', cardId: victim.cardId }]
+  const unit = (id: string): OfficialUnit => ({ id, cardId: victim.cardId, hp: 1, canAttack: false, attacked: false,
+    skillUsed: false, skillLock: false, attackBonus: 0, deathAttackBonus: 0, stealth: false, stunned: false, shield: 0 })
+  b.board = [unit('first'), unit('second')]
+  const state: OfficialMatchState = { seatOrder: ['A', 'B'], seats: { A: a, B: b }, turn: 2, finale: null, battleMode: false, effect: null }
+  const core = await MatchCore.create({ rules: officialRules, snapshot, state, activeSeat: 'A', random: { kind: 'recorded', inputs: [], consumed: 0 } })
+  const initial = core.propose({ kind: 'action', seat: 'A', expectedRevision: 0, action: { type: 'play-card', cardId: 'aoe' } })
+  if (initial.kind !== 'accepted') throw new Error('expected offer')
+  core.confirm(initial)
+  const saved = JSON.parse(JSON.stringify(core.read()))
+  const restored = await MatchCore.restore({ rules: officialRules, snapshot, match: saved })
+  const first = restored.read()
+  if (first.progress.kind !== 'waiting') throw new Error('expected first choice')
+  expect(first.state.seats.B.board).toHaveLength(0)
+  const pass = restored.propose({ kind: 'decision', seat: 'B', expectedRevision: 1, decisionId: first.progress.decision.id, answer: { kind: 'pass' } })
+  if (pass.kind !== 'accepted') throw new Error('expected pass')
+  restored.confirm(pass)
+  const second = restored.read()
+  if (second.progress.kind !== 'waiting') throw new Error('expected second choice')
+  expect(second.progress.decision.id).not.toBe(first.progress.decision.id)
+  const select = restored.propose({ kind: 'decision', seat: 'B', expectedRevision: 2, decisionId: second.progress.decision.id,
+    answer: { kind: 'select', candidateIds: ['cost'] } })
+  if (select.kind !== 'accepted') throw new Error('expected selected result')
+  restored.confirm(select)
+  expect(restored.read().progress.kind).toBe('active')
+  expect(restored.read().state.seats.B.hand.map(card => card.id)).toEqual(['draw-1', 'draw-2'])
+})
