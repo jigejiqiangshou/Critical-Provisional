@@ -17,6 +17,16 @@ const [two, three] = sources.map(readCards)
 if (two.length !== three.length || two.some(({ card }, i) => JSON.stringify(card) !== JSON.stringify(three[i].card))) {
   throw new Error('Legacy declarations differ across 2D and 3D sources; inspect before regenerating')
 }
+function sourceSteps(card) {
+  const steps = []
+  function visit(value, path) {
+    if (!value || typeof value !== 'object') return
+    if (!Array.isArray(value) && typeof value.type === 'string') steps.push({ path, type: value.type })
+    for (const [key, child] of Object.entries(value)) visit(child, `${path}.${key}`)
+  }
+  for (const [key, value] of Object.entries(card)) if (!ignored.has(key)) visit(value, key)
+  return steps
+}
 const out = [
   '# T045 旧版卡牌声明清查（未完成迁移）', '',
   '本清查仅定位两份旧版页面的声明，并非新规则定义、稳定 ID 或牌面规则核验。',
@@ -32,6 +42,6 @@ out.push('')
 writeFileSync('specs/001-offline-game-refactor/legacy-effect-inventory.md', out.join('\n'))
 writeFileSync('src/deck-catalog/legacy-card-sources.json', JSON.stringify(two.map(({ card, line }, i) => ({
   name: card.name, line2d: line, line3d: three[i].line,
-  ruleFields: Object.keys(card).filter(key => !ignored.has(key)),
+  ruleFields: Object.keys(card).filter(key => !ignored.has(key)), sourceSteps: sourceSteps(card),
 })), null, 2) + '\n')
 console.log(`${two.length} matching declarations inventoried; no effects marked implemented`)
